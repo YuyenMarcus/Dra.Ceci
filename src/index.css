@@ -1,0 +1,232 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-50: #f0fdfa;
+  --color-brand-100: #ccfbf1;
+  --color-brand-200: #99f6e4;
+  --color-brand-300: #5eead4;
+  --color-brand-400: #2dd4bf;
+  --color-brand-500: #14b8a6;
+  --color-brand-600: #0d9488;
+  --color-brand-700: #0f766e;
+  --color-brand-800: #115e59;
+  --color-brand-900: #134e4a;
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, Helvetica, Arial, sans-serif;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-slate-100 text-slate-800 font-sans;
+  }
+
+  /* Nicer scrollbars */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-slate-300 rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-400;
+  }
+}
+
+@utility card {
+  @apply bg-white rounded-2xl border border-slate-200 shadow-sm;
+}
+
+@utility input {
+  @apply w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm
+    text-slate-800 placeholder:text-slate-400 outline-none transition
+    focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10;
+}
+
+@utility label {
+  @apply block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1.5;
+}
+
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5
+    text-sm font-semibold transition active:scale-[.98] disabled:opacity-50
+    disabled:pointer-events-none;
+}
+
+@utility btn-primary {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5
+    text-sm font-semibold transition active:scale-[.98] disabled:opacity-50
+    disabled:pointer-events-none bg-brand-600 text-white hover:bg-brand-700
+    shadow-sm shadow-brand-600/20;
+}
+
+@utility btn-ghost {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5
+    text-sm font-semibold transition active:scale-[.98] disabled:opacity-50
+    disabled:pointer-events-none bg-transparent text-slate-600 hover:bg-slate-100;
+}
+
+@utility btn-danger {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5
+    text-sm font-semibold transition active:scale-[.98] disabled:opacity-50
+    disabled:pointer-events-none bg-rose-50 text-rose-600 hover:bg-rose-100;
+}
+
+@utility btn-outline {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5
+    text-sm font-semibold transition active:scale-[.98] disabled:opacity-50
+    disabled:pointer-events-none border border-slate-300 bg-white text-slate-700
+    hover:bg-slate-50;
+}
+
+/* ------------------------------------------------------------------ */
+/* Motion: entrance animations + intro splash sequence                */
+/* ------------------------------------------------------------------ */
+
+@keyframes mt-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes mt-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes mt-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes mt-logo-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.4) rotate(-12deg);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(1.12) rotate(4deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes mt-ring {
+  0% {
+    opacity: 0.55;
+    transform: scale(0.7);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.1);
+  }
+}
+
+@keyframes mt-bar {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes mt-splash-out {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+.animate-fade-in {
+  animation: mt-fade-in 0.5s ease both;
+}
+.animate-fade-up {
+  animation: mt-fade-up 0.5s cubic-bezier(0.21, 1.02, 0.73, 1) both;
+}
+.animate-scale-in {
+  animation: mt-scale-in 0.4s ease both;
+}
+
+/* Stagger direct children (cards, list items, etc.) */
+.stagger > * {
+  animation: mt-fade-up 0.5s cubic-bezier(0.21, 1.02, 0.73, 1) both;
+}
+.stagger > *:nth-child(1) {
+  animation-delay: 0.04s;
+}
+.stagger > *:nth-child(2) {
+  animation-delay: 0.1s;
+}
+.stagger > *:nth-child(3) {
+  animation-delay: 0.16s;
+}
+.stagger > *:nth-child(4) {
+  animation-delay: 0.22s;
+}
+.stagger > *:nth-child(5) {
+  animation-delay: 0.28s;
+}
+.stagger > *:nth-child(6) {
+  animation-delay: 0.34s;
+}
+.stagger > *:nth-child(7) {
+  animation-delay: 0.4s;
+}
+.stagger > *:nth-child(8) {
+  animation-delay: 0.46s;
+}
+.stagger > *:nth-child(n + 9) {
+  animation-delay: 0.5s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-fade-up,
+  .animate-scale-in,
+  .stagger > * {
+    animation: none !important;
+  }
+}
+
+/* Print: show only the ficha, cleanly. */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .ficha-print,
+  .ficha-print * {
+    visibility: visible;
+  }
+  .ficha-print {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 24px;
+  }
+  .no-print {
+    display: none !important;
+  }
+}
