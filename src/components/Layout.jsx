@@ -8,15 +8,16 @@ import {
   Stethoscope,
   Menu,
   X,
-  RotateCcw,
   LogOut,
   HelpCircle,
+  Share2,
+  HeartPulse,
   Settings as SettingsIcon,
 } from "lucide-react";
-import { useStore } from "../store/StoreContext.jsx";
 import { useAuth } from "../auth/AuthContext.jsx";
 import { useLang } from "../i18n/LanguageContext.jsx";
 import { initials } from "../lib/format.js";
+import { updateClinic } from "../store/db.js";
 import Tour from "./Tour.jsx";
 
 const TOUR_KEY = "medtrack.tour.doctor";
@@ -26,6 +27,7 @@ const nav = [
   { to: "/app/inventory", labelKey: "nav.inventory", icon: Boxes, tour: "nav-inventory" },
   { to: "/app/clients", labelKey: "nav.clients", icon: Users, tour: "nav-clients" },
   { to: "/app/appointments", labelKey: "nav.appointments", icon: CalendarDays, tour: "nav-appointments" },
+  { to: "/app/profile", labelKey: "nav.profile", icon: Share2, tour: "nav-profile" },
   { to: "/app/settings", labelKey: "nav.settings", icon: SettingsIcon, tour: "nav-settings" },
 ];
 
@@ -34,6 +36,7 @@ const titles = {
   "/app/inventory": "nav.inventory",
   "/app/clients": "nav.clients",
   "/app/appointments": "nav.appointments",
+  "/app/profile": "nav.profile",
   "/app/settings": "nav.settings",
 };
 
@@ -85,8 +88,7 @@ export default function Layout({ children }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { resetData } = useStore();
-  const { currentUser, logout } = useAuth();
+  const { currentUser, clinic, logout, refreshClinic, canSwitchRoles } = useAuth();
   const { t } = useLang();
   const title = titles[location.pathname]
     ? t(titles[location.pathname])
@@ -98,22 +100,37 @@ export default function Layout({ children }) {
     { selector: '[data-tour="nav-inventory"]', title: t("dtour.3.title"), body: t("dtour.3.body") },
     { selector: '[data-tour="nav-clients"]', title: t("dtour.4.title"), body: t("dtour.4.body") },
     { selector: '[data-tour="nav-appointments"]', title: t("dtour.5.title"), body: t("dtour.5.body") },
-    { selector: '[data-tour="reset"]', title: t("dtour.6.title"), body: t("dtour.6.body") },
+    { selector: '[data-tour="nav-settings"]', title: t("dtour.6.title"), body: t("dtour.6.body") },
   ];
 
   const [tourOpen, setTourOpen] = useState(false);
 
-  // Auto-start the walkthrough once per browser for first-time users.
+  // Show the walkthrough only at initial setup. "Onboarded" is persisted on the
+  // clinic account (survives cache clears, logins and different browsers); the
+  // localStorage key is just a fast local guard. Once either says "seen", the
+  // tour never auto-opens again.
+  const onboarded = Boolean(clinic?.profile?.onboarded);
   useEffect(() => {
-    if (!localStorage.getItem(TOUR_KEY)) {
-      const t = setTimeout(() => setTourOpen(true), 600);
-      return () => clearTimeout(t);
-    }
-  }, []);
+    if (!clinic || onboarded) return undefined;
+    if (localStorage.getItem(TOUR_KEY)) return undefined;
+    const timer = setTimeout(() => setTourOpen(true), 600);
+    return () => clearTimeout(timer);
+  }, [clinic, onboarded]);
 
-  function closeTour() {
+  async function closeTour() {
     localStorage.setItem(TOUR_KEY, "1");
     setTourOpen(false);
+    // Persist onboarding completion on the account so it won't show again.
+    if (clinic && !clinic.profile?.onboarded) {
+      try {
+        await updateClinic(clinic.id, {
+          profile: { ...(clinic.profile || {}), onboarded: true },
+        });
+        await refreshClinic();
+      } catch (err) {
+        console.error("Could not save onboarding flag:", err);
+      }
+    }
   }
 
   function signOut() {
@@ -122,15 +139,15 @@ export default function Layout({ children }) {
   }
 
   return (
-    <div className="min-h-screen lg:flex">
+    <div className="min-h-screen md:flex">
       {/* Desktop sidebar */}
-      <aside className="hidden w-64 shrink-0 flex-col bg-gradient-to-b from-brand-800 to-brand-900 lg:flex">
+      <aside className="hidden w-64 shrink-0 flex-col bg-gradient-to-b from-brand-800 to-brand-900 md:flex">
         <SidebarContent t={t} />
       </aside>
 
       {/* Mobile sidebar */}
       {mobileOpen && (
-        <div className="fixed inset-0 z-40 lg:hidden">
+        <div className="fixed inset-0 z-40 md:hidden">
           <div
             className="absolute inset-0 bg-slate-900/50"
             onClick={() => setMobileOpen(false)}
@@ -150,10 +167,10 @@ export default function Layout({ children }) {
 
       {/* Main column */}
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-slate-200 bg-white/80 px-4 py-3.5 backdrop-blur lg:px-8">
+        <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-slate-200 bg-white/80 px-4 py-3.5 backdrop-blur md:px-8">
           <div className="flex items-center gap-3">
             <button
-              className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 lg:hidden"
+              className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 md:hidden"
               onClick={() => setMobileOpen(true)}
               aria-label={t("layout.openMenu")}
             >
@@ -162,6 +179,16 @@ export default function Layout({ children }) {
             <h1 className="text-xl font-bold text-slate-900">{title}</h1>
           </div>
           <div className="flex items-center gap-3">
+            {canSwitchRoles && (
+              <button
+                className="btn-ghost text-xs text-portal-700 hover:bg-portal-50"
+                onClick={() => navigate("/me")}
+                title={t("layout.switchToPatient")}
+              >
+                <HeartPulse size={15} />
+                <span className="hidden sm:inline">{t("layout.patientPortal")}</span>
+              </button>
+            )}
             <button
               className="btn-ghost text-xs"
               onClick={() => setTourOpen(true)}
@@ -169,17 +196,6 @@ export default function Layout({ children }) {
             >
               <HelpCircle size={15} />
               <span className="hidden sm:inline">{t("layout.tour")}</span>
-            </button>
-            <button
-              data-tour="reset"
-              className="btn-ghost text-xs"
-              onClick={() => {
-                if (confirm(t("layout.resetConfirm"))) resetData();
-              }}
-              title={t("layout.resetDataTitle")}
-            >
-              <RotateCcw size={15} />
-              <span className="hidden sm:inline">{t("layout.resetData")}</span>
             </button>
             <div className="flex items-center gap-2.5 rounded-full border border-slate-200 bg-white py-1 pl-1 pr-3.5">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-100 text-sm font-semibold text-brand-700">
@@ -205,7 +221,7 @@ export default function Layout({ children }) {
           </div>
         </header>
 
-        <main className="flex-1 px-4 py-6 lg:px-8 lg:py-8">
+        <main className="flex-1 px-4 py-6 md:px-8 md:py-8">
           <div key={location.pathname} className="animate-fade-up">
             {children}
           </div>

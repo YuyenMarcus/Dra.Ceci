@@ -29,6 +29,11 @@ export const TEETH_LOWER = [
   48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38,
 ];
 
+// Primary (deciduous) teeth — "dientes temporales". FDI notation, laid out in
+// the middle of the chart since a child's arch sits inside the adult arch.
+export const TEETH_UPPER_PRIMARY = [55, 54, 53, 52, 51, 61, 62, 63, 64, 65];
+export const TEETH_LOWER_PRIMARY = [85, 84, 83, 82, 81, 71, 72, 73, 74, 75];
+
 // Per-tooth status. `none` is the default (healthy / unmarked).
 export const ODONTO_STATUSES = [
   { key: "none", label: "Sano", abbr: "", swatch: "bg-white border-slate-300" },
@@ -59,7 +64,6 @@ export function normalizeFicha(client = {}) {
     email: "",
     phone: "",
     dob: "",
-    password: "demo1234",
     // Datos del paciente
     ocupacion: "",
     direccion: "",

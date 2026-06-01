@@ -1,30 +1,26 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import {
-  Stethoscope,
-  Search,
-  Clock,
-  X,
-  CalendarPlus,
-  CalendarX,
-} from "lucide-react";
-import { useStore } from "../store/StoreContext.jsx";
+import { useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import { Stethoscope, Search, Clock, X, CalendarPlus, CalendarX, ClipboardList, FileText } from "lucide-react";
 import { useLang } from "../i18n/LanguageContext.jsx";
 import Confirm from "../components/Confirm.jsx";
 import LanguageToggle from "../components/LanguageToggle.jsx";
+import PhoneField from "../components/PhoneField.jsx";
+import TreatmentTimeline from "../components/TreatmentTimeline.jsx";
 import {
-  formatDate,
-  formatTime,
-  relativeDay,
-  normalizePhone,
-} from "../lib/format.js";
+  getClinicBySlug,
+  getBookingsByPhone,
+  cancelBookingByPhone,
+  getTreatmentsByPhone,
+  getConsentsByPhone,
+} from "../store/db.js";
+import { formatDate, formatTime, relativeDay, formatDateTime } from "../lib/format.js";
 
-function PublicHeader() {
+function PublicHeader({ slug }) {
   const { t } = useLang();
   return (
     <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/85 backdrop-blur">
       <div className="mx-auto flex max-w-2xl items-center justify-between px-5 py-3.5">
-        <Link to="/dra-ceci" className="flex items-center gap-2.5">
+        <Link to={`/c/${slug}`} className="flex items-center gap-2.5">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-600 text-white">
             <Stethoscope size={18} />
           </div>
@@ -32,7 +28,7 @@ function PublicHeader() {
         </Link>
         <div className="flex items-center gap-2">
           <LanguageToggle />
-          <Link to="/book" className="btn-primary text-sm">
+          <Link to={`/c/${slug}/book`} className="btn-primary text-sm">
             <CalendarPlus size={16} /> {t("manage.book")}
           </Link>
         </div>
@@ -42,105 +38,156 @@ function PublicHeader() {
 }
 
 export default function ManageBooking() {
-  const { appointments, doctors, cancelAppointment } = useStore();
-  const { t } = useLang();
+  const { slug } = useParams();
+  const { t, lang } = useLang();
+  const [clinic, setClinic] = useState(null);
   const [phone, setPhone] = useState("");
-  const [searched, setSearched] = useState("");
+  const [phoneValid, setPhoneValid] = useState(false);
+  const [searched, setSearched] = useState(false);
+  const [results, setResults] = useState([]);
+  const [treatments, setTreatments] = useState([]);
+  const [consents, setConsents] = useState([]);
+  const [busy, setBusy] = useState(false);
   const [toCancel, setToCancel] = useState(null);
 
-  const doctorName = (id) =>
-    doctors.find((d) => d.id === id)?.name ?? t("common.doctor");
+  useEffect(() => {
+    let active = true;
+    getClinicBySlug(slug)
+      .then((c) => active && setClinic(c))
+      .catch((err) => console.error(err));
+    return () => {
+      active = false;
+    };
+  }, [slug]);
 
-  function lookup(e) {
+  async function lookup(e) {
     e.preventDefault();
-    setSearched(normalizePhone(phone));
+    if (!clinic?.id || !phoneValid) return;
+    setBusy(true);
+    try {
+      const [all, tx, cs] = await Promise.all([
+        getBookingsByPhone(clinic.id, phone),
+        getTreatmentsByPhone(clinic.id, phone),
+        getConsentsByPhone(clinic.id, phone),
+      ]);
+      const upcoming = all
+        .filter((a) => a.status === "scheduled" && new Date(a.start).getTime() >= Date.now())
+        .sort((a, b) => new Date(a.start) - new Date(b.start));
+      setResults(upcoming);
+      setTreatments(tx);
+      setConsents(cs);
+    } catch (err) {
+      console.error(err);
+      setResults([]);
+      setTreatments([]);
+      setConsents([]);
+    } finally {
+      setBusy(false);
+      setSearched(true);
+    }
   }
 
-  const results = searched
-    ? appointments
-        .filter(
-          (a) =>
-            normalizePhone(a.patientPhone || "") === searched &&
-            a.status === "scheduled" &&
-            new Date(a.start).getTime() >= Date.now()
-        )
-        .sort((a, b) => new Date(a.start) - new Date(b.start))
-    : [];
+  async function confirmCancel() {
+    if (!toCancel) return;
+    const res = await cancelBookingByPhone(toCancel.id, phone);
+    if (res?.ok) {
+      setResults((list) => list.filter((a) => a.id !== toCancel.id));
+    }
+    setToCancel(null);
+  }
 
   return (
     <div className="min-h-screen bg-slate-100">
-      <PublicHeader />
+      <PublicHeader slug={slug} />
       <main className="mx-auto max-w-2xl px-5 py-10">
         <h1 className="text-2xl font-bold text-slate-900">{t("manage.title")}</h1>
         <p className="mt-1 text-sm text-slate-500">{t("manage.sub")}</p>
 
-        <form onSubmit={lookup} className="mt-6 flex gap-2">
-          <div className="relative flex-1">
-            <Search
-              size={16}
-              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
-            />
-            <input
-              className="input pl-10"
-              type="tel"
-              required
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+        <form onSubmit={lookup} className="mt-6 flex flex-col gap-2 sm:flex-row">
+          <div className="flex-1">
+            <PhoneField
+              lang={lang}
               placeholder={t("manage.phonePlaceholder")}
+              onChange={({ e164, valid }) => {
+                setPhone(e164);
+                setPhoneValid(valid);
+              }}
             />
           </div>
-          <button type="submit" className="btn-primary">
-            {t("common.find")}
+          <button
+            type="submit"
+            disabled={busy || !phoneValid}
+            className="btn-primary disabled:opacity-60"
+          >
+            <Search size={16} /> {t("common.find")}
           </button>
         </form>
 
         {searched && (
-          <div className="mt-6 space-y-3">
+          <div className="mt-6 space-y-6">
             {results.length === 0 ? (
               <div className="card flex flex-col items-center px-6 py-12 text-center">
                 <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
                   <CalendarX size={24} />
                 </div>
-                <p className="font-semibold text-slate-700">
-                  {t("manage.noneFound")}
-                </p>
-                <p className="mt-1 text-sm text-slate-500">
-                  {t("manage.noneFoundSub")}
-                </p>
-                <Link to="/book" className="btn-primary mt-5">
+                <p className="font-semibold text-slate-700">{t("manage.noneFound")}</p>
+                <p className="mt-1 text-sm text-slate-500">{t("manage.noneFoundSub")}</p>
+                <Link to={`/c/${slug}/book`} className="btn-primary mt-5">
                   <CalendarPlus size={16} /> {t("manage.bookAppointment")}
                 </Link>
               </div>
             ) : (
               results.map((a) => (
-                <div
-                  key={a.id}
-                  className="card flex items-center justify-between gap-3 p-5"
-                >
+                <div key={a.id} className="card flex items-center justify-between gap-3 p-5">
                   <div>
                     <p className="flex items-center gap-2 font-semibold text-slate-900">
                       <Clock size={16} className="text-brand-600" />
-                      {t("book.atTime", {
-                        day: relativeDay(a.start),
-                        time: formatTime(a.start),
-                      })}
+                      {t("book.atTime", { day: relativeDay(a.start), time: formatTime(a.start) })}
                     </p>
                     <p className="mt-0.5 text-sm text-slate-500">
-                      {formatDate(a.start)} · {doctorName(a.doctorId)}
+                      {formatDate(a.start)} · {a.provider || clinic?.name || t("common.doctor")}
                     </p>
                     <p className="text-sm text-slate-500">{a.reason}</p>
-                    {a.notes && (
-                      <p className="text-sm italic text-slate-400">“{a.notes}”</p>
-                    )}
+                    {a.notes && <p className="text-sm italic text-slate-400">“{a.notes}”</p>}
                   </div>
-                  <button
-                    className="btn-danger px-3 py-2 text-xs"
-                    onClick={() => setToCancel(a)}
-                  >
+                  <button className="btn-danger px-3 py-2 text-xs" onClick={() => setToCancel(a)}>
                     <X size={14} /> {t("appt.cancel")}
                   </button>
                 </div>
               ))
+            )}
+
+            {(treatments.length > 0 || consents.length > 0) && (
+              <>
+                {treatments.length > 0 && (
+                  <div className="card p-5">
+                    <h2 className="mb-4 flex items-center gap-2 font-semibold text-slate-900">
+                      <ClipboardList size={18} className="text-brand-600" />
+                      {t("patient.careHistory")}
+                    </h2>
+                    <TreatmentTimeline items={treatments} />
+                  </div>
+                )}
+                {consents.length > 0 && (
+                  <div className="card p-5">
+                    <h2 className="mb-4 flex items-center gap-2 font-semibold text-slate-900">
+                      <FileText size={18} className="text-brand-600" />
+                      {t("patient.documents")}
+                    </h2>
+                    <ul className="space-y-3 text-sm">
+                      {consents.map((c) => (
+                        <li key={c.id} className="rounded-xl bg-slate-50 p-4">
+                          <p className="font-semibold text-slate-900">{c.procedure}</p>
+                          <p className="text-xs text-slate-400">
+                            {c.signedName} — {formatDateTime(c.signedAt)}
+                          </p>
+                          <p className="mt-2 whitespace-pre-wrap text-slate-600">{c.body}</p>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}
@@ -149,12 +196,10 @@ export default function ManageBooking() {
       <Confirm
         open={!!toCancel}
         onClose={() => setToCancel(null)}
-        onConfirm={() => cancelAppointment(toCancel.id)}
+        onConfirm={confirmCancel}
         title={t("manage.cancelTitle")}
         message={t("manage.cancelMsg", {
-          when: toCancel
-            ? `${formatDate(toCancel.start)} · ${formatTime(toCancel.start)}`
-            : "",
+          when: toCancel ? `${formatDate(toCancel.start)} · ${formatTime(toCancel.start)}` : "",
         })}
         confirmLabel={t("manage.cancelAppointment")}
       />

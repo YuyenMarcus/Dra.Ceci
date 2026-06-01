@@ -32,7 +32,14 @@ function FeatureCard({ icon: Icon, title, children, delay = 0 }) {
 
 export default function AppLanding() {
   const { t } = useLang();
-  const { isDoctor, isClient } = useAuth();
+  const { isDoctor, isClient, canAccessPatientPortal, clinic } = useAuth();
+  const profileTo = isDoctor && clinic?.slug ? `/c/${clinic.slug}` : "/signup";
+  // Secondary CTA: doctors view their own public profile, everyone else is
+  // pointed at creating a clinic (no more "example profile" framing).
+  const secondaryLabel = isDoctor ? t("app.navProfile") : t("login.createOne");
+  const sampleName = isDoctor && clinic?.name ? clinic.name : t("app.profileSampleName");
+  const sampleUrl =
+    isDoctor && clinic?.slug ? `medtrack.app/${clinic.slug}` : t("app.profileSampleUrl");
 
   const features = [
     {
@@ -87,11 +94,14 @@ export default function AppLanding() {
           </Link>
           <div className="flex items-center gap-2">
             <LanguageToggle className="mr-1" />
-            <Link to="/dra-ceci" className="btn-ghost">
+            <Link to={canAccessPatientPortal ? "/me" : "/me/login"} className="btn-ghost">
+              {t("app.patientPortal")}
+            </Link>
+            <Link to={profileTo} className="btn-ghost">
               {t("app.navProfile")}
             </Link>
             <Link to={primaryTo} className="btn-primary">
-              {t("app.login")}
+              {isClient ? t("app.goToPortal") : t("app.login")}
             </Link>
           </div>
         </div>
@@ -127,8 +137,8 @@ export default function AppLanding() {
             <Link to={primaryTo} className="btn-primary px-6 py-3 text-base">
               {t("app.getStarted")} <ArrowRight size={18} />
             </Link>
-            <Link to="/dra-ceci" className="btn-outline px-6 py-3 text-base">
-              {t("app.seeProfile")}
+            <Link to={profileTo} className="btn-outline px-6 py-3 text-base">
+              {secondaryLabel}
             </Link>
           </div>
         </div>
@@ -164,8 +174,8 @@ export default function AppLanding() {
               {t("app.profileTitle")}
             </h2>
             <p className="mt-3 max-w-md text-slate-500">{t("app.profileSub")}</p>
-            <Link to="/dra-ceci" className="btn-primary mt-6 px-6 py-3 text-base">
-              {t("app.viewExample")} <ArrowRight size={18} />
+            <Link to={profileTo} className="btn-primary mt-6 px-6 py-3 text-base">
+              {secondaryLabel} <ArrowRight size={18} />
             </Link>
           </div>
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
@@ -175,8 +185,8 @@ export default function AppLanding() {
                   <Stethoscope size={18} />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-slate-900">Dra. Ceci</p>
-                  <p className="text-xs text-slate-400">medtrack.app/dra-ceci</p>
+                  <p className="text-sm font-bold text-slate-900">{sampleName}</p>
+                  <p className="text-xs text-slate-400">{sampleUrl}</p>
                 </div>
                 <span className="ml-auto rounded-full bg-brand-50 px-2.5 py-1 text-[11px] font-semibold text-brand-700">
                   {t("landing.bookAppointment")}

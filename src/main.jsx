@@ -5,18 +5,21 @@ import App from "./App.jsx";
 import { StoreProvider } from "./store/StoreContext.jsx";
 import { AuthProvider } from "./auth/AuthContext.jsx";
 import { LanguageProvider } from "./i18n/LanguageContext.jsx";
+import ErrorBoundary from "./components/ErrorBoundary.jsx";
 import "./index.css";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <BrowserRouter>
-      <LanguageProvider>
-        <StoreProvider>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <LanguageProvider>
           <AuthProvider>
-            <App />
+            <StoreProvider>
+              <App />
+            </StoreProvider>
           </AuthProvider>
-        </StoreProvider>
-      </LanguageProvider>
-    </BrowserRouter>
+        </LanguageProvider>
+      </BrowserRouter>
+    </ErrorBoundary>
   </StrictMode>
 );

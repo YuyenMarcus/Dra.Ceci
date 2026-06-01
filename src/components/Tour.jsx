@@ -6,7 +6,7 @@ const CARD_W = 330;
 const EST_H = 220;
 const PAD = 8;
 
-// Lightweight guided-tour / coachmark overlay used for the demo walkthroughs.
+// Lightweight guided-tour / coachmark overlay used for onboarding walkthroughs.
 // `steps` is an array of { selector?, title, body, interactive? }. A step without
 // a selector renders a centered card. When `interactive` is set, the highlighted
 // element stays clickable so the user can actually use that part of the UI.

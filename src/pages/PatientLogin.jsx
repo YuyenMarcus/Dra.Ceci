@@ -5,9 +5,9 @@ import { useAuth } from "../auth/AuthContext.jsx";
 import { useLang } from "../i18n/LanguageContext.jsx";
 import LanguageToggle from "../components/LanguageToggle.jsx";
 
-export default function Login() {
+export default function PatientLogin() {
   const navigate = useNavigate();
-  const { login, isDoctor, isClient, loading } = useAuth();
+  const { login, isDoctor, isClient, canSwitchRoles, loading } = useAuth();
   const { t } = useLang();
 
   const [email, setEmail] = useState("");
@@ -15,11 +15,13 @@ export default function Login() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
+  // Doctor-only accounts go to /app. Patient accounts and dual-role doctors
+  // (also registered as patients) land in the patient portal.
   useEffect(() => {
     if (loading) return;
-    if (isDoctor) navigate("/app", { replace: true });
-    else if (isClient) navigate("/me", { replace: true });
-  }, [isDoctor, isClient, loading, navigate]);
+    if (isDoctor && !canSwitchRoles) navigate("/app", { replace: true });
+    else if (isClient || canSwitchRoles) navigate("/me", { replace: true });
+  }, [isDoctor, isClient, canSwitchRoles, loading, navigate]);
 
   async function submit(e) {
     e.preventDefault();
@@ -31,48 +33,29 @@ export default function Login() {
       setError(res.error);
       return;
     }
-    // Patients (and any non-doctor account) land in the patient portal.
-    navigate(res.role === "doctor" ? "/app" : "/me", { replace: true });
+    const doctorOnly = res.role === "doctor" && !res.hasPatientProfile;
+    navigate(doctorOnly ? "/app" : "/me", { replace: true });
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-100 lg:flex-row">
-      {/* Brand panel */}
-      <div className="relative hidden flex-col justify-between bg-gradient-to-br from-brand-600 to-brand-800 p-10 text-white lg:flex lg:w-2/5">
-        <Link to="/" className="flex items-center gap-2.5">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15">
-            <Stethoscope size={20} />
-          </div>
-          <span className="text-xl font-bold">MedTrack</span>
-        </Link>
-        <div>
-          <h2 className="text-3xl font-bold leading-tight">{t("login.welcomeBack")}</h2>
-          <p className="mt-3 max-w-sm text-white/80">{t("login.brandSub")}</p>
+    <div className="portal-scope flex min-h-screen items-center justify-center bg-slate-100 p-6">
+      <div className="w-full max-w-md">
+        <div className="mb-6 flex items-center justify-between">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-700"
+          >
+            <ArrowLeft size={16} /> {t("login.backHome")}
+          </Link>
+          <LanguageToggle />
         </div>
-        <p className="text-sm text-white/60">{t("app.tagline")}</p>
-      </div>
 
-      {/* Form panel */}
-      <div className="flex flex-1 items-center justify-center p-6">
-        <div className="w-full max-w-md">
-          <div className="mb-6 flex items-center justify-between">
-            <Link
-              to="/"
-              className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-700"
-            >
-              <ArrowLeft size={16} /> {t("login.backHome")}
-            </Link>
-            <LanguageToggle />
+        <div className="card p-8">
+          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-50 to-portal-100 text-portal-600">
+            <Stethoscope size={22} />
           </div>
-
-          <h1 className="text-2xl font-bold text-slate-900">{t("login.doctorTitle")}</h1>
-          <p className="mt-1 text-sm text-slate-500">
-            {t("login.patientsNoAccount")}{" "}
-            <Link to="/" className="font-medium text-brand-600 hover:text-brand-700">
-              {t("login.bookHere")}
-            </Link>
-            .
-          </p>
+          <h1 className="text-2xl font-bold text-slate-900">{t("plogin.title")}</h1>
+          <p className="mt-1 text-sm text-slate-500">{t("plogin.sub")}</p>
 
           <form onSubmit={submit} className="mt-6 space-y-4">
             <div>
@@ -86,7 +69,7 @@ export default function Login() {
                   setEmail(e.target.value);
                   setError("");
                 }}
-                placeholder="you@clinic.com"
+                placeholder="you@example.com"
               />
             </div>
             <div>
@@ -119,18 +102,16 @@ export default function Login() {
             </Link>
             <span className="text-slate-500">
               {t("login.noAccount")}{" "}
-              <Link to="/signup" className="font-medium text-brand-600 hover:text-brand-700">
-                {t("login.createOne")}
+              <Link to="/me/signup" className="font-medium text-brand-600 hover:text-brand-700">
+                {t("plogin.createOne")}
               </Link>
             </span>
           </div>
 
-          <Link
-            to="/me/login"
-            className="mt-6 flex items-center justify-center gap-2 rounded-xl border border-dashed border-slate-300 py-3 text-sm font-medium text-slate-600 hover:border-brand-300 hover:text-brand-700"
-          >
-            <CalendarPlus size={16} /> {t("login.patientSignIn")}
-          </Link>
+          <p className="mt-6 rounded-xl border border-dashed border-slate-300 px-4 py-3 text-center text-xs text-slate-500">
+            <CalendarPlus size={13} className="mr-1 inline" />
+            {t("plogin.noAccountNeeded")}
+          </p>
         </div>
       </div>
     </div>

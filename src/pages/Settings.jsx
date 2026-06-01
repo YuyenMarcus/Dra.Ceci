@@ -1,21 +1,34 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Languages, Check, Share2, Link2, ExternalLink } from "lucide-react";
+import { Languages, Check, Share2, Link2, ExternalLink, Layers } from "lucide-react";
 import { useLang } from "../i18n/LanguageContext.jsx";
+import { useAuth } from "../auth/AuthContext.jsx";
+import { updateClinic } from "../store/db.js";
+import CommissionCalculator from "../components/CommissionCalculator.jsx";
 
 const LANGS = [
   { code: "es", labelKey: "settings.spanish", native: "Español" },
   { code: "en", labelKey: "settings.english", native: "English" },
 ];
 
+const PLANS = [
+  { id: "starter", labelKey: "plan.starter" },
+  { id: "profesional", labelKey: "plan.profesional" },
+  { id: "hacienda", labelKey: "plan.hacienda" },
+];
+
 export default function Settings() {
   const { lang, setLang, t } = useLang();
+  const { clinic, refreshClinic } = useAuth();
   const [copied, setCopied] = useState(false);
+  const [planBusy, setPlanBusy] = useState(false);
+  const currentPlan = clinic?.profile?.plan || "starter";
 
+  const profilePath = `/c/${clinic?.slug ?? ""}`;
   const profileUrl =
     typeof window !== "undefined"
-      ? `${window.location.origin}/dra-ceci`
-      : "/dra-ceci";
+      ? `${window.location.origin}${profilePath}`
+      : profilePath;
 
   async function copyLink() {
     try {
@@ -25,6 +38,21 @@ export default function Settings() {
     }
     setCopied(true);
     setTimeout(() => setCopied(false), 1800);
+  }
+
+  async function setPlan(plan) {
+    if (!clinic || plan === currentPlan || planBusy) return;
+    setPlanBusy(true);
+    try {
+      await updateClinic(clinic.id, {
+        profile: { ...(clinic.profile || {}), plan },
+      });
+      await refreshClinic();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setPlanBusy(false);
+    }
   }
 
   return (
@@ -53,11 +81,48 @@ export default function Settings() {
             {copied ? <Check size={16} /> : <Link2 size={16} />}
             {copied ? t("profile.copied") : t("profile.copyLink")}
           </button>
-          <Link to="/dra-ceci" className="btn-outline">
+          <Link to={profilePath} className="btn-outline">
             <ExternalLink size={16} /> {t("settings.viewProfile")}
           </Link>
         </div>
       </div>
+
+      {/* Plan tier (internal flag until billing is connected) */}
+      <div className="card p-6">
+        <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+            <Layers size={20} />
+          </div>
+          <div>
+            <h2 className="font-semibold text-slate-900">{t("plan.title")}</h2>
+            <p className="text-sm text-slate-500">{t("plan.hint")}</p>
+          </div>
+        </div>
+        <div className="mt-4 grid gap-2">
+          {PLANS.map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              disabled={planBusy}
+              onClick={() => setPlan(p.id)}
+              className={`flex items-center justify-between rounded-xl border px-4 py-3 text-left transition ${
+                currentPlan === p.id
+                  ? "border-brand-500 bg-brand-50/60"
+                  : "border-slate-200 hover:border-brand-300"
+              }`}
+            >
+              <span className="text-sm font-semibold text-slate-800">{t(p.labelKey)}</span>
+              {currentPlan === p.id && (
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-600 text-white">
+                  <Check size={14} />
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <CommissionCalculator />
 
       {/* Language */}
       <div className="card p-6">

@@ -1,11 +1,14 @@
 import { useState } from "react";
-import { Routes, Route, Navigate, Outlet } from "react-router-dom";
+import { Routes, Route, Navigate, Outlet, useParams } from "react-router-dom";
 import { useAuth } from "./auth/AuthContext.jsx";
 import Layout from "./components/Layout.jsx";
 import Splash from "./components/Splash.jsx";
 import AppLanding from "./pages/AppLanding.jsx";
 import Profile from "./pages/Profile.jsx";
 import Login from "./pages/Login.jsx";
+import Signup from "./pages/Signup.jsx";
+import ForgotPassword from "./pages/ForgotPassword.jsx";
+import UpdatePassword from "./pages/UpdatePassword.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import Inventory from "./pages/Inventory.jsx";
 import Clients from "./pages/Clients.jsx";
@@ -13,21 +16,49 @@ import Appointments from "./pages/Appointments.jsx";
 import BookAppointment from "./pages/BookAppointment.jsx";
 import ManageBooking from "./pages/ManageBooking.jsx";
 import Settings from "./pages/Settings.jsx";
+import ProfileEdit from "./pages/ProfileEdit.jsx";
 import PatientHome from "./pages/PatientHome.jsx";
+import PatientLogin from "./pages/PatientLogin.jsx";
+import PatientSignup from "./pages/PatientSignup.jsx";
+import FindDoctor from "./pages/FindDoctor.jsx";
 import CookieConsent from "./components/CookieConsent.jsx";
 
 const SPLASH_KEY = "medtrack.splashed";
 
+function AuthLoading() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-slate-50">
+      <div className="h-10 w-10 animate-spin rounded-full border-4 border-brand-200 border-t-brand-600" />
+    </div>
+  );
+}
+
 function RequireDoctor({ children }) {
-  const { isDoctor } = useAuth();
+  const { isDoctor, loading } = useAuth();
+  if (loading) return <AuthLoading />;
   if (!isDoctor) return <Navigate to="/login" replace />;
   return children;
 }
 
-function RequireClient({ children }) {
-  const { isClient } = useAuth();
-  if (!isClient) return <Navigate to="/login" replace />;
-  return children;
+// The patient portal is for patient accounts, OR for a doctor account that is
+// ALSO a patient (owns its own patient records). A doctor-only account has no
+// patient portal and is sent back to /app.
+function RequirePatient({ children }) {
+  const { canAccessPatientPortal, isDoctor, loading } = useAuth();
+  if (loading) return <AuthLoading />;
+  if (canAccessPatientPortal) return children;
+  if (isDoctor) return <Navigate to="/app" replace />;
+  return <Navigate to="/me/login" replace />;
+}
+
+// Redirect the old single-clinic path to its slug-based profile.
+function LegacyDraCeci() {
+  return <Navigate to="/c/dra-ceci" replace />;
+}
+
+function LegacySlugRedirect({ to }) {
+  const { slug } = useParams();
+  return <Navigate to={`/c/${slug}/${to}`} replace />;
 }
 
 export default function App() {
@@ -45,44 +76,58 @@ export default function App() {
   return (
     <>
       <Routes>
-      {/* Public */}
-      <Route path="/" element={<AppLanding />} />
-      <Route path="/dra-ceci" element={<Profile />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/book" element={<BookAppointment />} />
-      <Route path="/manage" element={<ManageBooking />} />
+        {/* Product marketing */}
+        <Route path="/" element={<AppLanding />} />
 
-      {/* Patient portal */}
-      <Route
-        path="/me"
-        element={
-          <RequireClient>
-            <PatientHome />
-          </RequireClient>
-        }
-      />
+        {/* Auth */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/update-password" element={<UpdatePassword />} />
 
-      {/* Doctor app */}
-      <Route
-        path="/app"
-        element={
-          <RequireDoctor>
-            <Layout>
-              <Outlet />
-            </Layout>
-          </RequireDoctor>
-        }
-      >
-        <Route index element={<Dashboard />} />
-        <Route path="inventory" element={<Inventory />} />
-        <Route path="clients" element={<Clients />} />
-        <Route path="appointments" element={<Appointments />} />
-        <Route path="settings" element={<Settings />} />
-      </Route>
+        {/* Public doctor directory */}
+        <Route path="/find" element={<FindDoctor />} />
 
-      {/* Legacy portal path now points at public booking */}
-      <Route path="/portal" element={<Navigate to="/book" replace />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
+        {/* Public clinic profile + booking (slug-scoped) */}
+        <Route path="/c/:slug" element={<Profile />} />
+        <Route path="/c/:slug/book" element={<BookAppointment />} />
+        <Route path="/c/:slug/manage" element={<ManageBooking />} />
+
+        {/* Patient portal */}
+        <Route path="/me/login" element={<PatientLogin />} />
+        <Route path="/me/signup" element={<PatientSignup />} />
+        <Route
+          path="/me"
+          element={
+            <RequirePatient>
+              <PatientHome />
+            </RequirePatient>
+          }
+        />
+
+        {/* Doctor app */}
+        <Route
+          path="/app"
+          element={
+            <RequireDoctor>
+              <Layout>
+                <Outlet />
+              </Layout>
+            </RequireDoctor>
+          }
+        >
+          <Route index element={<Dashboard />} />
+          <Route path="inventory" element={<Inventory />} />
+          <Route path="clients" element={<Clients />} />
+          <Route path="appointments" element={<Appointments />} />
+          <Route path="profile" element={<ProfileEdit />} />
+          <Route path="settings" element={<Settings />} />
+        </Route>
+
+        {/* Legacy redirects */}
+        <Route path="/dra-ceci" element={<LegacyDraCeci />} />
+        <Route path="/c/:slug/portal" element={<LegacySlugRedirect to="book" />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <CookieConsent />
     </>

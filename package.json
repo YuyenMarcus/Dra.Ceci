@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.106.2",
+    "libphonenumber-js": "^1.13.4",
     "lucide-react": "^0.469.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

@@ -1,36 +1,44 @@
 import {
   TEETH_UPPER,
   TEETH_LOWER,
+  TEETH_UPPER_PRIMARY,
+  TEETH_LOWER_PRIMARY,
   ODONTO_STATUSES,
   odontoStatus,
   nextOdontoStatus,
 } from "../lib/ficha.js";
 
-function Tooth({ number, statusKey, onClick, readOnly }) {
+function Tooth({ number, statusKey, onClick, readOnly, small }) {
   const status = odontoStatus(statusKey);
   const Tag = readOnly ? "div" : "button";
+  const box = small ? "h-6 w-6 text-[9px]" : "h-7 w-7 text-[10px]";
+  const col = small ? "w-6" : "w-7";
   return (
-    <div className="flex w-7 flex-col items-center gap-1">
+    <div className={`flex flex-col items-center gap-1 ${col}`}>
       <Tag
         type={readOnly ? undefined : "button"}
         onClick={readOnly ? undefined : onClick}
         title={`Diente ${number}${status.label ? ` · ${status.label}` : ""}`}
-        className={`flex h-7 w-7 items-center justify-center rounded-md border text-[10px] font-bold transition ${status.swatch} ${
+        className={`flex items-center justify-center rounded-md border font-bold transition ${box} ${status.swatch} ${
           readOnly ? "" : "cursor-pointer hover:ring-2 hover:ring-brand-300"
         }`}
       >
         {status.abbr}
       </Tag>
-      <span className="text-[10px] font-medium tabular-nums text-slate-400">
+      <span
+        className={`font-medium tabular-nums text-slate-400 ${
+          small ? "text-[9px]" : "text-[10px]"
+        }`}
+      >
         {number}
       </span>
     </div>
   );
 }
 
-function Arch({ teeth, value, onToggle, readOnly }) {
+function Arch({ teeth, value, onToggle, readOnly, small }) {
   return (
-    <div className="flex justify-center gap-1">
+    <div className={`flex justify-center ${small ? "gap-0.5" : "gap-1"}`}>
       {teeth.map((n, i) => (
         <div key={n} className="flex">
           {/* Midline divider between the two quadrants. */}
@@ -41,6 +49,7 @@ function Arch({ teeth, value, onToggle, readOnly }) {
             number={n}
             statusKey={value[n] || "none"}
             readOnly={readOnly}
+            small={small}
             onClick={() => onToggle?.(n)}
           />
         </div>
@@ -82,9 +91,15 @@ export default function Odontogram({ value = {}, onChange, readOnly = false }) {
   return (
     <div>
       <div className="overflow-x-auto">
-        <div className="mx-auto w-max space-y-2 py-1">
+        <div className="mx-auto w-max space-y-1.5 py-1">
+          {/* Permanent upper arch */}
           <Arch teeth={TEETH_UPPER} value={value} onToggle={toggle} readOnly={readOnly} />
-          <div className="mx-auto h-px w-full max-w-md bg-slate-100" />
+          {/* Primary (children) upper arch — smaller, sits inside the adult arch */}
+          <Arch teeth={TEETH_UPPER_PRIMARY} value={value} onToggle={toggle} readOnly={readOnly} small />
+          <div className="mx-auto my-0.5 h-px w-full max-w-md bg-slate-200" />
+          {/* Primary (children) lower arch */}
+          <Arch teeth={TEETH_LOWER_PRIMARY} value={value} onToggle={toggle} readOnly={readOnly} small />
+          {/* Permanent lower arch */}
           <Arch teeth={TEETH_LOWER} value={value} onToggle={toggle} readOnly={readOnly} />
         </div>
       </div>

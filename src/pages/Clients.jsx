@@ -19,6 +19,8 @@ import Confirm from "../components/Confirm.jsx";
 import Empty from "../components/Empty.jsx";
 import FichaEditor from "../components/FichaEditor.jsx";
 import FichaView from "../components/FichaView.jsx";
+import TreatmentLog from "../components/TreatmentLog.jsx";
+import PatientImport from "../components/PatientImport.jsx";
 import { initials, avatarColor, formatDate, relativeDay } from "../lib/format.js";
 import { normalizeFicha, calcEdad } from "../lib/ficha.js";
 
@@ -89,6 +91,7 @@ export default function Clients() {
 
   return (
     <div className="space-y-5">
+      <PatientImport />
       <div className="no-print flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative max-w-sm flex-1">
           <Search
@@ -230,7 +233,19 @@ export default function Clients() {
         }
       >
         {viewingClient && (
-          <FichaView client={viewingClient} doctorName={currentUser?.name} />
+          <div className="space-y-5">
+            <FichaView client={viewingClient} doctorName={currentUser?.name} />
+            <TreatmentLog
+              patient={viewingClient}
+              onOdontogramPatch={(tooth, status) => {
+                const odontograma = {
+                  ...(viewingClient.odontograma || {}),
+                  [tooth]: status,
+                };
+                updateClient(viewingClient.id, { odontograma });
+              }}
+            />
+          </div>
         )}
       </Modal>
 
