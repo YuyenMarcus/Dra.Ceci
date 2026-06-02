@@ -53,7 +53,7 @@ export default function Appointments() {
     updateAppointment,
     removeAppointment,
   } = useStore();
-  const { currentUser } = useAuth();
+  const { currentUser, receptionMode } = useAuth();
   const { t } = useLang();
   const navigate = useNavigate();
 
@@ -282,7 +282,8 @@ export default function Appointments() {
                         “{a.notes}”
                       </p>
                     )}
-                    {/* Ficha (patient record) tag */}
+                    {/* Ficha (patient record) tag — hidden in reception mode */}
+                    {!receptionMode && (
                     <div className="mt-1.5 flex flex-wrap items-center gap-2">
                       {client ? (
                         <>
@@ -308,6 +309,7 @@ export default function Appointments() {
                         </button>
                       )}
                     </div>
+                    )}
                   </div>
                 </div>
 

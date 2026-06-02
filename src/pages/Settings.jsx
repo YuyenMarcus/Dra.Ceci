@@ -1,6 +1,15 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { Languages, Check, Share2, Link2, ExternalLink, Layers } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  Languages,
+  Check,
+  Share2,
+  Link2,
+  ExternalLink,
+  Layers,
+  ConciergeBell,
+  LogIn,
+} from "lucide-react";
 import { useLang } from "../i18n/LanguageContext.jsx";
 import { useAuth } from "../auth/AuthContext.jsx";
 import { updateClinic } from "../store/db.js";
@@ -19,10 +28,37 @@ const PLANS = [
 
 export default function Settings() {
   const { lang, setLang, t } = useLang();
-  const { clinic, refreshClinic } = useAuth();
+  const { clinic, refreshClinic, enterReception } = useAuth();
+  const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
   const [planBusy, setPlanBusy] = useState(false);
   const currentPlan = clinic?.profile?.plan || "starter";
+
+  const savedPin = clinic?.profile?.receptionPin || "";
+  const [pin, setPin] = useState(savedPin);
+  const [pinBusy, setPinBusy] = useState(false);
+  const [pinSaved, setPinSaved] = useState(false);
+
+  async function savePin() {
+    if (!clinic || pinBusy) return;
+    setPinBusy(true);
+    try {
+      await updateClinic(clinic.id, {
+        profile: { ...(clinic.profile || {}), receptionPin: pin.trim() },
+      });
+      await refreshClinic();
+      setPinSaved(true);
+      setTimeout(() => setPinSaved(false), 1800);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setPinBusy(false);
+    }
+  }
+
+  function startReception() {
+    if (enterReception()) navigate("/app", { replace: true });
+  }
 
   const profilePath = `/c/${clinic?.slug ?? ""}`;
   const profileUrl =
@@ -120,6 +156,56 @@ export default function Settings() {
             </button>
           ))}
         </div>
+      </div>
+
+      {/* Reception access (front desk) */}
+      <div className="card p-6">
+        <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+            <ConciergeBell size={20} />
+          </div>
+          <div>
+            <h2 className="font-semibold text-slate-900">{t("reception.title")}</h2>
+            <p className="text-sm text-slate-500">{t("reception.hint")}</p>
+          </div>
+        </div>
+
+        <div className="mt-4 grid gap-3 sm:max-w-sm">
+          <label className="label mb-0">{t("reception.pinLabel")}</label>
+          <div className="flex gap-2">
+            <input
+              className="input"
+              inputMode="numeric"
+              autoComplete="off"
+              maxLength={8}
+              value={pin}
+              onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
+              placeholder={t("reception.pinPlaceholder")}
+            />
+            <button
+              type="button"
+              className="btn-outline shrink-0"
+              disabled={pinBusy || pin.trim().length < 4 || pin.trim() === savedPin}
+              onClick={savePin}
+            >
+              {pinSaved ? <Check size={16} /> : null}
+              {pinSaved ? t("reception.pinSaved") : t("reception.savePin")}
+            </button>
+          </div>
+          <p className="text-xs text-slate-400">{t("reception.pinHelp")}</p>
+        </div>
+
+        <button
+          type="button"
+          className="btn-primary mt-4 disabled:opacity-60"
+          disabled={!savedPin}
+          onClick={startReception}
+        >
+          <LogIn size={16} /> {t("reception.enter")}
+        </button>
+        {!savedPin && (
+          <p className="mt-2 text-xs text-amber-600">{t("reception.needPin")}</p>
+        )}
       </div>
 
       <CommissionCalculator />

@@ -51,6 +51,15 @@ function RequirePatient({ children }) {
   return <Navigate to="/me/login" replace />;
 }
 
+// Guards routes that are off-limits in reception mode (medical records and
+// clinic-wide settings). In reception mode the doctor's session is locked to
+// inventory + appointments, so these redirect to the dashboard.
+function RequireFullAccess({ children }) {
+  const { receptionMode } = useAuth();
+  if (receptionMode) return <Navigate to="/app" replace />;
+  return children;
+}
+
 // Redirect the old single-clinic path to its slug-based profile.
 function LegacyDraCeci() {
   return <Navigate to="/c/dra-ceci" replace />;
@@ -118,10 +127,31 @@ export default function App() {
         >
           <Route index element={<Dashboard />} />
           <Route path="inventory" element={<Inventory />} />
-          <Route path="clients" element={<Clients />} />
+          <Route
+            path="clients"
+            element={
+              <RequireFullAccess>
+                <Clients />
+              </RequireFullAccess>
+            }
+          />
           <Route path="appointments" element={<Appointments />} />
-          <Route path="profile" element={<ProfileEdit />} />
-          <Route path="settings" element={<Settings />} />
+          <Route
+            path="profile"
+            element={
+              <RequireFullAccess>
+                <ProfileEdit />
+              </RequireFullAccess>
+            }
+          />
+          <Route
+            path="settings"
+            element={
+              <RequireFullAccess>
+                <Settings />
+              </RequireFullAccess>
+            }
+          />
         </Route>
 
         {/* Legacy redirects */}

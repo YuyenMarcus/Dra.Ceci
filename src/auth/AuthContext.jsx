@@ -42,6 +42,19 @@ export function AuthProvider({ children }) {
   // account is ALSO a patient, this is true and we expose the portal switcher.
   const [hasPatientProfile, setHasPatientProfile] = useState(false);
   const [loading, setLoading] = useState(true);
+  // Front-desk "reception mode": when on, the doctor's own session is locked to
+  // inventory + appointments and medical records are hidden. It stores which
+  // clinic id it was enabled for so it only applies to that account. This is a
+  // device/UI-level restriction (handy for a shared front-desk computer), not a
+  // database access boundary — real per-staff accounts would need their own
+  // logins + RLS.
+  const [receptionClinicId, setReceptionClinicId] = useState(() => {
+    try {
+      return localStorage.getItem("medtrack.receptionMode") || null;
+    } catch {
+      return null;
+    }
+  });
 
   // Resolve the per-role context for a session. The source of truth for "is
   // this a doctor?" is clinic ownership, NOT the metadata role — that way an
@@ -138,6 +151,41 @@ export function AuthProvider({ children }) {
   // then may a doctor account enter the patient portal.
   const canSwitchRoles = isDoctor && hasPatientProfile;
   const canAccessPatientPortal = isClient || canSwitchRoles;
+
+  // Reception mode is active only while the locked clinic matches the signed-in
+  // doctor's clinic.
+  const receptionMode = Boolean(
+    clinic && receptionClinicId && receptionClinicId === clinic.id
+  );
+
+  // Lock the app into reception mode. Requires a PIN to have been set so the
+  // doctor can later unlock it. Returns false if no PIN is configured.
+  const enterReception = useCallback(() => {
+    if (!clinic || !clinic.profile?.receptionPin) return false;
+    try {
+      localStorage.setItem("medtrack.receptionMode", clinic.id);
+    } catch {
+      /* storage may be unavailable */
+    }
+    setReceptionClinicId(clinic.id);
+    return true;
+  }, [clinic]);
+
+  // Leave reception mode. Requires the clinic's reception PIN.
+  const exitReception = useCallback(
+    (pin) => {
+      const real = clinic?.profile?.receptionPin || "";
+      if (real && String(pin).trim() !== String(real)) return false;
+      try {
+        localStorage.removeItem("medtrack.receptionMode");
+      } catch {
+        /* ignore */
+      }
+      setReceptionClinicId(null);
+      return true;
+    },
+    [clinic]
+  );
 
   // The doctor app reads `currentUser` for name/id — map the clinic onto that
   // shape so existing components keep working.
@@ -266,6 +314,12 @@ export function AuthProvider({ children }) {
     setUser(null);
     setClinic(null);
     setHasPatientProfile(false);
+    try {
+      localStorage.removeItem("medtrack.receptionMode");
+    } catch {
+      /* ignore */
+    }
+    setReceptionClinicId(null);
   }, []);
 
   const value = useMemo(
@@ -282,6 +336,9 @@ export function AuthProvider({ children }) {
       hasPatientProfile,
       canSwitchRoles,
       canAccessPatientPortal,
+      receptionMode,
+      enterReception,
+      exitReception,
       backendEnabled: isSupabaseEnabled,
       login,
       signUp,
@@ -303,6 +360,9 @@ export function AuthProvider({ children }) {
       hasPatientProfile,
       canSwitchRoles,
       canAccessPatientPortal,
+      receptionMode,
+      enterReception,
+      exitReception,
       login,
       signUp,
       signUpPatient,

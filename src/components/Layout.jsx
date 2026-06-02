@@ -13,20 +13,23 @@ import {
   Share2,
   HeartPulse,
   Settings as SettingsIcon,
+  ConciergeBell,
+  Lock,
 } from "lucide-react";
 import { useAuth } from "../auth/AuthContext.jsx";
 import { useLang } from "../i18n/LanguageContext.jsx";
 import { initials } from "../lib/format.js";
 import { updateClinic } from "../store/db.js";
 import Tour from "./Tour.jsx";
+import Modal from "./Modal.jsx";
 
 const TOUR_KEY = "medtrack.tour.doctor";
 
 const nav = [
-  { to: "/app", labelKey: "nav.dashboard", icon: LayoutDashboard, end: true, tour: "nav-dashboard" },
-  { to: "/app/inventory", labelKey: "nav.inventory", icon: Boxes, tour: "nav-inventory" },
+  { to: "/app", labelKey: "nav.dashboard", icon: LayoutDashboard, end: true, tour: "nav-dashboard", reception: true },
+  { to: "/app/inventory", labelKey: "nav.inventory", icon: Boxes, tour: "nav-inventory", reception: true },
   { to: "/app/clients", labelKey: "nav.clients", icon: Users, tour: "nav-clients" },
-  { to: "/app/appointments", labelKey: "nav.appointments", icon: CalendarDays, tour: "nav-appointments" },
+  { to: "/app/appointments", labelKey: "nav.appointments", icon: CalendarDays, tour: "nav-appointments", reception: true },
   { to: "/app/profile", labelKey: "nav.profile", icon: Share2, tour: "nav-profile" },
   { to: "/app/settings", labelKey: "nav.settings", icon: SettingsIcon, tour: "nav-settings" },
 ];
@@ -40,7 +43,7 @@ const titles = {
   "/app/settings": "nav.settings",
 };
 
-function SidebarContent({ onNavigate, t }) {
+function SidebarContent({ onNavigate, t, items = nav }) {
   return (
     <>
       <div className="flex items-center gap-3 px-6 py-6">
@@ -54,7 +57,7 @@ function SidebarContent({ onNavigate, t }) {
       </div>
 
       <nav className="flex-1 space-y-1 px-3">
-        {nav.map(({ to, labelKey, icon: Icon, end, tour }, i) => (
+        {items.map(({ to, labelKey, icon: Icon, end, tour }, i) => (
           <NavLink
             key={to}
             to={to}
@@ -88,11 +91,35 @@ export default function Layout({ children }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { currentUser, clinic, logout, refreshClinic, canSwitchRoles } = useAuth();
+  const {
+    currentUser,
+    clinic,
+    logout,
+    refreshClinic,
+    canSwitchRoles,
+    receptionMode,
+    exitReception,
+  } = useAuth();
   const { t } = useLang();
   const title = titles[location.pathname]
     ? t(titles[location.pathname])
     : "MedTrack";
+
+  const navItems = receptionMode ? nav.filter((n) => n.reception) : nav;
+  const [exitOpen, setExitOpen] = useState(false);
+  const [pin, setPin] = useState("");
+  const [pinError, setPinError] = useState(false);
+
+  function tryExit(e) {
+    e.preventDefault();
+    if (exitReception(pin)) {
+      setExitOpen(false);
+      setPin("");
+      setPinError(false);
+    } else {
+      setPinError(true);
+    }
+  }
 
   const doctorTourSteps = [
     { title: t("dtour.1.title"), body: t("dtour.1.body") },
@@ -162,7 +189,7 @@ export default function Layout({ children }) {
     <div className="min-h-screen md:flex">
       {/* Desktop sidebar */}
       <aside className="hidden w-64 shrink-0 flex-col bg-gradient-to-b from-brand-800 to-brand-900 md:flex">
-        <SidebarContent t={t} />
+        <SidebarContent t={t} items={navItems} />
       </aside>
 
       {/* Slide-in nav drawer — available at every width as a guaranteed
@@ -182,7 +209,7 @@ export default function Layout({ children }) {
             >
               <X size={18} />
             </button>
-            <SidebarContent t={t} onNavigate={() => setMobileOpen(false)} />
+            <SidebarContent t={t} items={navItems} onNavigate={() => setMobileOpen(false)} />
           </aside>
         </div>
       )}
@@ -202,7 +229,7 @@ export default function Layout({ children }) {
             <h1 className="text-xl font-bold text-slate-900">{title}</h1>
           </div>
           <div className="flex items-center gap-3">
-            {canSwitchRoles && (
+            {!receptionMode && canSwitchRoles && (
               <button
                 className="btn-ghost text-xs text-portal-700 hover:bg-portal-50"
                 onClick={() => navigate("/me")}
@@ -244,6 +271,25 @@ export default function Layout({ children }) {
           </div>
         </header>
 
+        {receptionMode && (
+          <div className="flex items-center justify-between gap-3 border-b border-amber-200 bg-amber-50 px-4 py-2.5 md:px-8">
+            <p className="flex items-center gap-2 text-sm font-medium text-amber-800">
+              <ConciergeBell size={16} />
+              {t("reception.banner")}
+            </p>
+            <button
+              className="inline-flex items-center gap-1.5 rounded-lg border border-amber-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-amber-800 hover:bg-amber-100"
+              onClick={() => {
+                setPin("");
+                setPinError(false);
+                setExitOpen(true);
+              }}
+            >
+              <Lock size={14} /> {t("reception.exit")}
+            </button>
+          </div>
+        )}
+
         <main className="flex-1 px-4 py-6 md:px-8 md:py-8">
           <div key={location.pathname} className="animate-fade-up">
             {children}
@@ -252,6 +298,42 @@ export default function Layout({ children }) {
       </div>
 
       <Tour steps={doctorTourSteps} open={tourOpen} onClose={closeTour} />
+
+      {/* Exit reception mode (PIN required) */}
+      <Modal
+        open={exitOpen}
+        onClose={() => setExitOpen(false)}
+        title={t("reception.exitTitle")}
+        footer={
+          <>
+            <button className="btn-outline" onClick={() => setExitOpen(false)}>
+              {t("common.cancel")}
+            </button>
+            <button className="btn-primary" form="reception-exit" type="submit">
+              <Lock size={16} /> {t("reception.unlock")}
+            </button>
+          </>
+        }
+      >
+        <form id="reception-exit" onSubmit={tryExit} className="space-y-3">
+          <p className="text-sm text-slate-500">{t("reception.exitHint")}</p>
+          <input
+            className="input"
+            type="password"
+            inputMode="numeric"
+            autoFocus
+            value={pin}
+            onChange={(e) => {
+              setPin(e.target.value.replace(/\D/g, ""));
+              setPinError(false);
+            }}
+            placeholder={t("reception.enterPin")}
+          />
+          {pinError && (
+            <p className="text-sm font-medium text-rose-600">{t("reception.wrongPin")}</p>
+          )}
+        </form>
+      </Modal>
     </div>
   );
 }
