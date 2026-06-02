@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   Plus,
   Search,
@@ -29,6 +30,8 @@ export default function Clients() {
     useStore();
   const { currentUser } = useAuth();
   const { t } = useLang();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [editorOpen, setEditorOpen] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -40,6 +43,33 @@ export default function Clients() {
     () => clients.filter((c) => c.doctorId === currentUser?.id),
     [clients, currentUser]
   );
+
+  // Honor navigation from the Appointments page: open a specific ficha, or
+  // start a new ficha prefilled from an online booking.
+  const navState = location.state;
+  useEffect(() => {
+    if (!navState) return;
+    if (navState.openClientId) {
+      const c = clients.find((x) => x.id === navState.openClientId);
+      if (c) {
+        setViewing(c);
+        navigate(location.pathname, { replace: true, state: null });
+      }
+      return; // if not found yet, wait for clients to load and re-run
+    }
+    if (navState.newFicha) {
+      setEditing(null);
+      setForm(
+        normalizeFicha({
+          name: navState.newFicha.name || "",
+          phone: navState.newFicha.phone || "",
+          email: navState.newFicha.email || "",
+        })
+      );
+      setEditorOpen(true);
+      navigate(location.pathname, { replace: true, state: null });
+    }
+  }, [navState, clients, navigate, location.pathname]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();

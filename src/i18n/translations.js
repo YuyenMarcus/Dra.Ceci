@@ -48,6 +48,7 @@ export const translations = {
     "layout.switchToPatient": "Ir al portal del paciente",
     "layout.openMenu": "Abrir menú",
     "layout.closeMenu": "Cerrar menú",
+    "layout.menu": "Menú",
 
     // Dashboard
     "dash.inventoryItems": "Artículos en inventario",
@@ -157,6 +158,19 @@ export const translations = {
     "appt.cancelMsg":
       "¿Cancelar la cita de {name}? Puedes restaurarla luego desde la pestaña Canceladas.",
     "appt.thisClient": "este paciente",
+    "appt.fichaTag": "Ficha",
+    "appt.viewFicha": "Ver ficha",
+    "appt.assignFicha": "Asignar ficha",
+    "appt.changeFicha": "Cambiar ficha",
+    "appt.unlinkFicha": "Quitar ficha",
+    "appt.noFicha": "Sin ficha",
+    "appt.assignTitle": "Vincular ficha de paciente",
+    "appt.assignHint":
+      "Elige la ficha que corresponde a esta cita. Las reservas en línea no tienen ficha hasta que la vinculas.",
+    "appt.searchFichas": "Buscar fichas…",
+    "appt.phoneMatch": "Coincide por teléfono",
+    "appt.noFichasYet": "Aún no tienes fichas. Crea una desde esta reserva.",
+    "appt.createFichaFromBooking": "Crear ficha desde esta reserva",
 
     // Clients
     "clients.searchPlaceholder": "Buscar pacientes…",
@@ -686,6 +700,7 @@ export const translations = {
     "layout.switchToPatient": "Go to patient portal",
     "layout.openMenu": "Open menu",
     "layout.closeMenu": "Close menu",
+    "layout.menu": "Menu",
 
     "dash.inventoryItems": "Inventory items",
     "dash.lowOut": "Low / out of stock",
@@ -791,27 +806,40 @@ export const translations = {
     "appt.cancelMsg":
       "Cancel the appointment for {name}? You can restore it later from the Cancelled tab.",
     "appt.thisClient": "this client",
+    "appt.fichaTag": "Record",
+    "appt.viewFicha": "View record",
+    "appt.assignFicha": "Link record",
+    "appt.changeFicha": "Change record",
+    "appt.unlinkFicha": "Unlink record",
+    "appt.noFicha": "No record",
+    "appt.assignTitle": "Link a patient record",
+    "appt.assignHint":
+      "Pick the patient record this appointment belongs to. Online bookings have no record until you link one.",
+    "appt.searchFichas": "Search records…",
+    "appt.phoneMatch": "Phone match",
+    "appt.noFichasYet": "No records yet. Create one from this booking.",
+    "appt.createFichaFromBooking": "Create record from this booking",
 
     "clients.searchPlaceholder": "Search patients…",
-    "clients.newFicha": "New ficha",
+    "clients.newFicha": "New patient record",
     "clients.noClients": "No patients yet",
     "clients.noClientsHint":
-      "Create your first patient ficha to start scheduling appointments.",
+      "Create your first patient record to start scheduling appointments.",
     "clients.years": "{n} years",
     "clients.patientSince": "Patient since {date}",
     "clients.nextVisit": "Next visit",
     "clients.noUpcomingVisit": "No upcoming visit",
-    "clients.ficha": "Ficha",
-    "clients.fichaClinica": "Clinical record",
+    "clients.ficha": "Record",
+    "clients.fichaClinica": "Patient record",
     "clients.print": "Print",
-    "clients.editFicha": "Edit ficha",
-    "clients.editFichaTitle": "Edit ficha",
-    "clients.newFichaTitle": "New ficha",
+    "clients.editFicha": "Edit record",
+    "clients.editFichaTitle": "Edit patient record",
+    "clients.newFichaTitle": "New patient record",
     "clients.saveChanges": "Save changes",
-    "clients.createFicha": "Create ficha",
+    "clients.createFicha": "Create record",
     "clients.deletePatient": "Delete patient",
     "clients.deleteMsg":
-      'Remove "{name}"? Their ficha and appointments will also be removed.',
+      'Remove "{name}"? Their record and appointments will also be removed.',
 
     "login.welcomeBack": "Welcome back.",
     "login.brandSub":
@@ -1229,7 +1257,7 @@ export const translations = {
       "Log supplies, adjust quantities with quick +/- buttons, and get automatic low / out-of-stock badges.",
     "dtour.4.title": "Patients & fichas",
     "dtour.4.body":
-      "Open any patient to view or edit their full clinical ficha. Online bookings show up here automatically, matched by phone.",
+      "Open any patient to view or edit their full clinical record. Online bookings show up here automatically, matched by phone.",
     "dtour.5.title": "Appointments",
     "dtour.5.body":
       "Schedule conflict-free visits and manage Upcoming, Past and Cancelled. Bookings made online are tagged so you can spot them.",

@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Plus,
   CalendarDays,
@@ -8,6 +9,10 @@ import {
   RotateCcw,
   Trash2,
   CheckCircle2,
+  FileText,
+  Link2,
+  Search,
+  UserPlus,
 } from "lucide-react";
 import { useStore } from "../store/StoreContext.jsx";
 import { useAuth } from "../auth/AuthContext.jsx";
@@ -32,6 +37,13 @@ const TABS = [
 
 const durations = [15, 30, 45, 60, 90];
 
+// Compare phone numbers loosely by their last 8 digits, so an E.164 booking
+// (e.g. +50370001234) matches a record saved as "7000-1234".
+function phoneTail(value) {
+  const digits = (value || "").replace(/\D/g, "");
+  return digits.length >= 8 ? digits.slice(-8) : digits;
+}
+
 export default function Appointments() {
   const {
     appointments,
@@ -43,6 +55,7 @@ export default function Appointments() {
   } = useStore();
   const { currentUser } = useAuth();
   const { t } = useLang();
+  const navigate = useNavigate();
 
   const myClients = useMemo(
     () => clients.filter((c) => c.doctorId === currentUser?.id),
@@ -53,6 +66,8 @@ export default function Appointments() {
   const [modalOpen, setModalOpen] = useState(false);
   const [toCancel, setToCancel] = useState(null);
   const [bookError, setBookError] = useState(null);
+  const [assigning, setAssigning] = useState(null);
+  const [assignQuery, setAssignQuery] = useState("");
   const [form, setForm] = useState(() => ({
     clientId: "",
     reason: "",
@@ -112,6 +127,53 @@ export default function Appointments() {
     }
     setModalOpen(false);
   }
+
+  function openAssign(appt) {
+    setAssignQuery("");
+    setAssigning(appt);
+  }
+
+  function linkFicha(clientId) {
+    if (assigning) updateAppointment(assigning.id, { clientId });
+    setAssigning(null);
+  }
+
+  function openFicha(clientId) {
+    navigate("/app/clients", { state: { openClientId: clientId } });
+  }
+
+  function createFichaFromBooking() {
+    if (!assigning) return;
+    navigate("/app/clients", {
+      state: {
+        newFicha: {
+          name: assigning.patientName || "",
+          phone: assigning.patientPhone || "",
+          email: assigning.patientEmail || "",
+        },
+      },
+    });
+  }
+
+  // Records ranked for the assign modal: phone matches first, then by name,
+  // filtered by the search box.
+  const assignMatches = useMemo(() => {
+    if (!assigning) return [];
+    const tail = phoneTail(assigning.patientPhone);
+    const q = assignQuery.trim().toLowerCase();
+    return myClients
+      .filter(
+        (c) =>
+          !q ||
+          c.name.toLowerCase().includes(q) ||
+          (c.phone || "").toLowerCase().includes(q)
+      )
+      .map((c) => ({ c, match: tail && phoneTail(c.phone) === tail }))
+      .sort((a, b) => {
+        if (a.match !== b.match) return a.match ? -1 : 1;
+        return a.c.name.localeCompare(b.c.name);
+      });
+  }, [assigning, assignQuery, myClients]);
 
   return (
     <div className="space-y-5">
@@ -220,6 +282,32 @@ export default function Appointments() {
                         “{a.notes}”
                       </p>
                     )}
+                    {/* Ficha (patient record) tag */}
+                    <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                      {client ? (
+                        <>
+                          <button
+                            onClick={() => openFicha(client.id)}
+                            className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-700 hover:bg-brand-100"
+                          >
+                            <FileText size={12} /> {t("appt.fichaTag")}: {client.name}
+                          </button>
+                          <button
+                            onClick={() => openAssign(a)}
+                            className="text-xs font-medium text-slate-400 hover:text-brand-600"
+                          >
+                            {t("appt.changeFicha")}
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          onClick={() => openAssign(a)}
+                          className="inline-flex items-center gap-1 rounded-full border border-dashed border-slate-300 px-2 py-0.5 text-xs font-medium text-slate-500 hover:border-brand-400 hover:text-brand-700"
+                        >
+                          <Link2 size={12} /> {t("appt.assignFicha")}
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -384,6 +472,89 @@ export default function Appointments() {
               </p>
             )}
           </form>
+        )}
+      </Modal>
+
+      {/* Assign / link ficha modal */}
+      <Modal
+        open={!!assigning}
+        onClose={() => setAssigning(null)}
+        title={t("appt.assignTitle")}
+        footer={
+          <>
+            <button className="btn-outline" onClick={() => setAssigning(null)}>
+              {t("common.cancel")}
+            </button>
+            {assigning?.clientId && (
+              <button
+                className="btn-ghost text-rose-600 hover:bg-rose-50"
+                onClick={() => linkFicha(null)}
+              >
+                <X size={16} /> {t("appt.unlinkFicha")}
+              </button>
+            )}
+            <button className="btn-primary" onClick={createFichaFromBooking}>
+              <UserPlus size={16} /> {t("appt.createFichaFromBooking")}
+            </button>
+          </>
+        }
+      >
+        <p className="mb-3 text-sm text-slate-500">{t("appt.assignHint")}</p>
+        <div className="relative mb-3">
+          <Search
+            size={16}
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+          />
+          <input
+            className="input pl-10"
+            placeholder={t("appt.searchFichas")}
+            value={assignQuery}
+            onChange={(e) => setAssignQuery(e.target.value)}
+          />
+        </div>
+        {myClients.length === 0 ? (
+          <p className="rounded-xl bg-slate-50 px-4 py-6 text-center text-sm text-slate-400">
+            {t("appt.noFichasYet")}
+          </p>
+        ) : (
+          <div className="max-h-72 space-y-1.5 overflow-y-auto">
+            {assignMatches.map(({ c, match }) => {
+              const selected = assigning?.clientId === c.id;
+              return (
+                <button
+                  key={c.id}
+                  onClick={() => linkFicha(c.id)}
+                  className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition ${
+                    selected
+                      ? "border-brand-400 bg-brand-50"
+                      : "border-slate-200 hover:border-brand-300 hover:bg-slate-50"
+                  }`}
+                >
+                  <div
+                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${avatarColor(
+                      c.name
+                    )}`}
+                  >
+                    {initials(c.name)}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-slate-800">
+                      {c.name}
+                    </p>
+                    <p className="truncate text-xs text-slate-400">
+                      {c.phone || "—"}
+                    </p>
+                  </div>
+                  {match && (
+                    <span className="shrink-0 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
+                      {t("appt.phoneMatch")}
+                    </span>
+                  )}
+                  {selected && <CheckCircle2 size={16} className="shrink-0 text-brand-600" />}
+                </button>
+              );
+            })}
+          </div>
         )}
       </Modal>
 
