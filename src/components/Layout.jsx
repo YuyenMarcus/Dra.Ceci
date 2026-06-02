@@ -165,9 +165,11 @@ export default function Layout({ children }) {
         <SidebarContent t={t} />
       </aside>
 
-      {/* Mobile sidebar */}
+      {/* Slide-in nav drawer — available at every width as a guaranteed
+          fallback, so navigation is reachable even if the persistent desktop
+          sidebar is hidden by browser zoom/width quirks. */}
       {mobileOpen && (
-        <div className="fixed inset-0 z-40 md:hidden">
+        <div className="fixed inset-0 z-50">
           <div
             className="absolute inset-0 bg-slate-900/50"
             onClick={() => setMobileOpen(false)}
@@ -190,7 +192,7 @@ export default function Layout({ children }) {
         <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-slate-200 bg-white/80 px-4 py-3.5 backdrop-blur md:px-8">
           <div className="flex items-center gap-3">
             <button
-              className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 md:hidden"
+              className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"
               onClick={() => setMobileOpen(true)}
               aria-label={t("layout.openMenu")}
             >

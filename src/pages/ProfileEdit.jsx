@@ -201,6 +201,9 @@ export default function ProfileEdit() {
     setSaving(true);
     setError("");
     const profile = {
+      // Preserve any existing profile keys we don't edit here (e.g. onboarded,
+      // plan) so saving the public profile never wipes the tutorial flag.
+      ...(clinic.profile || {}),
       kicker: form.kicker.trim(),
       headline: form.headline.trim(),
       tagline: form.tagline.trim(),
