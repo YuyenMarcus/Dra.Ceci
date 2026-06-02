@@ -6,11 +6,10 @@ import {
   Phone,
   Mail,
   Cake,
-  Wallet,
   Smile,
 } from "lucide-react";
-import { initials, avatarColor, formatDate } from "../lib/format.js";
-import { SISTEMAS, calcEdad, normalizeFicha, totalAbonos } from "../lib/ficha.js";
+import { initials, avatarColor } from "../lib/format.js";
+import { SISTEMAS, calcEdad, normalizeFicha } from "../lib/ficha.js";
 import Odontogram from "./Odontogram.jsx";
 
 function Field({ label, value, className = "" }) {
@@ -53,7 +52,6 @@ function Chip({ icon: Icon, children }) {
 export default function FichaView({ client, doctorName }) {
   const f = normalizeFicha(client);
   const edad = calcEdad(f.dob);
-  const total = totalAbonos(f.treatments);
 
   return (
     <div className="ficha-print space-y-5">
@@ -79,11 +77,6 @@ export default function FichaView({ client, doctorName }) {
           <Chip icon={User}>{f.sexo}</Chip>
           <Chip icon={Phone}>{f.phone}</Chip>
           <Chip icon={Mail}>{f.email}</Chip>
-          {total > 0 && (
-            <span className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-              <Wallet size={13} /> Total abonos ${total.toLocaleString()}
-            </span>
-          )}
         </div>
       </div>
 
@@ -159,58 +152,9 @@ export default function FichaView({ client, doctorName }) {
         )}
       </Section>
 
-      {/* Plan + tratamientos */}
-      <Section icon={ClipboardList} title="Plan y tratamientos">
+      {/* Plan de tratamiento */}
+      <Section icon={ClipboardList} title="Plan de tratamiento">
         <Field label="Plan de tratamiento" value={f.planTratamiento} />
-        <div className="mt-4 overflow-hidden rounded-xl border border-slate-200">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-400">
-                <th className="px-4 py-2.5 font-semibold">Fecha</th>
-                <th className="px-4 py-2.5 font-semibold">Tratamiento</th>
-                <th className="px-4 py-2.5 text-right font-semibold">Abonos</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {f.treatments.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={3}
-                    className="px-4 py-5 text-center text-sm text-slate-400"
-                  >
-                    Sin tratamientos registrados.
-                  </td>
-                </tr>
-              ) : (
-                f.treatments.map((t, i) => (
-                  <tr key={i}>
-                    <td className="px-4 py-2.5 text-slate-600">
-                      {t.fecha ? formatDate(t.fecha) : "—"}
-                    </td>
-                    <td className="px-4 py-2.5 text-slate-800">
-                      {t.tratamiento || "—"}
-                    </td>
-                    <td className="px-4 py-2.5 text-right font-medium text-slate-800">
-                      {t.abonos ? `$${t.abonos}` : "—"}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-            {f.treatments.length > 0 && (
-              <tfoot>
-                <tr className="border-t border-slate-200 bg-slate-50 font-semibold text-slate-700">
-                  <td className="px-4 py-2.5" colSpan={2}>
-                    Total abonos
-                  </td>
-                  <td className="px-4 py-2.5 text-right">
-                    ${total.toLocaleString()}
-                  </td>
-                </tr>
-              </tfoot>
-            )}
-          </table>
-        </div>
       </Section>
     </div>
   );

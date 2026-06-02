@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -105,32 +105,52 @@ export default function Layout({ children }) {
 
   const [tourOpen, setTourOpen] = useState(false);
 
-  // Show the walkthrough only at initial setup. "Onboarded" is persisted on the
-  // clinic account (survives cache clears, logins and different browsers); the
-  // localStorage key is just a fast local guard. Once either says "seen", the
-  // tour never auto-opens again.
+  // The walkthrough must appear ONLY at initial setup, never again on later
+  // logins. "Seen" is recorded two ways: a localStorage guard (instant, per
+  // browser) and `profile.onboarded` on the clinic account (persists across
+  // cache clears and other browsers). We mark it the moment the tour is shown —
+  // not when it's closed — so it can't reappear even if the user refreshes or
+  // closes it abruptly mid-tour.
+  const clinicId = clinic?.id;
   const onboarded = Boolean(clinic?.profile?.onboarded);
-  useEffect(() => {
-    if (!clinic || onboarded) return undefined;
-    if (localStorage.getItem(TOUR_KEY)) return undefined;
-    const timer = setTimeout(() => setTourOpen(true), 600);
-    return () => clearTimeout(timer);
-  }, [clinic, onboarded]);
 
-  async function closeTour() {
-    localStorage.setItem(TOUR_KEY, "1");
-    setTourOpen(false);
-    // Persist onboarding completion on the account so it won't show again.
-    if (clinic && !clinic.profile?.onboarded) {
-      try {
-        await updateClinic(clinic.id, {
-          profile: { ...(clinic.profile || {}), onboarded: true },
-        });
-        await refreshClinic();
-      } catch (err) {
-        console.error("Could not save onboarding flag:", err);
-      }
+  const markOnboarded = useCallback(() => {
+    try {
+      localStorage.setItem(TOUR_KEY, "1");
+    } catch {
+      /* storage may be unavailable; the server flag below still covers us */
     }
+    if (clinic && !clinic.profile?.onboarded) {
+      // Fire-and-forget: persist on the account so it never shows again.
+      updateClinic(clinic.id, {
+        profile: { ...(clinic.profile || {}), onboarded: true },
+      })
+        .then(() => refreshClinic())
+        .catch((err) => console.error("Could not save onboarding flag:", err));
+    }
+  }, [clinic, refreshClinic]);
+
+  useEffect(() => {
+    if (!clinicId || onboarded) return undefined;
+    if (localStorage.getItem(TOUR_KEY)) return undefined;
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      if (cancelled) return;
+      setTourOpen(true);
+      markOnboarded();
+    }, 600);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+    // Keyed on clinicId (stable) + onboarded so a new clinic object reference
+    // from refreshClinic doesn't cancel/re-arm the timer in a loop.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clinicId, onboarded]);
+
+  function closeTour() {
+    setTourOpen(false);
+    markOnboarded();
   }
 
   function signOut() {

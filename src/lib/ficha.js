@@ -83,12 +83,7 @@ export function normalizeFicha(client = {}) {
       client.odontograma && typeof client.odontograma === "object"
         ? { ...client.odontograma }
         : {},
-    treatments: Array.isArray(client.treatments) ? client.treatments : [],
   };
-}
-
-export function emptyTreatment() {
-  return { fecha: "", tratamiento: "", abonos: "" };
 }
 
 export function calcEdad(dob) {
@@ -100,11 +95,4 @@ export function calcEdad(dob) {
   const m = now.getMonth() - birth.getMonth();
   if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) age -= 1;
   return age >= 0 ? age : null;
-}
-
-export function totalAbonos(treatments = []) {
-  return treatments.reduce((sum, t) => {
-    const n = parseFloat(String(t.abonos).replace(/[^0-9.-]/g, ""));
-    return sum + (Number.isFinite(n) ? n : 0);
-  }, 0);
 }

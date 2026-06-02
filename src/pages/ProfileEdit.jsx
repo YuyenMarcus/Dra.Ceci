@@ -145,8 +145,10 @@ export default function ProfileEdit() {
     address: clinic?.address ?? "",
     city: clinic?.city ?? "",
     mapQuery: clinic?.mapQuery ?? "",
+    kicker: p.kicker ?? "",
     headline: p.headline ?? "",
     tagline: p.tagline ?? "",
+    professionLabel: p.professionLabel ?? "",
     bio: p.bio ?? "",
     hours: p.hours ?? "",
     highlights: [
@@ -199,8 +201,10 @@ export default function ProfileEdit() {
     setSaving(true);
     setError("");
     const profile = {
+      kicker: form.kicker.trim(),
       headline: form.headline.trim(),
       tagline: form.tagline.trim(),
+      professionLabel: form.professionLabel.trim(),
       bio: form.bio.trim(),
       hours: form.hours.trim(),
       highlights: form.highlights.map((h) => h.trim()).filter(Boolean),
@@ -274,11 +278,19 @@ export default function ProfileEdit() {
       {/* About */}
       <Section icon={FileText} title={t("pedit.aboutTitle")} hint={t("pedit.aboutHint")}>
         <div className="space-y-4">
+          <Field label={t("pedit.kicker")}>
+            <input className="input" value={form.kicker} onChange={(e) => set("kicker", e.target.value)} placeholder={t("pedit.kickerPh")} />
+            <p className="mt-1 text-xs text-slate-400">{t("pedit.kickerHint")}</p>
+          </Field>
           <Field label={t("pedit.headline")}>
             <input className="input" value={form.headline} onChange={(e) => set("headline", e.target.value)} placeholder={t("pedit.headlinePh")} />
           </Field>
           <Field label={t("pedit.tagline")}>
             <input className="input" value={form.tagline} onChange={(e) => set("tagline", e.target.value)} placeholder={t("pedit.taglinePh")} />
+          </Field>
+          <Field label={t("pedit.professionLabel")}>
+            <input className="input" value={form.professionLabel} onChange={(e) => set("professionLabel", e.target.value)} placeholder={t("pedit.professionLabelPh")} />
+            <p className="mt-1 text-xs text-slate-400">{t("pedit.professionLabelHint")}</p>
           </Field>
           <Field label={t("pedit.bio")}>
             <textarea className="input min-h-[6rem]" value={form.bio} onChange={(e) => set("bio", e.target.value)} placeholder={t("pedit.bioPh")} />

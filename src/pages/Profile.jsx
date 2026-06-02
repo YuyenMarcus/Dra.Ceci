@@ -240,7 +240,7 @@ export default function Profile() {
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-16 lg:grid-cols-2 lg:py-24">
           <div>
             <span className="animate-fade-up inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-3.5 py-1.5 text-xs font-semibold text-brand-700">
-              <Sparkles size={14} /> {t("landing.heroKicker")}
+              <Sparkles size={14} /> {cp.kicker?.trim() || t("landing.heroKicker")}
             </span>
             <h1 className="animate-fade-up mt-6 text-4xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-5xl">
               {cp.headline?.trim() ? (
@@ -282,7 +282,7 @@ export default function Profile() {
           <ImageSlot src={doctorImg} label={clinicName} className="aspect-[4/5] max-h-[30rem] w-full" />
           <div>
             <span className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-3.5 py-1.5 text-xs font-semibold text-brand-700">
-              <Stethoscope size={14} /> {t("landing.yourDentist")}
+              <Stethoscope size={14} /> {cp.professionLabel?.trim() || t("landing.yourDentist")}
             </span>
             <h2 className="mt-4 text-3xl font-bold text-slate-900">{clinicName}</h2>
             {clinic.specialty && (

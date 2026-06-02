@@ -1,5 +1,4 @@
-import { Plus, Trash2 } from "lucide-react";
-import { SISTEMAS, emptyTreatment } from "../lib/ficha.js";
+import { SISTEMAS } from "../lib/ficha.js";
 import Odontogram from "./Odontogram.jsx";
 
 function SectionTitle({ children }) {
@@ -14,24 +13,6 @@ export default function FichaEditor({ form, setForm, formId, onSubmit }) {
   const set = (patch) => setForm((f) => ({ ...f, ...patch }));
   const setSistema = (key, value) =>
     setForm((f) => ({ ...f, sistemas: { ...f.sistemas, [key]: value } }));
-
-  function updateTreatment(i, patch) {
-    setForm((f) => {
-      const treatments = f.treatments.map((t, idx) =>
-        idx === i ? { ...t, ...patch } : t
-      );
-      return { ...f, treatments };
-    });
-  }
-  function addTreatment() {
-    setForm((f) => ({ ...f, treatments: [...f.treatments, emptyTreatment()] }));
-  }
-  function removeTreatment(i) {
-    setForm((f) => ({
-      ...f,
-      treatments: f.treatments.filter((_, idx) => idx !== i),
-    }));
-  }
 
   return (
     <form id={formId} onSubmit={onSubmit} className="space-y-6">
@@ -201,9 +182,9 @@ export default function FichaEditor({ form, setForm, formId, onSubmit }) {
         </div>
       </section>
 
-      {/* Plan + tratamientos */}
+      {/* Plan de tratamiento */}
       <section>
-        <SectionTitle>Plan y tratamientos</SectionTitle>
+        <SectionTitle>Plan de tratamiento</SectionTitle>
         <div>
           <label className="label">Plan de tratamiento</label>
           <textarea
@@ -211,70 +192,9 @@ export default function FichaEditor({ form, setForm, formId, onSubmit }) {
             value={form.planTratamiento}
             onChange={(e) => set({ planTratamiento: e.target.value })}
           />
-        </div>
-
-        <div className="mt-4 space-y-2">
-          <div className="flex items-center justify-between">
-            <label className="label mb-0">Registro de tratamientos</label>
-            <button
-              type="button"
-              className="btn-ghost px-2.5 py-1.5 text-xs"
-              onClick={addTreatment}
-            >
-              <Plus size={14} /> Agregar fila
-            </button>
-          </div>
-
-          {form.treatments.length === 0 ? (
-            <p className="rounded-xl bg-slate-50 px-4 py-4 text-center text-sm text-slate-400">
-              Sin tratamientos. Agrega una fila para registrar fecha, tratamiento
-              y abonos.
-            </p>
-          ) : (
-            <div className="space-y-2">
-              <div className="hidden grid-cols-[7rem_1fr_6rem_2rem] gap-2 px-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400 sm:grid">
-                <span>Fecha</span>
-                <span>Tratamiento</span>
-                <span>Abonos</span>
-                <span />
-              </div>
-              {form.treatments.map((t, i) => (
-                <div
-                  key={i}
-                  className="grid grid-cols-[1fr_2rem] gap-2 sm:grid-cols-[7rem_1fr_6rem_2rem]"
-                >
-                  <input
-                    type="date"
-                    className="input px-2.5 py-2"
-                    value={t.fecha}
-                    onChange={(e) => updateTreatment(i, { fecha: e.target.value })}
-                  />
-                  <input
-                    className="input col-span-1 px-2.5 py-2"
-                    placeholder="Tratamiento"
-                    value={t.tratamiento}
-                    onChange={(e) =>
-                      updateTreatment(i, { tratamiento: e.target.value })
-                    }
-                  />
-                  <input
-                    className="input px-2.5 py-2"
-                    placeholder="$"
-                    value={t.abonos}
-                    onChange={(e) => updateTreatment(i, { abonos: e.target.value })}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeTreatment(i)}
-                    className="flex items-center justify-center rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600"
-                    aria-label="Eliminar fila"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
+          <p className="mt-2 text-xs text-slate-400">
+            Los procedimientos realizados se registran en el Historial clínico.
+          </p>
         </div>
       </section>
     </form>
