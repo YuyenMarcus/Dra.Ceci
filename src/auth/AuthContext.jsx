@@ -327,6 +327,38 @@ export function AuthProvider({ children }) {
     return { ok: true };
   }, []);
 
+  // Confirm a sign-up with the 6-digit code Supabase emailed (the "Confirm
+  // signup" template must include {{ .Token }}). On success a session is
+  // created and the auth listener resolves the role; we also look up clinic
+  // ownership here so the caller can route to /app vs /me immediately.
+  const verifyOtp = useCallback(async (email, token) => {
+    if (!isSupabaseEnabled) return { ok: false, error: "err.noBackend" };
+    const { data, error } = await supabase.auth.verifyOtp({
+      email: (email || "").trim(),
+      token: (token || "").trim().replace(/\s+/g, ""),
+      type: "signup",
+    });
+    if (error) return { ok: false, error: "auth.invalidCode" };
+    let ownedClinic = null;
+    try {
+      ownedClinic = await getMyClinic(data.user.id);
+    } catch {
+      /* treated as patient below */
+    }
+    return { ok: true, role: ownedClinic ? "doctor" : "patient" };
+  }, []);
+
+  // Resend a fresh confirmation code (no redirect URL — the email template
+  // delivers the {{ .Token }} code, not a link).
+  const resendCode = useCallback(async (email) => {
+    if (!isSupabaseEnabled) return { ok: false, error: "err.noBackend" };
+    const trimmed = (email || "").trim();
+    if (!trimmed) return { ok: false, error: "auth.resendNeedEmail" };
+    const { error } = await supabase.auth.resend({ type: "signup", email: trimmed });
+    if (error) return { ok: false, error: error.message };
+    return { ok: true };
+  }, []);
+
   const clearSession = useCallback(() => {
     setUser(null);
     setClinic(null);
@@ -378,6 +410,8 @@ export function AuthProvider({ children }) {
       resetPassword,
       updatePassword,
       resendConfirmation,
+      verifyOtp,
+      resendCode,
       refreshClinic,
       logout,
       deleteAccount,
@@ -403,6 +437,8 @@ export function AuthProvider({ children }) {
       resetPassword,
       updatePassword,
       resendConfirmation,
+      verifyOtp,
+      resendCode,
       refreshClinic,
       logout,
       deleteAccount,

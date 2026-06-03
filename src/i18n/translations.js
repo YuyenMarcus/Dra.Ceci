@@ -282,6 +282,13 @@ export const translations = {
     "auth.resendNeedEmail": "Escribe tu correo primero para reenviar la confirmación.",
     "auth.alreadyExists":
       "Ya existe una cuenta con este correo. Si nunca la confirmaste, reenvía el correo de confirmación; si ya está activa, inicia sesión.",
+    "auth.confirmCodeTitle": "Confirma tu correo",
+    "auth.confirmCodeSub": "Ingresa el código de 6 dígitos que enviamos a {email}.",
+    "auth.codeLabel": "Código de verificación",
+    "auth.verify": "Verificar",
+    "auth.invalidCode": "Código inválido o expirado. Verifícalo o reenvía uno nuevo.",
+    "auth.resendCode": "Reenviar código",
+    "auth.codeSent": "Enviamos un nuevo código. Revisa tu correo.",
 
     // Landing
     "landing.manageBooking": "Gestionar cita",
@@ -973,6 +980,13 @@ export const translations = {
     "auth.resendNeedEmail": "Enter your email first to resend the confirmation.",
     "auth.alreadyExists":
       "An account with this email already exists. If you never confirmed it, resend the confirmation email; if it's already active, sign in.",
+    "auth.confirmCodeTitle": "Confirm your email",
+    "auth.confirmCodeSub": "Enter the 6-digit code we sent to {email}.",
+    "auth.codeLabel": "Verification code",
+    "auth.verify": "Verify",
+    "auth.invalidCode": "Invalid or expired code. Check it or resend a new one.",
+    "auth.resendCode": "Resend code",
+    "auth.codeSent": "A new code is on its way. Check your email.",
 
     "landing.manageBooking": "Manage booking",
     "landing.bookAppointment": "Book appointment",
