@@ -94,10 +94,13 @@ export default function AppLanding() {
           </Link>
           <div className="flex items-center gap-2">
             <LanguageToggle className="mr-1" />
-            <Link to={canAccessPatientPortal ? "/me" : "/me/login"} className="btn-ghost">
+            <Link
+              to={canAccessPatientPortal ? "/me" : "/me/login"}
+              className="btn-ghost hidden sm:inline-flex"
+            >
               {t("app.patientPortal")}
             </Link>
-            <Link to={profileTo} className="btn-ghost">
+            <Link to={profileTo} className="btn-ghost hidden sm:inline-flex">
               {t("app.navProfile")}
             </Link>
             <Link to={primaryTo} className="btn-primary">
