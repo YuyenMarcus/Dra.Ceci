@@ -6,7 +6,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { supabase, isSupabaseEnabled } from "../lib/supabase.js";
+import { supabase, isSupabaseEnabled, appUrl } from "../lib/supabase.js";
 import {
   getMyClinic,
   linkPatientRecords,
@@ -264,7 +264,7 @@ export function AuthProvider({ children }) {
       password,
       options: {
         data: { role: "doctor", name: name?.trim() || "", slug: finalSlug },
-        emailRedirectTo: `${window.location.origin}/login`,
+        emailRedirectTo: appUrl("/login"),
       },
     });
     if (error) return { ok: false, error: error.message };
@@ -284,7 +284,7 @@ export function AuthProvider({ children }) {
           name: name?.trim() || "",
           phone: phone?.trim() || "",
         },
-        emailRedirectTo: `${window.location.origin}/me/login`,
+        emailRedirectTo: appUrl("/me/login"),
       },
     });
     if (error) return { ok: false, error: error.message };
@@ -296,7 +296,7 @@ export function AuthProvider({ children }) {
   const resetPassword = useCallback(async (email) => {
     if (!isSupabaseEnabled) return { ok: false, error: "err.noBackend" };
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: `${window.location.origin}/update-password`,
+      redirectTo: appUrl("/update-password"),
     });
     if (error) return { ok: false, error: error.message };
     return { ok: true };
