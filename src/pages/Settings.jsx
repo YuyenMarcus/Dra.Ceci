@@ -134,7 +134,8 @@ export default function Settings() {
   }
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="space-y-6">
+      <div className="gap-6 xl:columns-2 [&>*]:mb-6 [&>*]:break-inside-avoid">
       {/* Public profile */}
       <div className="card p-6">
         <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
@@ -351,6 +352,7 @@ export default function Settings() {
             <Trash2 size={16} /> {t("account.delete")}
           </button>
         </div>
+      </div>
       </div>
 
       <Modal

@@ -254,9 +254,7 @@ export default function ProfileEdit() {
         </Link>
       </div>
 
-      <div className="grid items-start gap-6 xl:grid-cols-2">
-        {/* Left column: text content */}
-        <div className="space-y-6">
+      <div className="gap-6 xl:columns-2 [&>*]:mb-6 [&>*]:break-inside-avoid">
       {/* Identity */}
       <Section icon={User} title={t("pedit.identityTitle")} hint={t("pedit.identityHint")}>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -337,10 +335,7 @@ export default function ProfileEdit() {
           </div>
         </div>
       </Section>
-        </div>
 
-        {/* Right column: media & services */}
-        <div className="space-y-6">
       {/* Photos */}
       <Section icon={ImageIcon} title={t("pedit.photosTitle")} hint={t("pedit.photosHint")}>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -394,7 +389,6 @@ export default function ProfileEdit() {
           )}
         </div>
       </Section>
-        </div>
       </div>
 
       {/* Sticky save bar */}
