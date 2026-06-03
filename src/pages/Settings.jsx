@@ -9,11 +9,17 @@ import {
   Layers,
   ConciergeBell,
   LogIn,
+  PauseCircle,
+  PlayCircle,
+  Trash2,
+  AlertTriangle,
+  Loader2,
 } from "lucide-react";
 import { useLang } from "../i18n/LanguageContext.jsx";
 import { useAuth } from "../auth/AuthContext.jsx";
 import { updateClinic } from "../store/db.js";
 import CommissionCalculator from "../components/CommissionCalculator.jsx";
+import Modal from "../components/Modal.jsx";
 
 const LANGS = [
   { code: "es", labelKey: "settings.spanish", native: "Español" },
@@ -28,11 +34,47 @@ const PLANS = [
 
 export default function Settings() {
   const { lang, setLang, t } = useLang();
-  const { clinic, refreshClinic, enterReception } = useAuth();
+  const { clinic, refreshClinic, enterReception, deleteAccount } = useAuth();
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
   const [planBusy, setPlanBusy] = useState(false);
   const currentPlan = clinic?.profile?.plan || "starter";
+
+  const suspended = Boolean(clinic?.profile?.suspended);
+  const [pauseBusy, setPauseBusy] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [confirmText, setConfirmText] = useState("");
+  const [deleteBusy, setDeleteBusy] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+  const confirmTarget = clinic?.slug || "";
+
+  async function togglePause() {
+    if (!clinic || pauseBusy) return;
+    setPauseBusy(true);
+    try {
+      await updateClinic(clinic.id, {
+        profile: { ...(clinic.profile || {}), suspended: !suspended },
+      });
+      await refreshClinic();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setPauseBusy(false);
+    }
+  }
+
+  async function doDelete() {
+    if (deleteBusy) return;
+    setDeleteBusy(true);
+    setDeleteError("");
+    const res = await deleteAccount();
+    setDeleteBusy(false);
+    if (!res.ok) {
+      setDeleteError(res.error || "account.deleteFailed");
+      return;
+    }
+    navigate("/", { replace: true });
+  }
 
   const savedPin = clinic?.profile?.receptionPin || "";
   const [pin, setPin] = useState(savedPin);
@@ -253,6 +295,104 @@ export default function Settings() {
           })}
         </div>
       </div>
+
+      {/* Account: pause public bookings or delete permanently */}
+      <div className="card border-rose-200 p-6">
+        <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-50 text-rose-600">
+            <AlertTriangle size={20} />
+          </div>
+          <div>
+            <h2 className="font-semibold text-slate-900">{t("account.title")}</h2>
+            <p className="text-sm text-slate-500">{t("account.hint")}</p>
+          </div>
+        </div>
+
+        <div className="mt-4 flex flex-col gap-3 rounded-xl border border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold text-slate-800">
+              {suspended ? t("account.pausedTitle") : t("account.activeTitle")}
+            </p>
+            <p className="text-xs text-slate-500">
+              {suspended ? t("account.pausedHint") : t("account.activeHint")}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={togglePause}
+            disabled={pauseBusy}
+            className="btn-outline shrink-0 disabled:opacity-60"
+          >
+            {pauseBusy ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : suspended ? (
+              <PlayCircle size={16} />
+            ) : (
+              <PauseCircle size={16} />
+            )}
+            {suspended ? t("account.reactivate") : t("account.pause")}
+          </button>
+        </div>
+
+        <div className="mt-3 flex flex-col gap-3 rounded-xl border border-rose-200 bg-rose-50/40 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold text-rose-700">{t("account.deleteTitle")}</p>
+            <p className="text-xs text-rose-600/80">{t("account.deleteHint")}</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setConfirmText("");
+              setDeleteError("");
+              setDeleteOpen(true);
+            }}
+            className="btn-danger shrink-0"
+          >
+            <Trash2 size={16} /> {t("account.delete")}
+          </button>
+        </div>
+      </div>
+
+      <Modal
+        open={deleteOpen}
+        onClose={() => setDeleteOpen(false)}
+        title={t("account.deleteTitle")}
+        footer={
+          <>
+            <button className="btn-outline" onClick={() => setDeleteOpen(false)}>
+              {t("common.cancel")}
+            </button>
+            <button
+              className="btn-danger disabled:opacity-60"
+              disabled={deleteBusy || confirmText.trim() !== confirmTarget}
+              onClick={doDelete}
+            >
+              {deleteBusy ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+              {t("account.deleteConfirm")}
+            </button>
+          </>
+        }
+      >
+        <div className="space-y-3">
+          <p className="rounded-xl bg-rose-50 px-3.5 py-2.5 text-sm font-medium text-rose-700">
+            {t("account.deleteWarning")}
+          </p>
+          <p className="text-sm text-slate-600">
+            {t("account.deletePrompt")}{" "}
+            <span className="font-mono font-semibold text-slate-900">{confirmTarget}</span>
+          </p>
+          <input
+            className="input"
+            autoComplete="off"
+            value={confirmText}
+            onChange={(e) => setConfirmText(e.target.value)}
+            placeholder={confirmTarget}
+          />
+          {deleteError && (
+            <p className="text-sm font-medium text-rose-600">{t(deleteError)}</p>
+          )}
+        </div>
+      </Modal>
     </div>
   );
 }

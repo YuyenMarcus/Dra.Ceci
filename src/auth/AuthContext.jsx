@@ -11,6 +11,7 @@ import {
   getMyClinic,
   linkPatientRecords,
   countMyPatientRecords,
+  deleteMyAccount,
 } from "../store/db.js";
 
 const AuthContext = createContext(null);
@@ -326,8 +327,7 @@ export function AuthProvider({ children }) {
     return { ok: true };
   }, []);
 
-  const logout = useCallback(async () => {
-    if (isSupabaseEnabled) await supabase.auth.signOut();
+  const clearSession = useCallback(() => {
     setUser(null);
     setClinic(null);
     setHasPatientProfile(false);
@@ -338,6 +338,21 @@ export function AuthProvider({ children }) {
     }
     setReceptionClinicId(null);
   }, []);
+
+  const logout = useCallback(async () => {
+    if (isSupabaseEnabled) await supabase.auth.signOut();
+    clearSession();
+  }, [clearSession]);
+
+  // Permanently delete the signed-in account (and all owned clinic data via
+  // cascade), then sign out locally.
+  const deleteAccount = useCallback(async () => {
+    const res = await deleteMyAccount();
+    if (!res.ok) return res;
+    if (isSupabaseEnabled) await supabase.auth.signOut().catch(() => {});
+    clearSession();
+    return { ok: true };
+  }, [clearSession]);
 
   const value = useMemo(
     () => ({
@@ -365,6 +380,7 @@ export function AuthProvider({ children }) {
       resendConfirmation,
       refreshClinic,
       logout,
+      deleteAccount,
     }),
     [
       user,
@@ -389,6 +405,7 @@ export function AuthProvider({ children }) {
       resendConfirmation,
       refreshClinic,
       logout,
+      deleteAccount,
     ]
   );
 

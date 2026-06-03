@@ -67,6 +67,26 @@ export const translations = {
     "reception.enterPin": "Ingresa el PIN",
     "reception.wrongPin": "PIN incorrecto.",
     "reception.unlock": "Desbloquear",
+    "account.title": "Cuenta",
+    "account.hint":
+      "Pausa tu presencia pública o elimina tu cuenta de forma permanente.",
+    "account.activeTitle": "Cuenta activa",
+    "account.activeHint":
+      "Tu perfil público y las reservas en línea están disponibles.",
+    "account.pausedTitle": "Cuenta en pausa",
+    "account.pausedHint":
+      "Tu perfil está oculto del directorio y no se aceptan reservas en línea.",
+    "account.pause": "Pausar cuenta",
+    "account.reactivate": "Reactivar",
+    "account.deleteTitle": "Eliminar cuenta",
+    "account.deleteHint":
+      "Borra de forma permanente tu cuenta y todos los datos del consultorio.",
+    "account.delete": "Eliminar cuenta",
+    "account.deleteWarning":
+      "Esta acción no se puede deshacer. Se eliminarán tu perfil, inventario, pacientes, citas y tratamientos.",
+    "account.deletePrompt": "Para confirmar, escribe el identificador de tu consultorio:",
+    "account.deleteConfirm": "Eliminar definitivamente",
+    "account.deleteFailed": "No se pudo eliminar la cuenta. Inténtalo de nuevo.",
 
     // Dashboard
     "dash.inventoryItems": "Artículos en inventario",
@@ -581,6 +601,9 @@ export const translations = {
     "book.withPhone": "con el número de teléfono {phone}.",
     "book.bookAnother": "Agendar otra cita",
     "book.backHome": "Volver al inicio",
+    "book.pausedTitle": "{name} no recibe reservas por ahora",
+    "book.pausedBody":
+      "Este consultorio pausó las reservas en línea temporalmente. Vuelve más tarde o contáctalo directamente.",
     "book.chooseDoctor": "Elige tu doctor",
     "book.chooseDoctorSub":
       "Elige a quién quieres ver y te mostraremos sus horarios disponibles.",
@@ -743,6 +766,24 @@ export const translations = {
     "reception.enterPin": "Enter PIN",
     "reception.wrongPin": "Incorrect PIN.",
     "reception.unlock": "Unlock",
+    "account.title": "Account",
+    "account.hint":
+      "Pause your public presence or permanently delete your account.",
+    "account.activeTitle": "Account active",
+    "account.activeHint": "Your public profile and online booking are live.",
+    "account.pausedTitle": "Account paused",
+    "account.pausedHint":
+      "Your profile is hidden from the directory and online bookings are off.",
+    "account.pause": "Pause account",
+    "account.reactivate": "Reactivate",
+    "account.deleteTitle": "Delete account",
+    "account.deleteHint": "Permanently erase your account and all clinic data.",
+    "account.delete": "Delete account",
+    "account.deleteWarning":
+      "This can't be undone. Your profile, inventory, patients, appointments and treatments will be deleted.",
+    "account.deletePrompt": "To confirm, type your clinic handle:",
+    "account.deleteConfirm": "Delete permanently",
+    "account.deleteFailed": "Couldn't delete the account. Please try again.",
 
     "dash.inventoryItems": "Inventory items",
     "dash.lowOut": "Low / out of stock",
@@ -1248,6 +1289,9 @@ export const translations = {
     "book.withPhone": "with the phone number {phone}.",
     "book.bookAnother": "Book another appointment",
     "book.backHome": "Back home",
+    "book.pausedTitle": "{name} isn't taking bookings right now",
+    "book.pausedBody":
+      "This clinic has paused online booking for now. Check back later or contact them directly.",
     "book.chooseDoctor": "Choose your doctor",
     "book.chooseDoctorSub":
       "Pick who you'd like to see and we'll show their open times.",

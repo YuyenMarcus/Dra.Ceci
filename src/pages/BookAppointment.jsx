@@ -227,6 +227,26 @@ export default function BookAppointment() {
     );
   }
 
+  // Clinic has paused online bookings.
+  if (clinic.profile?.suspended) {
+    return (
+      <div className="min-h-screen bg-slate-100">
+        <PublicHeader slug={slug} />
+        <main className="mx-auto max-w-md px-5 py-12">
+          <div className="card p-8 text-center">
+            <h1 className="text-xl font-bold text-slate-900">
+              {t("book.pausedTitle", { name: clinic.name })}
+            </h1>
+            <p className="mt-2 text-sm text-slate-500">{t("book.pausedBody")}</p>
+            <Link to={`/c/${slug}`} className="btn-outline mt-6">
+              {t("book.backHome")}
+            </Link>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   // ---- Success screen ----
   if (confirmation) {
     return (

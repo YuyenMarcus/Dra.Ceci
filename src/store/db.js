@@ -183,15 +183,18 @@ export async function listClinics() {
     .select("id, slug, name, specialty, clinic_name, city, profile")
     .order("created_at", { ascending: true });
   if (error) throw error;
-  return (data ?? []).map((row) => ({
-    id: row.id,
-    slug: row.slug,
-    name: row.name,
-    specialty: row.specialty,
-    clinic: row.clinic_name,
-    city: row.city,
-    profile: row.profile ?? {},
-  }));
+  return (data ?? [])
+    .map((row) => ({
+      id: row.id,
+      slug: row.slug,
+      name: row.name,
+      specialty: row.specialty,
+      clinic: row.clinic_name,
+      city: row.city,
+      profile: row.profile ?? {},
+    }))
+    // Hide clinics that have paused their public presence.
+    .filter((c) => !c.profile?.suspended);
 }
 
 // Public profile by slug (PII-safe RPC).
@@ -366,6 +369,19 @@ export async function cancelBookingByPhone(appointmentId, phone) {
   });
   if (error) return { ok: false, error: "err.cannotCancel" };
   return data;
+}
+
+// Permanently delete the signed-in user's account and all of their clinic data
+// (handled by ON DELETE CASCADE from auth.users). Requires the
+// `delete_my_account` RPC from migration 0005.
+export async function deleteMyAccount() {
+  if (!isSupabaseEnabled) return { ok: false, error: "err.noBackend" };
+  const { error } = await supabase.rpc("delete_my_account");
+  if (error) {
+    console.error("Account deletion failed:", error);
+    return { ok: false, error: "account.deleteFailed" };
+  }
+  return { ok: true };
 }
 
 // ---------------------------------------------------------------------------
