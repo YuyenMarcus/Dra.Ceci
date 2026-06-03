@@ -260,6 +260,8 @@ export const translations = {
     "auth.resendConfirmation": "Reenviar correo de confirmación",
     "auth.resendSent": "Correo de confirmación reenviado. Revisa tu bandeja.",
     "auth.resendNeedEmail": "Escribe tu correo primero para reenviar la confirmación.",
+    "auth.alreadyExists":
+      "Ya existe una cuenta con este correo. Si nunca la confirmaste, reenvía el correo de confirmación; si ya está activa, inicia sesión.",
 
     // Landing
     "landing.manageBooking": "Gestionar cita",
@@ -928,6 +930,8 @@ export const translations = {
     "auth.resendConfirmation": "Resend confirmation email",
     "auth.resendSent": "Confirmation email resent. Check your inbox.",
     "auth.resendNeedEmail": "Enter your email first to resend the confirmation.",
+    "auth.alreadyExists":
+      "An account with this email already exists. If you never confirmed it, resend the confirmation email; if it's already active, sign in.",
 
     "landing.manageBooking": "Manage booking",
     "landing.bookAppointment": "Book appointment",

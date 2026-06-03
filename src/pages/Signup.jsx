@@ -166,6 +166,18 @@ export default function Signup() {
                 {t(error)}
               </p>
             )}
+            {(error === "err.emailInUse" || error === "err.emailNotConfirmed") && (
+              <div className="rounded-xl bg-slate-50 px-3.5 py-3 text-sm">
+                <p className="text-slate-600">{t("auth.alreadyExists")}</p>
+                <ResendConfirmation email={email} redirectPath="/login" />
+                <Link
+                  to="/login"
+                  className="mt-2 inline-block font-medium text-brand-600 hover:text-brand-700"
+                >
+                  {t("auth.signIn")}
+                </Link>
+              </div>
+            )}
             <button type="submit" disabled={busy} className="btn-primary w-full py-3 disabled:opacity-60">
               <UserPlus size={18} /> {t("auth.createAccount")}
             </button>
