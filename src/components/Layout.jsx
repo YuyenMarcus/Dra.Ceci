@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -106,6 +106,24 @@ export default function Layout({ children }) {
     : "MedTrack";
 
   const navItems = receptionMode ? nav.filter((n) => n.reception) : nav;
+
+  // Some ad-block / content-filter extensions inject `display:none !important`
+  // on the sidebar (it survived even after switching <aside> to <div>). A
+  // stylesheet rule can't beat an extension's author-origin !important, but an
+  // INLINE !important does (this is exactly what fixed it in testing). Drive it
+  // from a media query so the sidebar still only shows on md+.
+  const sidebarRef = useRef(null);
+  useEffect(() => {
+    const el = sidebarRef.current;
+    if (!el) return undefined;
+    const mq = window.matchMedia("(min-width: 768px)");
+    const apply = () =>
+      el.style.setProperty("display", mq.matches ? "flex" : "none", "important");
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, []);
+
   const [exitOpen, setExitOpen] = useState(false);
   const [pin, setPin] = useState("");
   const [pinError, setPinError] = useState(false);
@@ -190,7 +208,10 @@ export default function Layout({ children }) {
       {/* Desktop sidebar. Intentionally a <div>, not <aside>: ad-block/content
           "cosmetic filter" extensions frequently inject `display:none !important`
           on <aside> tags, which would hide the whole nav in some Chrome setups. */}
-      <div className="hidden w-64 shrink-0 flex-col bg-gradient-to-b from-brand-800 to-brand-900 md:flex">
+      <div
+        ref={sidebarRef}
+        className="hidden w-64 shrink-0 flex-col bg-gradient-to-b from-brand-800 to-brand-900 md:flex"
+      >
         <SidebarContent t={t} items={navItems} />
       </div>
 
