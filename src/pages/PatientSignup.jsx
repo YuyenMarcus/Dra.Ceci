@@ -5,6 +5,7 @@ import { useAuth } from "../auth/AuthContext.jsx";
 import { useLang } from "../i18n/LanguageContext.jsx";
 import LanguageToggle from "../components/LanguageToggle.jsx";
 import PhoneField from "../components/PhoneField.jsx";
+import ResendConfirmation from "../components/ResendConfirmation.jsx";
 
 export default function PatientSignup() {
   const navigate = useNavigate();
@@ -54,6 +55,8 @@ export default function PatientSignup() {
           </div>
           <h1 className="text-2xl font-bold text-slate-900">{t("auth.checkEmail")}</h1>
           <p className="mt-2 text-sm text-slate-500">{t("auth.confirmSent")}</p>
+          <p className="mt-3 text-sm text-slate-500">{t("auth.noEmail")}</p>
+          <ResendConfirmation email={email} redirectPath="/me/login" />
           <Link to="/me/login" className="btn-primary mt-6 w-full py-3">
             {t("auth.backToLogin")}
           </Link>

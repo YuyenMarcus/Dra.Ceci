@@ -309,6 +309,23 @@ export function AuthProvider({ children }) {
     return { ok: true };
   }, []);
 
+  // Resend the sign-up confirmation email so a user who never confirmed (or
+  // whose link expired/pointed at the wrong host) can get a fresh one without
+  // creating the account again. `redirectPath` is where the link lands after
+  // confirming (/login for doctors, /me/login for patients).
+  const resendConfirmation = useCallback(async (email, redirectPath = "/login") => {
+    if (!isSupabaseEnabled) return { ok: false, error: "err.noBackend" };
+    const trimmed = (email || "").trim();
+    if (!trimmed) return { ok: false, error: "auth.resendNeedEmail" };
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: trimmed,
+      options: { emailRedirectTo: appUrl(redirectPath) },
+    });
+    if (error) return { ok: false, error: error.message };
+    return { ok: true };
+  }, []);
+
   const logout = useCallback(async () => {
     if (isSupabaseEnabled) await supabase.auth.signOut();
     setUser(null);
@@ -345,6 +362,7 @@ export function AuthProvider({ children }) {
       signUpPatient,
       resetPassword,
       updatePassword,
+      resendConfirmation,
       refreshClinic,
       logout,
     }),
@@ -368,6 +386,7 @@ export function AuthProvider({ children }) {
       signUpPatient,
       resetPassword,
       updatePassword,
+      resendConfirmation,
       refreshClinic,
       logout,
     ]

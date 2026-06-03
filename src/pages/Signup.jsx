@@ -4,6 +4,7 @@ import { Stethoscope, ArrowLeft, UserPlus, MailCheck } from "lucide-react";
 import { useAuth } from "../auth/AuthContext.jsx";
 import { useLang } from "../i18n/LanguageContext.jsx";
 import LanguageToggle from "../components/LanguageToggle.jsx";
+import ResendConfirmation from "../components/ResendConfirmation.jsx";
 
 function slugify(value) {
   return (value || "")
@@ -60,6 +61,8 @@ export default function Signup() {
           </div>
           <h1 className="text-2xl font-bold text-slate-900">{t("auth.checkEmail")}</h1>
           <p className="mt-2 text-sm text-slate-500">{t("auth.confirmSent")}</p>
+          <p className="mt-3 text-sm text-slate-500">{t("auth.noEmail")}</p>
+          <ResendConfirmation email={email} redirectPath="/login" />
           <Link to="/login" className="btn-primary mt-6 w-full py-3">
             {t("auth.backToLogin")}
           </Link>

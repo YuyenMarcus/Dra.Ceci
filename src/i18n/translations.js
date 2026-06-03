@@ -256,6 +256,10 @@ export const translations = {
     "auth.updatePassword": "Actualizar contraseña",
     "auth.updated": "Contraseña actualizada. Ya puedes usarla para iniciar sesión.",
     "auth.backToLogin": "Volver a iniciar sesión",
+    "auth.noEmail": "¿No te llegó el correo? Revisa spam o reenvíalo.",
+    "auth.resendConfirmation": "Reenviar correo de confirmación",
+    "auth.resendSent": "Correo de confirmación reenviado. Revisa tu bandeja.",
+    "auth.resendNeedEmail": "Escribe tu correo primero para reenviar la confirmación.",
 
     // Landing
     "landing.manageBooking": "Gestionar cita",
@@ -920,6 +924,10 @@ export const translations = {
     "auth.updatePassword": "Update password",
     "auth.updated": "Password updated. You can use it to sign in now.",
     "auth.backToLogin": "Back to sign in",
+    "auth.noEmail": "Didn't get the email? Check spam or resend it.",
+    "auth.resendConfirmation": "Resend confirmation email",
+    "auth.resendSent": "Confirmation email resent. Check your inbox.",
+    "auth.resendNeedEmail": "Enter your email first to resend the confirmation.",
 
     "landing.manageBooking": "Manage booking",
     "landing.bookAppointment": "Book appointment",

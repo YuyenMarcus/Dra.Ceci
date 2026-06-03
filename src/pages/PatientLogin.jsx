@@ -4,6 +4,7 @@ import { Stethoscope, ArrowLeft, LogIn, CalendarPlus } from "lucide-react";
 import { useAuth } from "../auth/AuthContext.jsx";
 import { useLang } from "../i18n/LanguageContext.jsx";
 import LanguageToggle from "../components/LanguageToggle.jsx";
+import ResendConfirmation from "../components/ResendConfirmation.jsx";
 
 export default function PatientLogin() {
   const navigate = useNavigate();
@@ -90,6 +91,9 @@ export default function PatientLogin() {
               <p className="rounded-xl bg-rose-50 px-3.5 py-2.5 text-sm font-medium text-rose-600">
                 {t(error)}
               </p>
+            )}
+            {error === "err.emailNotConfirmed" && (
+              <ResendConfirmation email={email} redirectPath="/me/login" />
             )}
             <button type="submit" disabled={busy} className="btn-primary w-full py-3 disabled:opacity-60">
               <LogIn size={18} /> {t("login.signIn")}
