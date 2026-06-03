@@ -187,10 +187,12 @@ export default function Layout({ children }) {
 
   return (
     <div className="min-h-screen md:flex">
-      {/* Desktop sidebar */}
-      <aside className="hidden w-64 shrink-0 flex-col bg-gradient-to-b from-brand-800 to-brand-900 md:flex">
+      {/* Desktop sidebar. Intentionally a <div>, not <aside>: ad-block/content
+          "cosmetic filter" extensions frequently inject `display:none !important`
+          on <aside> tags, which would hide the whole nav in some Chrome setups. */}
+      <div className="hidden w-64 shrink-0 flex-col bg-gradient-to-b from-brand-800 to-brand-900 md:flex">
         <SidebarContent t={t} items={navItems} />
-      </aside>
+      </div>
 
       {/* Slide-in nav drawer — opened by the always-visible menu button, so
           navigation is reachable at every width even when the persistent
@@ -201,7 +203,7 @@ export default function Layout({ children }) {
             className="absolute inset-0 bg-slate-900/50"
             onClick={() => setMobileOpen(false)}
           />
-          <aside className="absolute left-0 top-0 flex h-full w-64 flex-col bg-gradient-to-b from-brand-800 to-brand-900">
+          <div className="absolute left-0 top-0 flex h-full w-64 flex-col bg-gradient-to-b from-brand-800 to-brand-900">
             <button
               className="absolute right-3 top-5 rounded-lg p-1.5 text-brand-100 hover:bg-white/10"
               onClick={() => setMobileOpen(false)}
@@ -210,7 +212,7 @@ export default function Layout({ children }) {
               <X size={18} />
             </button>
             <SidebarContent t={t} items={navItems} onNavigate={() => setMobileOpen(false)} />
-          </aside>
+          </div>
         </div>
       )}
 
