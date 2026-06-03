@@ -138,10 +138,19 @@ export default function BookAppointment() {
   }, [clinic?.id, confirmation]);
 
   useEffect(() => {
-    if (!localStorage.getItem(TOUR_KEY)) {
-      const tm = setTimeout(() => setTourOpen(true), 600);
-      return () => clearTimeout(tm);
-    }
+    if (localStorage.getItem(TOUR_KEY)) return undefined;
+    const tm = setTimeout(() => {
+      setTourOpen(true);
+      // Mark it seen the moment it shows — not only on close — so it never
+      // reappears even if the user books through the interactive step (and
+      // gets navigated to the confirmation) without clicking "Got it".
+      try {
+        localStorage.setItem(TOUR_KEY, "1");
+      } catch {
+        /* storage may be unavailable */
+      }
+    }, 600);
+    return () => clearTimeout(tm);
   }, []);
 
   function closeTour() {
