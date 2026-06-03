@@ -379,7 +379,13 @@ export async function deleteMyAccount() {
   const { error } = await supabase.rpc("delete_my_account");
   if (error) {
     console.error("Account deletion failed:", error);
-    return { ok: false, error: "account.deleteFailed" };
+    // A missing function shows up as PGRST202 / "Could not find the function".
+    // Surface the raw reason so it can be diagnosed without the dev console.
+    return {
+      ok: false,
+      error: "account.deleteFailed",
+      detail: error.message || error.hint || error.code || "",
+    };
   }
   return { ok: true };
 }

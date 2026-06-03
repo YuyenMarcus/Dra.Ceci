@@ -46,6 +46,7 @@ export default function Settings() {
   const [confirmText, setConfirmText] = useState("");
   const [deleteBusy, setDeleteBusy] = useState(false);
   const [deleteError, setDeleteError] = useState("");
+  const [deleteDetail, setDeleteDetail] = useState("");
   const confirmTarget = clinic?.slug || "";
 
   async function togglePause() {
@@ -67,10 +68,12 @@ export default function Settings() {
     if (deleteBusy) return;
     setDeleteBusy(true);
     setDeleteError("");
+    setDeleteDetail("");
     const res = await deleteAccount();
     setDeleteBusy(false);
     if (!res.ok) {
       setDeleteError(res.error || "account.deleteFailed");
+      setDeleteDetail(res.detail || "");
       return;
     }
     navigate("/", { replace: true });
@@ -391,7 +394,14 @@ export default function Settings() {
             placeholder={confirmTarget}
           />
           {deleteError && (
-            <p className="text-sm font-medium text-rose-600">{t(deleteError)}</p>
+            <div>
+              <p className="text-sm font-medium text-rose-600">{t(deleteError)}</p>
+              {deleteDetail && (
+                <p className="mt-1 break-words font-mono text-xs text-rose-500/80">
+                  {deleteDetail}
+                </p>
+              )}
+            </div>
           )}
         </div>
       </Modal>
