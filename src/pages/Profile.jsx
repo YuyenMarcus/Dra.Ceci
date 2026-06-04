@@ -179,7 +179,7 @@ export default function Profile() {
               <Sparkles size={15} /> {t("profile.youBadge")} ·{" "}
               <span className="text-brand-100">{t("profile.shareHint")}</span>
             </span>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <button
                 onClick={copyLink}
                 className="btn bg-white/15 px-3 py-1.5 text-xs text-white hover:bg-white/25"
@@ -206,27 +206,31 @@ export default function Profile() {
 
       {/* Nav */}
       <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/80 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-          <Link to={`/c/${slug}`} className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-600 text-white">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-5 py-4">
+          <Link to={`/c/${slug}`} className="flex min-w-0 items-center gap-2.5">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-600 text-white">
               <Stethoscope size={18} />
             </div>
-            <span className="text-lg font-bold text-slate-900">{clinicName}</span>
+            <span className="truncate text-lg font-bold text-slate-900">{clinicName}</span>
           </Link>
-          <div className="flex items-center gap-2">
-            <LanguageToggle className="mr-1" />
-            <Link to={`/c/${slug}/manage`} className="btn-ghost">
+          <div className="flex shrink-0 items-center gap-2">
+            <LanguageToggle className="sm:mr-1" />
+            <Link to={`/c/${slug}/manage`} className="btn-ghost hidden sm:inline-flex">
               {t("landing.manageBooking")}
             </Link>
             <Link to={`/c/${slug}/book`} className="btn-primary">
               {t("landing.bookAppointment")}
             </Link>
             {isOwner ? (
-              <button onClick={logout} className="btn-ghost" title={t("layout.signOut")}>
+              <button
+                onClick={logout}
+                className="btn-ghost hidden sm:inline-flex"
+                title={t("layout.signOut")}
+              >
                 <LogOut size={16} /> {t("layout.signOut")}
               </button>
             ) : (
-              <Link to="/login" className="btn-outline">
+              <Link to="/login" className="btn-outline hidden sm:inline-flex">
                 {t("landing.login")}
               </Link>
             )}
