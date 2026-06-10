@@ -422,6 +422,14 @@ export const translations = {
     "pedit.mapQueryPh": "Clínica Dental Sonríe, San Salvador",
     "pedit.mapQueryHint":
       "Lo que se busca en Google Maps para mostrar tu ubicación y las indicaciones.",
+    "pedit.pinLabel": "Ubicación en el mapa",
+    "pedit.pinSearchPh": "Busca una dirección o lugar para centrar el mapa",
+    "pedit.pinSearch": "Buscar",
+    "pedit.pinHint":
+      "Toca o arrastra el marcador para colocar la ubicación exacta de tu clínica.",
+    "pedit.pinClear": "Quitar marcador",
+    "pedit.searchNotFound": "No encontramos ese lugar. Prueba con otra dirección.",
+    "pedit.searchFailed": "No se pudo buscar la ubicación. Inténtalo de nuevo.",
     "pedit.photosTitle": "Fotos",
     "pedit.photosHint": "Sube imágenes o pega una URL. Deja en blanco para usar las de muestra.",
     "pedit.imgHero": "Imagen principal",
@@ -1119,6 +1127,14 @@ export const translations = {
     "pedit.mapQueryPh": "Smile Dental Clinic, San Salvador",
     "pedit.mapQueryHint":
       "What gets searched on Google Maps to show your location and directions.",
+    "pedit.pinLabel": "Map location",
+    "pedit.pinSearchPh": "Search an address or place to center the map",
+    "pedit.pinSearch": "Search",
+    "pedit.pinHint":
+      "Tap or drag the marker to set your clinic's exact location.",
+    "pedit.pinClear": "Remove pin",
+    "pedit.searchNotFound": "We couldn't find that place. Try another address.",
+    "pedit.searchFailed": "Couldn't search for the location. Please try again.",
     "pedit.photosTitle": "Photos",
     "pedit.photosHint": "Upload images or paste a URL. Leave blank to use the sample photos.",
     "pedit.imgHero": "Hero image",

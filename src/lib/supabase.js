@@ -13,7 +13,7 @@ export const supabase = isSupabaseEnabled ? createClient(url, anonKey) : null;
 // instead of a developer's machine. Override per-environment with VITE_SITE_URL
 // (e.g. set it to http://localhost:5173 in .env.local for local-only flows).
 export const siteUrl = (
-  import.meta.env.VITE_SITE_URL || "https://dra-ceci-tan.vercel.app"
+  import.meta.env.VITE_SITE_URL || "https://www.clinika.health"
 ).replace(/\/+$/, "");
 
 export function appUrl(path = "") {

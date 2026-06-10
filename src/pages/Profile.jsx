@@ -25,6 +25,7 @@ import { useLang } from "../i18n/LanguageContext.jsx";
 import { useAuth } from "../auth/AuthContext.jsx";
 import { getClinicBySlug } from "../store/db.js";
 import LanguageToggle from "../components/LanguageToggle.jsx";
+import ClinicMap from "../components/ClinicMap.jsx";
 
 const U = (id) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=1200&q=80`;
 const STOCK = {
@@ -99,9 +100,16 @@ export default function Profile() {
   const profileUrl =
     typeof window !== "undefined" ? `${window.location.origin}/c/${slug}` : `/c/${slug}`;
   const isOwner = isDoctor && authClinic?.slug === slug;
-  const mapsUrl = clinic?.mapQuery
-    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(clinic.mapQuery)}`
-    : null;
+  // A dropped pin (exact coords) takes priority over the free-text map query.
+  const coords =
+    Number.isFinite(clinic?.profile?.lat) && Number.isFinite(clinic?.profile?.lng)
+      ? { lat: clinic.profile.lat, lng: clinic.profile.lng }
+      : null;
+  const mapsUrl = coords
+    ? `https://www.google.com/maps/search/?api=1&query=${coords.lat},${coords.lng}`
+    : clinic?.mapQuery
+      ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(clinic.mapQuery)}`
+      : null;
 
   async function copyLink() {
     try {
@@ -378,7 +386,23 @@ export default function Profile() {
             )}
           </div>
 
-          {mapsUrl ? (
+          {coords ? (
+            <a
+              href={mapsUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="group relative block overflow-hidden rounded-2xl border border-slate-200"
+            >
+              <ClinicMap
+                lat={coords.lat}
+                lng={coords.lng}
+                className="pointer-events-none h-full min-h-[18rem] w-full"
+              />
+              <span className="absolute bottom-3 right-3 z-[400] inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 text-xs font-semibold text-brand-700 shadow-sm">
+                <MapPin size={13} /> {t("landing.getDirections")}
+              </span>
+            </a>
+          ) : mapsUrl ? (
             <a
               href={mapsUrl}
               target="_blank"

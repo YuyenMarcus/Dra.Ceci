@@ -12,10 +12,13 @@ import {
   MapPin,
   FileText,
   Sparkles,
+  Search,
+  X,
 } from "lucide-react";
 import { useAuth } from "../auth/AuthContext.jsx";
 import { useLang } from "../i18n/LanguageContext.jsx";
 import { updateClinic, uploadProfileImage } from "../store/db.js";
+import ClinicMap from "../components/ClinicMap.jsx";
 
 const IMAGE_FIELDS = [
   { key: "hero", labelKey: "pedit.imgHero" },
@@ -145,6 +148,8 @@ export default function ProfileEdit() {
     address: clinic?.address ?? "",
     city: clinic?.city ?? "",
     mapQuery: clinic?.mapQuery ?? "",
+    lat: Number.isFinite(p.lat) ? p.lat : null,
+    lng: Number.isFinite(p.lng) ? p.lng : null,
     kicker: p.kicker ?? "",
     headline: p.headline ?? "",
     tagline: p.tagline ?? "",
@@ -163,6 +168,39 @@ export default function ProfileEdit() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
+
+  // Address-search state for recentering the pin map.
+  const [geoQuery, setGeoQuery] = useState("");
+  const [geoBusy, setGeoBusy] = useState(false);
+  const [geoError, setGeoError] = useState("");
+
+  // Geocode a free-text place via OpenStreetMap Nominatim (no API key) and drop
+  // the pin there. The doctor can then drag it to fine-tune the exact spot.
+  async function searchPlace(e) {
+    e.preventDefault();
+    const q = geoQuery.trim() || [form.address, form.city].filter(Boolean).join(", ");
+    if (!q) return;
+    setGeoBusy(true);
+    setGeoError("");
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(q)}`,
+        { headers: { Accept: "application/json" } }
+      );
+      const data = await res.json();
+      if (Array.isArray(data) && data[0]) {
+        setForm((f) => ({ ...f, lat: Number(data[0].lat), lng: Number(data[0].lon) }));
+        setSaved(false);
+      } else {
+        setGeoError("pedit.searchNotFound");
+      }
+    } catch (searchErr) {
+      console.error("Geocoding failed:", searchErr);
+      setGeoError("pedit.searchFailed");
+    } finally {
+      setGeoBusy(false);
+    }
+  }
 
   const set = (key, val) => {
     setForm((f) => ({ ...f, [key]: val }));
@@ -217,6 +255,8 @@ export default function ProfileEdit() {
       images: Object.fromEntries(
         Object.entries(form.images).filter(([, v]) => v && v.trim())
       ),
+      lat: Number.isFinite(form.lat) ? form.lat : null,
+      lng: Number.isFinite(form.lng) ? form.lng : null,
     };
     try {
       await updateClinic(clinic.id, {
@@ -331,6 +371,65 @@ export default function ProfileEdit() {
             <Field label={t("pedit.mapQuery")}>
               <input className="input" value={form.mapQuery} onChange={(e) => set("mapQuery", e.target.value)} placeholder={t("pedit.mapQueryPh")} />
               <p className="mt-1 text-xs text-slate-400">{t("pedit.mapQueryHint")}</p>
+            </Field>
+          </div>
+          <div className="sm:col-span-2">
+            <Field label={t("pedit.pinLabel")}>
+              <div className="flex gap-2">
+                <input
+                  className="input"
+                  value={geoQuery}
+                  onChange={(e) => {
+                    setGeoQuery(e.target.value);
+                    setGeoError("");
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") searchPlace(e);
+                  }}
+                  placeholder={t("pedit.pinSearchPh")}
+                />
+                <button
+                  type="button"
+                  onClick={searchPlace}
+                  disabled={geoBusy}
+                  className="btn-outline shrink-0 disabled:opacity-60"
+                >
+                  {geoBusy ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    <Search size={16} />
+                  )}
+                  {t("pedit.pinSearch")}
+                </button>
+              </div>
+              {geoError && (
+                <p className="mt-1.5 text-xs font-medium text-rose-600">{t(geoError)}</p>
+              )}
+              <ClinicMap
+                editable
+                lat={form.lat}
+                lng={form.lng}
+                onChange={({ lat, lng }) => {
+                  setForm((f) => ({ ...f, lat, lng }));
+                  setSaved(false);
+                }}
+                className="relative z-0 mt-3 h-72 w-full overflow-hidden rounded-xl border border-slate-200"
+              />
+              <div className="mt-2 flex items-center justify-between gap-2">
+                <p className="text-xs text-slate-400">{t("pedit.pinHint")}</p>
+                {Number.isFinite(form.lat) && Number.isFinite(form.lng) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setForm((f) => ({ ...f, lat: null, lng: null }));
+                      setSaved(false);
+                    }}
+                    className="btn-ghost shrink-0 text-xs text-rose-600"
+                  >
+                    <X size={14} /> {t("pedit.pinClear")}
+                  </button>
+                )}
+              </div>
             </Field>
           </div>
         </div>
