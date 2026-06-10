@@ -4,7 +4,7 @@ import { Stethoscope, ArrowLeft, LogIn, CalendarPlus } from "lucide-react";
 import { useAuth } from "../auth/AuthContext.jsx";
 import { useLang } from "../i18n/LanguageContext.jsx";
 import LanguageToggle from "../components/LanguageToggle.jsx";
-import OtpConfirm from "../components/OtpConfirm.jsx";
+import ResendConfirmation from "../components/ResendConfirmation.jsx";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -44,7 +44,7 @@ export default function Login() {
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15">
             <Stethoscope size={20} />
           </div>
-          <span className="text-xl font-bold">MedTrack</span>
+          <span className="text-xl font-bold">Clinika</span>
         </Link>
         <div>
           <h2 className="text-3xl font-bold leading-tight">{t("login.welcomeBack")}</h2>
@@ -111,10 +111,8 @@ export default function Login() {
             )}
             {error === "err.emailNotConfirmed" && (
               <div className="rounded-xl bg-slate-50 px-3.5 py-3">
-                <p className="text-sm text-slate-600">
-                  {t("auth.confirmCodeSub", { email })}
-                </p>
-                <OtpConfirm email={email} />
+                <p className="text-sm text-slate-600">{t("auth.confirmSent")}</p>
+                <ResendConfirmation email={email} redirectPath="/login" />
               </div>
             )}
             <button type="submit" disabled={busy} className="btn-primary w-full py-3 disabled:opacity-60">

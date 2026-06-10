@@ -51,7 +51,7 @@ export default function Splash({ onDone }) {
         className="mt-7 text-3xl font-bold tracking-tight text-white"
         style={{ animation: "mt-fade-up .6s ease both", animationDelay: ".35s" }}
       >
-        MedTrack
+        Clinika
       </h1>
       <p
         className="mt-1.5 text-sm font-medium text-brand-200"

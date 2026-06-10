@@ -31,7 +31,7 @@ function PublicHeader({ slug, onReplayTour }) {
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-600 text-white">
             <Stethoscope size={18} />
           </div>
-          <span className="text-lg font-bold text-slate-900">MedTrack</span>
+          <span className="text-lg font-bold text-slate-900">Clinika</span>
         </Link>
         <div className="flex items-center gap-2">
           <LanguageToggle />
@@ -230,7 +230,7 @@ export default function BookAppointment() {
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-slate-100 px-6 text-center">
         <h1 className="text-2xl font-bold text-slate-900">404</h1>
         <Link to="/" className="btn-primary">
-          MedTrack
+          Clinika
         </Link>
       </div>
     );

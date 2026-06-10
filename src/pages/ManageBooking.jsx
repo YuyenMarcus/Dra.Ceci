@@ -24,7 +24,7 @@ function PublicHeader({ slug }) {
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-600 text-white">
             <Stethoscope size={18} />
           </div>
-          <span className="text-lg font-bold text-slate-900">MedTrack</span>
+          <span className="text-lg font-bold text-slate-900">Clinika</span>
         </Link>
         <div className="flex items-center gap-2">
           <LanguageToggle />

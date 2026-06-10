@@ -1,4 +1,4 @@
-# MedTrack
+# Clinika
 
 Operations platform for **dental and medical clinics in El Salvador** — fichas, odontogram, inventory, appointments, patient portal, and public booking.
 

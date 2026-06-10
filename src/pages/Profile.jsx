@@ -141,13 +141,13 @@ export default function Profile() {
           {t("common.unknown")} — <span className="font-mono">/c/{slug}</span>
         </p>
         <Link to="/" className="btn-primary">
-          MedTrack
+          Clinika
         </Link>
       </div>
     );
   }
 
-  const clinicName = clinic.name || "MedTrack";
+  const clinicName = clinic.name || "Clinika";
 
   // Editable content with sensible fallbacks to the translated defaults.
   const cp = clinic.profile || {};

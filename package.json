@@ -1,9 +1,9 @@
 {
-  "name": "medtrack",
+  "name": "clinika",
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "MedTrack — inventory logging, client management and appointment scheduling for dental and medical clinics.",
+  "description": "Clinika — inventory logging, client management and appointment scheduling for dental and medical clinics.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

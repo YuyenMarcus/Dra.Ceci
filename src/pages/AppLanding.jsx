@@ -39,7 +39,7 @@ export default function AppLanding() {
   const secondaryLabel = isDoctor ? t("app.navProfile") : t("login.createOne");
   const sampleName = isDoctor && clinic?.name ? clinic.name : t("app.profileSampleName");
   const sampleUrl =
-    isDoctor && clinic?.slug ? `medtrack.app/${clinic.slug}` : t("app.profileSampleUrl");
+    isDoctor && clinic?.slug ? `clinika.health/${clinic.slug}` : t("app.profileSampleUrl");
 
   const features = [
     {
@@ -86,7 +86,7 @@ export default function AppLanding() {
               <Stethoscope size={18} />
             </div>
             <span className="flex flex-col leading-none">
-              <span className="text-lg font-bold text-slate-900">MedTrack</span>
+              <span className="text-lg font-bold text-slate-900">Clinika</span>
               <span className="text-[11px] font-medium text-slate-400">
                 {t("app.tagline")}
               </span>
@@ -219,7 +219,7 @@ export default function AppLanding() {
       </section>
 
       <footer className="border-t border-slate-200 py-8 text-center text-sm text-slate-400">
-        MedTrack · {t("app.footerNote")}
+        Clinika · {t("app.footerNote")}
       </footer>
     </div>
   );

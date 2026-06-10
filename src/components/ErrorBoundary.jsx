@@ -16,7 +16,7 @@ export default class ErrorBoundary extends Component {
 
   componentDidCatch(error, info) {
     // Surface it for debugging; the fallback also shows the message.
-    console.error("MedTrack crashed:", error, info?.componentStack);
+    console.error("Clinika crashed:", error, info?.componentStack);
   }
 
   render() {

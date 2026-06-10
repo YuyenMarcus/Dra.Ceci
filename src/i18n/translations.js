@@ -341,10 +341,10 @@ export const translations = {
     "app.heroTitle": "Tu consultorio,",
     "app.heroTitleEm": "ordenado",
     "app.heroSub":
-      "MedTrack reúne inventario, fichas de pacientes y agenda en una sola app simple y rápida.",
+      "Clinika reúne inventario, fichas de pacientes y agenda en una sola app simple y rápida.",
     "app.getStarted": "Iniciar sesión",
     "app.profileSampleName": "Tu consultorio",
-    "app.profileSampleUrl": "medtrack.app/tu-consultorio",
+    "app.profileSampleUrl": "clinika.health/tu-consultorio",
     "app.featuresTitle": "Todo lo que tu clínica necesita",
     "app.featuresSub": "Las herramientas del día a día, sin complicaciones.",
     "app.feat.inventoryTitle": "Inventario",
@@ -547,7 +547,7 @@ export const translations = {
     "landing.heroTitle1": "Administra tu clínica y deja que tus pacientes agenden",
     "landing.heroTitleEm": "en segundos",
     "landing.heroSub":
-      "MedTrack le da a los doctores un solo lugar para gestionar inventario, pacientes y agenda — mientras los pacientes obtienen un portal simple para agendar y cancelar citas según la disponibilidad real.",
+      "Clinika le da a los doctores un solo lugar para gestionar inventario, pacientes y agenda — mientras los pacientes obtienen un portal simple para agendar y cancelar citas según la disponibilidad real.",
     "landing.bookCta": "Agendar una cita",
     "landing.imDoctor": "Soy doctor",
     "landing.heroImage":
@@ -661,7 +661,7 @@ export const translations = {
     "tour.gotIt": "Entendido",
     "tour.skip": "Omitir tutorial",
     // Doctor tour
-    "dtour.1.title": "Bienvenido a MedTrack 👋",
+    "dtour.1.title": "Bienvenido a Clinika 👋",
     "dtour.1.body":
       "Este es el panel de tu clínica. Aquí tienes un recorrido de 30 segundos por dónde está todo. Puedes omitirlo cuando quieras y repetirlo desde el botón “?”.",
     "dtour.2.title": "Tu panel",
@@ -683,7 +683,7 @@ export const translations = {
     // Cookies
     "cookie.title": "Usamos cookies",
     "cookie.body":
-      "MedTrack usa cookies para mantener tu sesión y recordar tus preferencias. Puedes aceptar todas o quedarte con las esenciales.",
+      "Clinika usa cookies para mantener tu sesión y recordar tus preferencias. Puedes aceptar todas o quedarte con las esenciales.",
     "cookie.essential": "Solo esenciales",
     "cookie.acceptAll": "Aceptar todas",
     "cookie.dismiss": "Descartar",
@@ -1038,10 +1038,10 @@ export const translations = {
     "app.heroTitle": "Your practice,",
     "app.heroTitleEm": "organized",
     "app.heroSub":
-      "MedTrack brings inventory, patient records and scheduling together in one simple, fast app.",
+      "Clinika brings inventory, patient records and scheduling together in one simple, fast app.",
     "app.getStarted": "Sign in",
     "app.profileSampleName": "Your clinic",
-    "app.profileSampleUrl": "medtrack.app/your-clinic",
+    "app.profileSampleUrl": "clinika.health/your-clinic",
     "app.featuresTitle": "Everything your clinic needs",
     "app.featuresSub": "Your everyday tools, without the hassle.",
     "app.feat.inventoryTitle": "Inventory",
@@ -1243,7 +1243,7 @@ export const translations = {
     "landing.heroTitle1": "Run your clinic and let patients book",
     "landing.heroTitleEm": "in seconds",
     "landing.heroSub":
-      "MedTrack gives doctors a single place to manage inventory, patients and schedules — while patients get a simple portal to book and cancel appointments around real availability.",
+      "Clinika gives doctors a single place to manage inventory, patients and schedules — while patients get a simple portal to book and cancel appointments around real availability.",
     "landing.bookCta": "Book an appointment",
     "landing.imDoctor": "I'm a doctor",
     "landing.heroImage":
@@ -1352,7 +1352,7 @@ export const translations = {
     "tour.demoTour": "Tour",
     "tour.gotIt": "Got it",
     "tour.skip": "Skip tour",
-    "dtour.1.title": "Welcome to MedTrack 👋",
+    "dtour.1.title": "Welcome to Clinika 👋",
     "dtour.1.body":
       "This is your clinic dashboard. Here's a 30-second tour of where everything lives. You can skip anytime and replay it later from the “?” button.",
     "dtour.2.title": "Your dashboard",
@@ -1373,7 +1373,7 @@ export const translations = {
 
     "cookie.title": "We use cookies",
     "cookie.body":
-      "MedTrack uses cookies to keep you signed in and remember your preferences. You can accept all cookies or stick to the essentials.",
+      "Clinika uses cookies to keep you signed in and remember your preferences. You can accept all cookies or stick to the essentials.",
     "cookie.essential": "Essential only",
     "cookie.acceptAll": "Accept all",
     "cookie.dismiss": "Dismiss",

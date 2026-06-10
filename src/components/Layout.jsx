@@ -51,7 +51,7 @@ function SidebarContent({ onNavigate, t, items = nav }) {
           <Stethoscope size={20} />
         </div>
         <div>
-          <p className="text-lg font-bold leading-none text-white">MedTrack</p>
+          <p className="text-lg font-bold leading-none text-white">Clinika</p>
           <p className="mt-1 text-xs text-brand-200">{t("layout.clinicOps")}</p>
         </div>
       </div>
@@ -103,7 +103,7 @@ export default function Layout({ children }) {
   const { t } = useLang();
   const title = titles[location.pathname]
     ? t(titles[location.pathname])
-    : "MedTrack";
+    : "Clinika";
 
   const navItems = receptionMode ? nav.filter((n) => n.reception) : nav;
 

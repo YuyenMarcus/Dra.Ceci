@@ -5,7 +5,6 @@ import { useAuth } from "../auth/AuthContext.jsx";
 import { useLang } from "../i18n/LanguageContext.jsx";
 import LanguageToggle from "../components/LanguageToggle.jsx";
 import ResendConfirmation from "../components/ResendConfirmation.jsx";
-import OtpConfirm from "../components/OtpConfirm.jsx";
 
 function slugify(value) {
   return (value || "")
@@ -60,9 +59,10 @@ export default function Signup() {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
             <MailCheck size={32} />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900">{t("auth.confirmCodeTitle")}</h1>
-          <p className="mt-2 text-sm text-slate-500">{t("auth.confirmCodeSub", { email })}</p>
-          <OtpConfirm email={email} redirectTo="/app" />
+          <h1 className="text-2xl font-bold text-slate-900">{t("auth.checkEmail")}</h1>
+          <p className="mt-2 text-sm text-slate-500">{t("auth.confirmSent")}</p>
+          <p className="mt-2 text-xs text-slate-400">{t("auth.noEmail")}</p>
+          <ResendConfirmation email={email} redirectPath="/login" />
           <Link
             to="/login"
             className="mt-5 inline-block text-sm font-medium text-slate-500 hover:text-slate-700"
@@ -81,7 +81,7 @@ export default function Signup() {
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15">
             <Stethoscope size={20} />
           </div>
-          <span className="text-xl font-bold">MedTrack</span>
+          <span className="text-xl font-bold">Clinika</span>
         </Link>
         <div>
           <h2 className="text-3xl font-bold leading-tight">{t("auth.signupTitle")}</h2>
