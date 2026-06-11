@@ -1,20 +1,20 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 
-// App-wide light/dark theme. Persisted to localStorage, defaults to light
+// App-wide light/dark theme. Persisted to localStorage, defaults to dark
 // (we intentionally ignore the OS preference per product decision).
 // The "dark" class on <html> drives the .dark CSS overrides in index.css.
 
 const KEY = "clinika.theme";
-const ThemeContext = createContext({ theme: "light", toggle: () => {} });
+const ThemeContext = createContext({ theme: "dark", toggle: () => {} });
 
 export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(() => {
     try {
-      const saved = localStorage.getItem(KEY);
-      return saved === "dark" ? "dark" : "light";
+      // Default is dark; only an explicit "light" choice opts out.
+      return localStorage.getItem(KEY) === "light" ? "light" : "dark";
     } catch {
-      return "light";
+      return "dark";
     }
   });
 

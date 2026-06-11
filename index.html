@@ -112,10 +112,9 @@
     </script>
 
     <script>
-      // Default is light. Only restore dark when the user explicitly chose it.
+      // Default is dark. Only opt out when the user explicitly chose light.
       try {
-        document.documentElement.classList.remove("dark");
-        if (localStorage.getItem("clinika.theme") === "dark") {
+        if (localStorage.getItem("clinika.theme") !== "light") {
           document.documentElement.classList.add("dark");
         }
         // Keep the lang attribute honest pre-hydration too.
