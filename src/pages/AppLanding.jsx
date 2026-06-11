@@ -321,7 +321,10 @@ export default function AppLanding() {
           <div className="mt-12 grid items-stretch gap-6 lg:grid-cols-3">
             {PLANS.map((p, i) => {
               const feats = planFeatures(p.id, lang);
-              const shown = feats.slice(0, 6);
+              // Show 6 features by default; Hacienda-Ready shows its full 7 so
+              // nothing is hidden behind "+N more".
+              const cap = p.id === "hacienda" ? 7 : 6;
+              const shown = feats.slice(0, cap);
               const extra = feats.length - shown.length;
               return (
                 <Reveal

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, UserPlus, MailCheck, CalendarPlus, HeartPulse, Tag, Check } from "lucide-react";
+import { ArrowLeft, UserPlus, MailCheck, HeartPulse, Tag, Check } from "lucide-react";
 import BrandMark from "../components/BrandMark.jsx";
 import { useAuth } from "../auth/AuthContext.jsx";
 import { useLang } from "../i18n/LanguageContext.jsx";
@@ -151,29 +151,6 @@ export default function Signup() {
               <ArrowLeft size={16} /> {t("auth.signIn")}
             </Link>
             <LanguageToggle />
-          </div>
-
-          <div className="mb-6 rounded-2xl border border-portal-200 bg-gradient-to-br from-portal-50 to-white p-4 shadow-sm dark:border-portal-800 dark:from-portal-950/40 dark:to-slate-900">
-            <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-portal-600 text-white">
-                <HeartPulse size={18} />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="font-semibold text-slate-900">{t("login.tabClient")}</p>
-                <p className="mt-0.5 text-sm text-slate-500">{t("app.imPatientHint")}</p>
-                <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-                  <Link to="/find" className="btn-portal justify-center px-4 py-2.5 text-sm">
-                    <CalendarPlus size={16} /> {t("login.imPatient")}
-                  </Link>
-                  <Link
-                    to="/me/signup"
-                    className="btn justify-center border border-portal-200 bg-white px-4 py-2.5 text-sm text-portal-700 hover:bg-portal-50 dark:border-portal-700 dark:bg-slate-800 dark:text-portal-200 dark:hover:bg-portal-950/50"
-                  >
-                    {t("plogin.createOne")}
-                  </Link>
-                </div>
-              </div>
-            </div>
           </div>
 
           <h1 className="text-2xl font-bold text-slate-900">{t("auth.signupTitle")}</h1>
@@ -352,6 +329,24 @@ export default function Signup() {
               {t("auth.signIn")}
             </Link>
           </p>
+
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 border-t border-slate-100 pt-5 text-sm text-slate-500 dark:border-slate-800">
+            <HeartPulse size={14} className="text-portal-500" />
+            <span>{t("login.patientPrompt")}</span>
+            <Link
+              to="/find"
+              className="font-medium text-portal-600 hover:text-portal-700 dark:text-portal-300 dark:hover:text-portal-200"
+            >
+              {t("login.patientBook")}
+            </Link>
+            <span className="text-slate-300 dark:text-slate-600">·</span>
+            <Link
+              to="/me/login"
+              className="font-medium text-portal-600 hover:text-portal-700 dark:text-portal-300 dark:hover:text-portal-200"
+            >
+              {t("login.patientPortal")}
+            </Link>
+          </div>
         </div>
       </div>
     </div>
