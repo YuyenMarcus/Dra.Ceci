@@ -334,6 +334,7 @@ export const translations = {
 
     // App product landing ( / )
     "app.tagline": "Gestión de clínicas",
+    "splash.tagline": "Inventario y agenda para tu clínica",
     "app.navProfile": "Ver perfil",
     "app.login": "Iniciar sesión",
     "app.patientPortal": "Portal de pacientes",
@@ -1210,6 +1211,7 @@ export const translations = {
 
     // App product landing ( / )
     "app.tagline": "Clinic management",
+    "splash.tagline": "Clinic inventory & scheduling",
     "app.navProfile": "View profile",
     "app.login": "Sign in",
     "app.patientPortal": "Patient portal",

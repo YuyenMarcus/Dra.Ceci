@@ -1,5 +1,29 @@
 import { Component } from "react";
 
+// This boundary lives above LanguageProvider, so it can't use the translation
+// hook. Read the saved language directly (same key as LanguageContext) so the
+// crash screen still matches the user's language. Defaults to Spanish.
+const COPY = {
+  es: {
+    title: "Algo salió mal",
+    body: "La app encontró un error inesperado. Recargar suele solucionarlo.",
+    reload: "Recargar app",
+  },
+  en: {
+    title: "Something went wrong",
+    body: "The app hit an unexpected error. A full reload usually fixes it.",
+    reload: "Reload app",
+  },
+};
+
+function crashCopy() {
+  try {
+    return localStorage.getItem("medtrack.lang") === "en" ? COPY.en : COPY.es;
+  } catch {
+    return COPY.es;
+  }
+}
+
 // Catches runtime render errors anywhere below it and shows a recoverable
 // fallback instead of a blank white screen. Critically useful in development:
 // a bad hot-reload (e.g. changing hooks in a provider) throws during render,
@@ -21,6 +45,8 @@ export default class ErrorBoundary extends Component {
 
   render() {
     if (!this.state.error) return this.props.children;
+
+    const copy = crashCopy();
 
     return (
       <div
@@ -47,10 +73,10 @@ export default class ErrorBoundary extends Component {
           }}
         >
           <h1 style={{ fontSize: "20px", fontWeight: 700, color: "#0f172a" }}>
-            Something went wrong
+            {copy.title}
           </h1>
           <p style={{ marginTop: "8px", fontSize: "14px", color: "#64748b" }}>
-            The app hit an unexpected error. A full reload usually fixes it.
+            {copy.body}
           </p>
           <pre
             style={{
@@ -86,7 +112,7 @@ export default class ErrorBoundary extends Component {
               cursor: "pointer",
             }}
           >
-            Reload app
+            {copy.reload}
           </button>
         </div>
       </div>

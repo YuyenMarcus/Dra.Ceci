@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLang } from "../i18n/LanguageContext.jsx";
 
 /**
  * Branded intro sequence shown once per browser session.
@@ -7,6 +8,7 @@ import { useEffect, useState } from "react";
  *  3. A loading bar fills, then the whole overlay fades away
  */
 export default function Splash({ onDone }) {
+  const { t } = useLang();
   const [leaving, setLeaving] = useState(false);
 
   useEffect(() => {
@@ -61,7 +63,7 @@ export default function Splash({ onDone }) {
         className="mt-1.5 text-sm font-medium text-brand-200"
         style={{ animation: "mt-fade-up .6s ease both", animationDelay: ".5s" }}
       >
-        Clinic inventory &amp; scheduling
+        {t("splash.tagline")}
       </p>
 
       {/* Loading bar */}

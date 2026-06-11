@@ -151,7 +151,7 @@ export const PLANS = [
       en: [
         "Everything in Profesional",
         "Full DTE pipeline (JSON → digital signature → Hacienda API → UUID)",
-        "Sello de Recepción storage",
+        "Reception stamp storage",
         "Payment link integration",
         "10-year document archive (fiscal compliance)",
         "Unlimited document storage",
