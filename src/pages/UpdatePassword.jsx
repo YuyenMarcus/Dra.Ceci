@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Stethoscope, KeyRound, CheckCircle2 } from "lucide-react";
+import { KeyRound, CheckCircle2 } from "lucide-react";
+import BrandMark from "../components/BrandMark.jsx";
 import { useAuth } from "../auth/AuthContext.jsx";
 import { useLang } from "../i18n/LanguageContext.jsx";
 import LanguageToggle from "../components/LanguageToggle.jsx";
@@ -35,9 +36,7 @@ export default function UpdatePassword() {
           <LanguageToggle />
         </div>
         <div className="card p-8">
-          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-50 text-brand-600">
-            <Stethoscope size={22} />
-          </div>
+          <BrandMark size={48} rounded="rounded-2xl" className="mb-4" />
           {done ? (
             <>
               <div className="mb-3 flex items-center gap-2 text-emerald-600">

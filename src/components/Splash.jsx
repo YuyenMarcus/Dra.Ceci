@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Stethoscope } from "lucide-react";
 
 /**
  * Branded intro sequence shown once per browser session.
@@ -39,10 +38,15 @@ export default function Splash({ onDone }) {
           style={{ animation: "mt-ring 1.8s ease-out infinite", animationDelay: ".6s" }}
         />
         <div
-          className="relative flex h-24 w-24 items-center justify-center rounded-3xl bg-white text-brand-700 shadow-2xl shadow-black/20"
+          className="relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-3xl bg-white shadow-2xl shadow-black/20"
           style={{ animation: "mt-logo-pop .7s cubic-bezier(.21,1.02,.73,1) both" }}
         >
-          <Stethoscope size={44} strokeWidth={2.2} />
+          <img
+            src="/logo.png"
+            alt="Clinika"
+            className="h-20 w-20 object-contain"
+            draggable={false}
+          />
         </div>
       </div>
 

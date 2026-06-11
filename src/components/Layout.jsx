@@ -5,7 +5,6 @@ import {
   Boxes,
   Users,
   CalendarDays,
-  Stethoscope,
   Menu,
   X,
   LogOut,
@@ -15,15 +14,22 @@ import {
   Settings as SettingsIcon,
   ConciergeBell,
   Lock,
+  ShieldCheck,
 } from "lucide-react";
 import { useAuth } from "../auth/AuthContext.jsx";
 import { useLang } from "../i18n/LanguageContext.jsx";
 import { initials } from "../lib/format.js";
-import { updateClinic } from "../store/db.js";
+import { updateClinic, logEvent } from "../store/db.js";
 import Tour from "./Tour.jsx";
 import Modal from "./Modal.jsx";
+import BrandMark from "./BrandMark.jsx";
 
 const TOUR_KEY = "medtrack.tour.doctor";
+
+// Throttle feature-open logging to at most once per route per 10 minutes so the
+// usage log stays meaningful (last feature used / engagement) without flooding.
+const lastFeatureLog = {};
+const FEATURE_LOG_THROTTLE_MS = 10 * 60 * 1000;
 
 const nav = [
   { to: "/app", labelKey: "nav.dashboard", icon: LayoutDashboard, end: true, tour: "nav-dashboard", reception: true },
@@ -47,9 +53,7 @@ function SidebarContent({ onNavigate, t, items = nav }) {
   return (
     <>
       <div className="flex items-center gap-3 px-6 py-6">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-600 text-white shadow-sm">
-          <Stethoscope size={20} />
-        </div>
+        <BrandMark size={40} />
         <div>
           <p className="text-lg font-bold leading-none text-white">Clinika</p>
           <p className="mt-1 text-xs text-brand-200">{t("layout.clinicOps")}</p>
@@ -99,6 +103,7 @@ export default function Layout({ children }) {
     canSwitchRoles,
     receptionMode,
     exitReception,
+    isAdmin,
   } = useAuth();
   const { t } = useLang();
   const title = titles[location.pathname]
@@ -106,6 +111,19 @@ export default function Layout({ children }) {
     : "Clinika";
 
   const navItems = receptionMode ? nav.filter((n) => n.reception) : nav;
+
+  // Log which feature the doctor opened (powers "last feature used" + activity
+  // recency in the admin console). Throttled per route; clinic-scoped.
+  const clinicIdForLog = clinic?.id;
+  useEffect(() => {
+    if (!clinicIdForLog) return;
+    const feature = location.pathname.replace(/^\/app\/?/, "") || "dashboard";
+    const key = `${clinicIdForLog}:${feature}`;
+    const now = Date.now();
+    if (now - (lastFeatureLog[key] || 0) < FEATURE_LOG_THROTTLE_MS) return;
+    lastFeatureLog[key] = now;
+    logEvent("feature.open", { feature }, clinicIdForLog);
+  }, [location.pathname, clinicIdForLog]);
 
   // Some ad-block / content-filter extensions inject `display:none !important`
   // on the sidebar (it survived even after switching <aside> to <div>). A
@@ -251,6 +269,16 @@ export default function Layout({ children }) {
             <h1 className="text-xl font-bold text-slate-900">{title}</h1>
           </div>
           <div className="flex items-center gap-3">
+            {isAdmin && !receptionMode && (
+              <button
+                className="btn-ghost text-xs"
+                onClick={() => navigate("/admin")}
+                title={t("admin.title")}
+              >
+                <ShieldCheck size={15} />
+                <span className="hidden sm:inline">{t("nav.admin")}</span>
+              </button>
+            )}
             {!receptionMode && canSwitchRoles && (
               <button
                 className="btn-ghost text-xs text-portal-700 hover:bg-portal-50"

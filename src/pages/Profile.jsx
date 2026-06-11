@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import BrandMark from "../components/BrandMark.jsx";
 import {
   Stethoscope,
   ArrowRight,
@@ -216,9 +217,7 @@ export default function Profile() {
       <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/80 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-5 py-4">
           <Link to={`/c/${slug}`} className="flex min-w-0 items-center gap-2.5">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-600 text-white">
-              <Stethoscope size={18} />
-            </div>
+            <BrandMark size={36} />
             <span className="truncate text-lg font-bold text-slate-900">{clinicName}</span>
           </Link>
           <div className="flex shrink-0 items-center gap-2">

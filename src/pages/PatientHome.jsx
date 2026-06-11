@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import BrandMark from "../components/BrandMark.jsx";
 import {
   Stethoscope,
   Mail,
@@ -23,6 +24,7 @@ import {
   linkPatientRecords,
   getMyTreatments,
   getMyConsents,
+  logEvent,
 } from "../store/db.js";
 import {
   formatLongDate,
@@ -61,6 +63,12 @@ export default function PatientHome() {
         setAppointments(data.appointments);
         setTreatments(tx);
         setConsents(cs);
+        // Record a portal login once per browser session (engagement metric).
+        const key = `medtrack.portalLogged.${patient?.id}`;
+        if (patient?.id && !sessionStorage.getItem(key)) {
+          sessionStorage.setItem(key, "1");
+          logEvent("portal.login");
+        }
       } catch (err) {
         console.error("Could not load patient portal:", err);
       } finally {
@@ -116,9 +124,7 @@ export default function PatientHome() {
       <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/80 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-5 py-4">
           <Link to="/" className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-600 text-white">
-              <Stethoscope size={18} />
-            </div>
+            <BrandMark size={36} />
             <span className="text-lg font-bold text-slate-900">Clinika</span>
           </Link>
           <div className="flex items-center gap-2">

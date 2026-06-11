@@ -21,6 +21,7 @@ import PatientHome from "./pages/PatientHome.jsx";
 import PatientLogin from "./pages/PatientLogin.jsx";
 import PatientSignup from "./pages/PatientSignup.jsx";
 import FindDoctor from "./pages/FindDoctor.jsx";
+import Admin from "./pages/Admin.jsx";
 import CookieConsent from "./components/CookieConsent.jsx";
 
 const SPLASH_KEY = "medtrack.splashed";
@@ -49,6 +50,16 @@ function RequirePatient({ children }) {
   if (canAccessPatientPortal) return children;
   if (isDoctor) return <Navigate to="/app" replace />;
   return <Navigate to="/me/login" replace />;
+}
+
+// Operator-only console. Admins are allowlisted server-side (app_admins) and
+// every admin RPC re-checks is_admin(), so this client gate is just UX.
+function RequireAdmin({ children }) {
+  const { isAdmin, loading, isAuthenticated } = useAuth();
+  if (loading) return <AuthLoading />;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (!isAdmin) return <Navigate to="/app" replace />;
+  return children;
 }
 
 // Guards routes that are off-limits in reception mode (medical records and
@@ -153,6 +164,16 @@ export default function App() {
             }
           />
         </Route>
+
+        {/* Operator / super-admin console */}
+        <Route
+          path="/admin"
+          element={
+            <RequireAdmin>
+              <Admin />
+            </RequireAdmin>
+          }
+        />
 
         {/* Legacy redirects */}
         <Route path="/dra-ceci" element={<LegacyDraCeci />} />

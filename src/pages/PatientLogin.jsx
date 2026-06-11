@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Stethoscope, ArrowLeft, LogIn, CalendarPlus } from "lucide-react";
+import { ArrowLeft, LogIn, CalendarPlus } from "lucide-react";
+import BrandMark from "../components/BrandMark.jsx";
 import { useAuth } from "../auth/AuthContext.jsx";
 import { useLang } from "../i18n/LanguageContext.jsx";
 import LanguageToggle from "../components/LanguageToggle.jsx";
@@ -52,9 +53,7 @@ export default function PatientLogin() {
         </div>
 
         <div className="card p-8">
-          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-50 to-portal-100 text-portal-600">
-            <Stethoscope size={22} />
-          </div>
+          <BrandMark size={48} rounded="rounded-2xl" className="mb-4" />
           <h1 className="text-2xl font-bold text-slate-900">{t("plogin.title")}</h1>
           <p className="mt-1 text-sm text-slate-500">{t("plogin.sub")}</p>
 

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import BrandMark from "../components/BrandMark.jsx";
 import {
   Stethoscope,
   ArrowLeft,
@@ -28,9 +29,7 @@ function PublicHeader({ slug, onReplayTour }) {
     <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/85 backdrop-blur">
       <div className="mx-auto flex max-w-3xl items-center justify-between px-5 py-3.5">
         <Link to={`/c/${slug}`} className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-600 text-white">
-            <Stethoscope size={18} />
-          </div>
+          <BrandMark size={36} />
           <span className="text-lg font-bold text-slate-900">Clinika</span>
         </Link>
         <div className="flex items-center gap-2">

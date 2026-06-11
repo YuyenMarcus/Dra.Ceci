@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Languages,
@@ -14,23 +14,24 @@ import {
   Trash2,
   AlertTriangle,
   Loader2,
+  CreditCard,
 } from "lucide-react";
 import { useLang } from "../i18n/LanguageContext.jsx";
 import { useAuth } from "../auth/AuthContext.jsx";
 import { updateClinic } from "../store/db.js";
+import { startCheckout, openBillingPortal } from "../lib/billing.js";
 import CommissionCalculator from "../components/CommissionCalculator.jsx";
 import Modal from "../components/Modal.jsx";
+import { PLANS, planFeatures } from "../lib/plans.js";
 
 const LANGS = [
   { code: "es", labelKey: "settings.spanish", native: "Español" },
   { code: "en", labelKey: "settings.english", native: "English" },
 ];
 
-const PLANS = [
-  { id: "starter", labelKey: "plan.starter" },
-  { id: "profesional", labelKey: "plan.profesional" },
-  { id: "hacienda", labelKey: "plan.hacienda" },
-];
+// Temporarily hidden (code kept intact, just not surfaced in the UI).
+const SHOW_RECEPTION = false;
+const SHOW_COMMISSION = false;
 
 export default function Settings() {
   const { lang, setLang, t } = useLang();
@@ -38,7 +39,41 @@ export default function Settings() {
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
   const [planBusy, setPlanBusy] = useState(false);
+  const [billingNotice, setBillingNotice] = useState("");
+  const [billingError, setBillingError] = useState("");
   const currentPlan = clinic?.profile?.plan || "starter";
+  const hasBillingCustomer = Boolean(clinic?.profile?.stripe?.customerId);
+
+  // Show a banner after returning from Stripe Checkout, and refresh the clinic
+  // so the webhook-applied plan shows up (it may land a moment after redirect).
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const billing = params.get("billing");
+    if (!billing) return;
+    setBillingNotice(billing === "success" ? "billing.success" : "billing.canceled");
+    if (billing === "success") {
+      setTimeout(() => refreshClinic(), 1500);
+    }
+    window.history.replaceState({}, "", window.location.pathname);
+  }, [refreshClinic]);
+
+  async function subscribe(plan) {
+    if (planBusy) return;
+    setPlanBusy(true);
+    setBillingError("");
+    const res = await startCheckout(plan);
+    if (!res.ok) setBillingError(res.error || "billing.error");
+    setPlanBusy(false);
+  }
+
+  async function manageBilling() {
+    if (planBusy) return;
+    setPlanBusy(true);
+    setBillingError("");
+    const res = await openBillingPortal();
+    if (!res.ok) setBillingError(res.error || "billing.error");
+    setPlanBusy(false);
+  }
 
   const suspended = Boolean(clinic?.profile?.suspended);
   const [pauseBusy, setPauseBusy] = useState(false);
@@ -121,21 +156,6 @@ export default function Settings() {
     setTimeout(() => setCopied(false), 1800);
   }
 
-  async function setPlan(plan) {
-    if (!clinic || plan === currentPlan || planBusy) return;
-    setPlanBusy(true);
-    try {
-      await updateClinic(clinic.id, {
-        profile: { ...(clinic.profile || {}), plan },
-      });
-      await refreshClinic();
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setPlanBusy(false);
-    }
-  }
-
   return (
     <div className="space-y-6">
       <div className="gap-6 xl:columns-2 [&>*]:mb-6 [&>*]:break-inside-avoid">
@@ -175,36 +195,107 @@ export default function Settings() {
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
             <Layers size={20} />
           </div>
-          <div>
+          <div className="flex-1">
             <h2 className="font-semibold text-slate-900">{t("plan.title")}</h2>
             <p className="text-sm text-slate-500">{t("plan.hint")}</p>
           </div>
-        </div>
-        <div className="mt-4 grid gap-2">
-          {PLANS.map((p) => (
+          {hasBillingCustomer && (
             <button
-              key={p.id}
               type="button"
+              onClick={manageBilling}
               disabled={planBusy}
-              onClick={() => setPlan(p.id)}
-              className={`flex items-center justify-between rounded-xl border px-4 py-3 text-left transition ${
-                currentPlan === p.id
-                  ? "border-brand-500 bg-brand-50/60"
-                  : "border-slate-200 hover:border-brand-300"
-              }`}
+              className="btn-outline shrink-0 text-sm disabled:opacity-60"
             >
-              <span className="text-sm font-semibold text-slate-800">{t(p.labelKey)}</span>
-              {currentPlan === p.id && (
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-600 text-white">
-                  <Check size={14} />
-                </span>
-              )}
+              <CreditCard size={15} /> {t("billing.manage")}
             </button>
-          ))}
+          )}
+        </div>
+
+        {billingNotice && (
+          <div
+            className={`mt-4 rounded-xl px-4 py-3 text-sm ${
+              billingNotice === "billing.success"
+                ? "bg-emerald-50 text-emerald-700"
+                : "bg-slate-100 text-slate-600"
+            }`}
+          >
+            {t(billingNotice)}
+          </div>
+        )}
+        {billingError && (
+          <div className="mt-4 flex items-center gap-2 rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700">
+            <AlertTriangle size={16} /> {t(billingError)}
+          </div>
+        )}
+
+        <div className="mt-4 grid gap-3">
+          {PLANS.map((p) => {
+            const active = currentPlan === p.id;
+            return (
+              <div
+                key={p.id}
+                className={`rounded-xl border p-4 transition ${
+                  active
+                    ? "border-brand-500 bg-brand-50/50"
+                    : "border-slate-200"
+                }`}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold text-slate-900">{p.name}</p>
+                      {p.highlight && (
+                        <span className="rounded-full bg-brand-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-brand-700">
+                          {t("plan.popular")}
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-0.5 text-sm text-slate-500">
+                      <span className="text-lg font-bold text-slate-900">
+                        ${p.price}
+                      </span>
+                      {t("plan.perMonth")}
+                    </p>
+                  </div>
+                  {active ? (
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-3 py-1 text-xs font-semibold text-white">
+                      <Check size={14} /> {t("plan.current")}
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled={planBusy}
+                      onClick={() => subscribe(p.id)}
+                      className="btn-primary shrink-0 text-sm disabled:opacity-60"
+                    >
+                      {planBusy ? (
+                        <Loader2 size={15} className="animate-spin" />
+                      ) : (
+                        <CreditCard size={15} />
+                      )}
+                      {t("plan.subscribe")}
+                    </button>
+                  )}
+                </div>
+                <ul className="mt-3 grid gap-1.5 text-sm text-slate-600">
+                  {planFeatures(p.id, lang).map((f) => (
+                    <li key={f} className="flex items-start gap-2">
+                      <Check
+                        size={15}
+                        className="mt-0.5 shrink-0 text-brand-500"
+                      />
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })}
         </div>
       </div>
 
-      {/* Reception access (front desk) */}
+      {/* Reception access (front desk) — temporarily hidden (code kept). */}
+      {SHOW_RECEPTION && (
       <div className="card p-6">
         <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
@@ -253,8 +344,10 @@ export default function Settings() {
           <p className="mt-2 text-xs text-amber-600">{t("reception.needPin")}</p>
         )}
       </div>
+      )}
 
-      <CommissionCalculator />
+      {/* Commission calculator — temporarily hidden (code kept). */}
+      {SHOW_COMMISSION && <CommissionCalculator />}
 
       {/* Language */}
       <div className="card p-6">

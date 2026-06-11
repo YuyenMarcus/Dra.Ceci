@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Stethoscope, ArrowLeft, Send, MailCheck } from "lucide-react";
+import { ArrowLeft, Send, MailCheck } from "lucide-react";
+import BrandMark from "../components/BrandMark.jsx";
 import { useAuth } from "../auth/AuthContext.jsx";
 import { useLang } from "../i18n/LanguageContext.jsx";
 import LanguageToggle from "../components/LanguageToggle.jsx";
@@ -11,12 +12,18 @@ export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState("");
 
   async function submit(e) {
     e.preventDefault();
     setBusy(true);
-    await resetPassword(email);
+    setError("");
+    const res = await resetPassword(email);
     setBusy(false);
+    if (!res?.ok) {
+      setError(res?.error || "err.generic");
+      return;
+    }
     setSent(true);
   }
 
@@ -34,9 +41,7 @@ export default function ForgotPassword() {
         </div>
 
         <div className="card p-8">
-          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-50 text-brand-600">
-            <Stethoscope size={22} />
-          </div>
+          <BrandMark size={48} rounded="rounded-2xl" className="mb-4" />
           {sent ? (
             <>
               <div className="mb-3 flex items-center gap-2 text-emerald-600">
@@ -64,6 +69,11 @@ export default function ForgotPassword() {
                     placeholder="you@clinic.com"
                   />
                 </div>
+                {error && (
+                  <p className="rounded-xl bg-rose-50 px-3.5 py-2.5 text-sm font-medium text-rose-600">
+                    {t(error)}
+                  </p>
+                )}
                 <button type="submit" disabled={busy} className="btn-primary w-full py-3 disabled:opacity-60">
                   <Send size={18} /> {t("auth.sendLink")}
                 </button>

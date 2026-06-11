@@ -1,0 +1,12 @@
+project_id = "dtlljwvaggyaalzspkzm"
+
+# Stripe webhook must be reachable without a Supabase JWT (Stripe signs it
+# with its own signature, which the function verifies instead).
+[functions.stripe-webhook]
+verify_jwt = false
+
+[functions.stripe-checkout]
+verify_jwt = true
+
+[functions.stripe-portal]
+verify_jwt = true

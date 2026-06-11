@@ -660,3 +660,85 @@ export async function getConsentsByPhone(clinicId, phone) {
   }));
 }
 
+// ---------------------------------------------------------------------------
+// Product usage events (migration 0008). Fire-and-forget: never throws, never
+// blocks the UI. clinicId is null for patient-portal events.
+// ---------------------------------------------------------------------------
+export function logEvent(type, meta = {}, clinicId = null) {
+  if (!isSupabaseEnabled || !type) return;
+  supabase
+    .from("app_events")
+    .insert({ type, meta, clinic_id: clinicId })
+    .then(({ error }) => {
+      if (error) console.debug("logEvent failed:", error.message);
+    });
+}
+
+// ---------------------------------------------------------------------------
+// Admin console (cross-tenant, gated server-side by is_admin() in migration 0007)
+// ---------------------------------------------------------------------------
+
+// Is the signed-in user an admin? Resolves false on any error so a normal user
+// never sees the admin UI even if the RPC is missing.
+export async function amIAdmin() {
+  if (!isSupabaseEnabled) return false;
+  const { data, error } = await supabase.rpc("am_i_admin");
+  if (error) return false;
+  return Boolean(data);
+}
+
+// One row per clinic with the metrics the admin console needs.
+export async function adminOverview() {
+  if (!isSupabaseEnabled) return [];
+  const { data, error } = await supabase.rpc("admin_overview");
+  if (error) throw error;
+  return (data ?? []).map((r) => ({
+    id: r.id,
+    slug: r.slug,
+    name: r.name,
+    ownerEmail: r.owner_email,
+    city: r.city,
+    createdAt: r.created_at,
+    plan: r.plan,
+    billing: r.billing,
+    suspended: r.suspended,
+    trialEndsAt: r.trial_ends_at,
+    referralSource: r.referral_source,
+    planCycle: r.plan_cycle,
+    lastSignInAt: r.last_sign_in_at,
+    patientCount: Number(r.patient_count || 0),
+    apptCount: Number(r.appt_count || 0),
+    apptThisMonth: Number(r.appt_this_month || 0),
+    inventoryCount: Number(r.inventory_count || 0),
+    lastEventAt: r.last_event_at,
+    lastEventType: r.last_event_type,
+  }));
+}
+
+// Time-based growth metrics (conversions, churn, new/lost MRR this month).
+// Returns null on any error so the dashboard can fall back gracefully.
+export async function adminGrowth() {
+  if (!isSupabaseEnabled) return null;
+  const { data, error } = await supabase.rpc("admin_growth");
+  if (error) {
+    console.debug("admin_growth failed:", error.message);
+    return null;
+  }
+  return data || null;
+}
+
+// Shallow-merge a patch into a clinic's profile (plan, billing, trialEndsAt,
+// suspended, referralSource, planCycle). Returns { ok, error? }.
+export async function adminUpdateClinic(clinicId, patch) {
+  if (!isSupabaseEnabled) return { ok: false, error: "err.noBackend" };
+  const { error } = await supabase.rpc("admin_update_clinic", {
+    p_clinic_id: clinicId,
+    p_patch: patch,
+  });
+  if (error) {
+    console.error("admin_update_clinic failed:", error);
+    return { ok: false, error: error.message || error.code || "error" };
+  }
+  return { ok: true };
+}
+

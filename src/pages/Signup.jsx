@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Stethoscope, ArrowLeft, UserPlus, MailCheck } from "lucide-react";
+import { ArrowLeft, UserPlus, MailCheck } from "lucide-react";
+import BrandMark from "../components/BrandMark.jsx";
 import { useAuth } from "../auth/AuthContext.jsx";
 import { useLang } from "../i18n/LanguageContext.jsx";
 import LanguageToggle from "../components/LanguageToggle.jsx";
@@ -78,9 +79,7 @@ export default function Signup() {
     <div className="flex min-h-screen flex-col bg-slate-100 lg:flex-row">
       <div className="relative hidden flex-col justify-between bg-gradient-to-br from-brand-600 to-brand-800 p-10 text-white lg:flex lg:w-2/5">
         <Link to="/" className="flex items-center gap-2.5">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15">
-            <Stethoscope size={20} />
-          </div>
+          <BrandMark size={40} />
           <span className="text-xl font-bold">Clinika</span>
         </Link>
         <div>

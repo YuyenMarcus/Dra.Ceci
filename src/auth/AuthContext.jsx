@@ -12,7 +12,9 @@ import {
   linkPatientRecords,
   countMyPatientRecords,
   deleteMyAccount,
+  amIAdmin,
 } from "../store/db.js";
+import { DEFAULT_PLAN_ID, hasCapability } from "../lib/plans.js";
 
 const AuthContext = createContext(null);
 
@@ -42,6 +44,9 @@ export function AuthProvider({ children }) {
   // Whether this account also owns patient records of its own. When a doctor
   // account is ALSO a patient, this is true and we expose the portal switcher.
   const [hasPatientProfile, setHasPatientProfile] = useState(false);
+  // Whether this account is an operator/super-admin (allowlisted in app_admins).
+  // Drives the /admin console; the real security is server-side (is_admin()).
+  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   // Front-desk "reception mode": when on, the doctor's own session is locked to
   // inventory + appointments and medical records are hidden. It stores which
@@ -67,6 +72,7 @@ export function AuthProvider({ children }) {
     if (!sessionUser) {
       setClinic(null);
       setHasPatientProfile(false);
+      setIsAdmin(false);
       return;
     }
     let ownedClinic = null;
@@ -91,6 +97,9 @@ export function AuthProvider({ children }) {
       console.error("Could not detect patient profile:", err);
       setHasPatientProfile(false);
     }
+
+    // Admin check is best-effort and never blocks the session resolving.
+    setIsAdmin(await amIAdmin());
   }, []);
 
   useEffect(() => {
@@ -158,6 +167,12 @@ export function AuthProvider({ children }) {
   const receptionMode = Boolean(
     clinic && receptionClinicId && receptionClinicId === clinic.id
   );
+
+  // Current subscription tier (stored on the clinic profile until billing is
+  // wired up) and a capability gate derived from it. Use `can("feature")`
+  // anywhere to check tier entitlements — see src/lib/plans.js.
+  const plan = clinic?.profile?.plan || DEFAULT_PLAN_ID;
+  const can = useCallback((capability) => hasCapability(plan, capability), [plan]);
 
   // Lock the app into reception mode. Requires a PIN to have been set so the
   // doctor can later unlock it. Returns false if no PIN is configured.
@@ -363,6 +378,7 @@ export function AuthProvider({ children }) {
     setUser(null);
     setClinic(null);
     setHasPatientProfile(false);
+    setIsAdmin(false);
     try {
       localStorage.removeItem("medtrack.receptionMode");
     } catch {
@@ -403,6 +419,9 @@ export function AuthProvider({ children }) {
       receptionMode,
       enterReception,
       exitReception,
+      plan,
+      can,
+      isAdmin,
       backendEnabled: isSupabaseEnabled,
       login,
       signUp,
@@ -431,6 +450,9 @@ export function AuthProvider({ children }) {
       receptionMode,
       enterReception,
       exitReception,
+      plan,
+      can,
+      isAdmin,
       login,
       signUp,
       signUpPatient,

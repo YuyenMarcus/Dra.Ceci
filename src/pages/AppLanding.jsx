@@ -1,34 +1,24 @@
 import { Link } from "react-router-dom";
+import BrandMark from "../components/BrandMark.jsx";
+import { LiquidButton } from "../components/ui/liquid-glass-button.jsx";
+import AppPreview from "../components/ui/app-preview.jsx";
+import HeroScroll from "../components/ui/hero-scroll-animation.jsx";
+import { Footer2 } from "../components/ui/footer2.jsx";
 import {
-  Stethoscope,
   ArrowRight,
   Boxes,
   ClipboardList,
   CalendarDays,
-  Globe2,
   CalendarCheck2,
   LayoutDashboard,
   Languages,
   Share2,
+  Globe2,
+  Stethoscope,
 } from "lucide-react";
 import { useLang } from "../i18n/LanguageContext.jsx";
 import { useAuth } from "../auth/AuthContext.jsx";
 import LanguageToggle from "../components/LanguageToggle.jsx";
-
-function FeatureCard({ icon: Icon, title, children, delay = 0 }) {
-  return (
-    <div
-      className="card animate-fade-up p-6"
-      style={{ animationDelay: `${delay}s` }}
-    >
-      <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
-        <Icon size={22} />
-      </div>
-      <h3 className="font-semibold text-slate-900">{title}</h3>
-      <p className="mt-1.5 text-sm leading-relaxed text-slate-500">{children}</p>
-    </div>
-  );
-}
 
 export default function AppLanding() {
   const { t } = useLang();
@@ -75,6 +65,41 @@ export default function AppLanding() {
   ];
 
   const primaryTo = isDoctor ? "/app" : isClient ? "/me" : "/login";
+  const portalTo = canAccessPatientPortal ? "/me" : "/me/login";
+
+  const footerMenu = [
+    {
+      title: t("footer.product"),
+      links: [
+        { text: t("footer.features"), url: "#features" },
+        { text: t("footer.booking"), url: profileTo },
+        { text: t("footer.portal"), url: portalTo },
+        { text: t("footer.signin"), url: primaryTo },
+      ],
+    },
+    {
+      title: t("footer.company"),
+      links: [
+        { text: t("footer.about"), url: "#features" },
+        { text: t("footer.contact"), url: "mailto:hola@clinika.health" },
+      ],
+    },
+    {
+      title: t("footer.resources"),
+      links: [
+        { text: t("footer.help"), url: "mailto:hola@clinika.health" },
+        { text: t("footer.privacy"), url: "#" },
+      ],
+    },
+    {
+      title: t("footer.social"),
+      links: [
+        { text: "Instagram", url: "#" },
+        { text: "LinkedIn", url: "#" },
+        { text: "X", url: "#" },
+      ],
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -82,9 +107,7 @@ export default function AppLanding() {
       <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/80 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
           <Link to="/" className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-600 text-white">
-              <Stethoscope size={18} />
-            </div>
+            <BrandMark size={36} />
             <span className="flex flex-col leading-none">
               <span className="text-lg font-bold text-slate-900">Clinika</span>
               <span className="text-[11px] font-medium text-slate-400">
@@ -113,58 +136,66 @@ export default function AppLanding() {
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="pointer-events-none absolute -top-24 left-1/2 h-72 w-[42rem] -translate-x-1/2 rounded-full bg-brand-200/40 blur-3xl" />
-        <div className="mx-auto max-w-4xl px-5 py-20 text-center lg:py-28">
-          <span
-            className="animate-fade-up inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-3.5 py-1.5 text-xs font-semibold text-brand-700"
-            style={{ animationDelay: ".05s" }}
-          >
-            <Stethoscope size={14} /> {t("app.heroKicker")}
-          </span>
-          <h1
-            className="animate-fade-up mt-6 text-4xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-6xl"
-            style={{ animationDelay: ".12s" }}
-          >
-            {t("app.heroTitle")}{" "}
-            <span className="text-brand-600">{t("app.heroTitleEm")}</span>.
-          </h1>
-          <p
-            className="animate-fade-up mx-auto mt-5 max-w-xl text-lg text-slate-500"
-            style={{ animationDelay: ".2s" }}
-          >
-            {t("app.heroSub")}
-          </p>
+        {/* Diagonal teal light beams (adapted from the hero-section-9 backdrop) */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 -z-[1] hidden opacity-70 contain-strict lg:block"
+        >
+          <div className="absolute left-0 top-0 h-[80rem] w-[35rem] -translate-y-[350px] -rotate-45 rounded-full bg-[radial-gradient(68.54%_68.72%_at_55.02%_31.46%,rgba(20,184,166,0.10)_0,rgba(13,148,136,0.03)_50%,transparent_80%)]" />
+          <div className="absolute left-0 top-0 h-[80rem] w-56 -rotate-45 rounded-full bg-[radial-gradient(50%_50%_at_50%_50%,rgba(45,212,191,0.07)_0,rgba(13,148,136,0.02)_80%,transparent_100%)] [translate:5%_-50%]" />
+        </div>
+        <div className="relative z-10 mx-auto grid max-w-6xl items-center gap-12 px-5 pt-20 pb-20 lg:grid-cols-2 lg:gap-8 lg:pt-28">
+          {/* Left: copy */}
+          <div className="text-center lg:text-left">
+            <h1
+              className="animate-fade-up text-4xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-6xl"
+              style={{ animationDelay: ".12s" }}
+            >
+              {t("app.heroTitle")}{" "}
+              <span className="text-brand-600">{t("app.heroTitleEm")}</span>.
+            </h1>
+            <p
+              className="animate-fade-up mx-auto mt-5 max-w-xl text-lg text-slate-500 lg:mx-0"
+              style={{ animationDelay: ".2s" }}
+            >
+              {t("app.heroSub")}
+            </p>
+            <div
+              className="animate-fade-up mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row lg:justify-start"
+              style={{ animationDelay: ".28s" }}
+            >
+              <Link to={primaryTo} className="btn-primary px-6 py-3 text-base">
+                {t("app.getStarted")} <ArrowRight size={18} />
+              </Link>
+              <LiquidButton as={Link} to={profileTo} size="xl" className="text-brand-800">
+                {secondaryLabel}
+              </LiquidButton>
+            </div>
+          </div>
+
+          {/* Right: angled product preview, off to the side for depth/style
+              (flat and centered on small screens, tilted from lg up). */}
           <div
-            className="animate-fade-up mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row"
-            style={{ animationDelay: ".28s" }}
+            className="animate-fade-up [perspective:2200px]"
+            style={{ animationDelay: ".34s" }}
           >
-            <Link to={primaryTo} className="btn-primary px-6 py-3 text-base">
-              {t("app.getStarted")} <ArrowRight size={18} />
-            </Link>
-            <Link to={profileTo} className="btn-outline px-6 py-3 text-base">
-              {secondaryLabel}
-            </Link>
+            <div className="origin-center transition-transform duration-500 lg:[transform:rotateY(-22deg)_rotateX(6deg)_rotate(-1deg)] lg:scale-110">
+              <AppPreview />
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Features */}
-      <section className="bg-white py-16">
-        <div className="mx-auto max-w-6xl px-5">
-          <h2 className="text-center text-3xl font-bold text-slate-900">
-            {t("app.featuresTitle")}
-          </h2>
-          <p className="mx-auto mt-2 max-w-md text-center text-slate-500">
-            {t("app.featuresSub")}
-          </p>
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {features.map((f, i) => (
-              <FeatureCard key={f.title} icon={f.icon} title={f.title} delay={i * 0.05}>
-                {f.desc}
-              </FeatureCard>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Features — compact animated reveal */}
+      <div id="features">
+        <HeroScroll
+          title={t("app.featuresTitle")}
+          subtitle={t("app.featuresSub")}
+          features={features}
+          ctaTo={primaryTo}
+          ctaLabel={t("app.getStarted")}
+        />
+      </div>
 
       {/* Shareable profile highlight */}
       <section className="mx-auto max-w-6xl px-5 py-16">
@@ -204,23 +235,16 @@ export default function AppLanding() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="mx-auto max-w-6xl px-5 pb-20">
-        <div className="card flex flex-col items-center gap-5 bg-gradient-to-br from-brand-700 to-brand-900 px-8 py-12 text-center text-white">
-          <h2 className="max-w-xl text-3xl font-bold">{t("app.ctaTitle")}</h2>
-          <p className="max-w-md text-brand-100">{t("app.ctaSub")}</p>
-          <Link
-            to={primaryTo}
-            className="btn bg-white px-6 py-3 text-base text-brand-700 hover:bg-brand-50"
-          >
-            {t("app.getStarted")} <ArrowRight size={18} />
-          </Link>
-        </div>
-      </section>
-
-      <footer className="border-t border-slate-200 py-8 text-center text-sm text-slate-400">
-        Clinika · {t("app.footerNote")}
-      </footer>
+      <Footer2
+        logo={{ url: "/", title: "Clinika" }}
+        tagline={t("footer.tagline")}
+        menuItems={footerMenu}
+        copyright={`© ${new Date().getFullYear()} Clinika. ${t("footer.rights")}`}
+        bottomLinks={[
+          { text: t("footer.terms"), url: "#" },
+          { text: t("footer.privacy"), url: "#" },
+        ]}
+      />
     </div>
   );
 }

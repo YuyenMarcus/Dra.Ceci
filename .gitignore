@@ -12,3 +12,7 @@ yarn-error.log*
 .vscode/*
 !.vscode/extensions.json
 .vercel
+
+# Supabase CLI local state
+supabase/.temp
+supabase/.branches
