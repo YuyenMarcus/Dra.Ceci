@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../auth/AuthContext.jsx";
 import { useLang } from "../i18n/LanguageContext.jsx";
-import { initials } from "../lib/format.js";
+import { initials, formatLongDate } from "../lib/format.js";
 import { updateClinic, logEvent } from "../store/db.js";
 import Tour from "./Tour.jsx";
 import Modal from "./Modal.jsx";
@@ -49,18 +49,28 @@ const titles = {
   "/app/settings": "nav.settings",
 };
 
-function SidebarContent({ onNavigate, t, items = nav }) {
+function SidebarContent({ onNavigate, t, items = nav, userName, userSpecialty }) {
   return (
     <>
-      <div className="flex items-center gap-3 px-6 py-6">
-        <BrandMark size={40} />
+      <div className="flex items-center gap-3 px-5 pb-5 pt-6">
+        <BrandMark size={38} rounded="rounded-xl" />
         <div>
-          <p className="text-lg font-bold leading-none text-white">Clinika</p>
-          <p className="mt-1 text-xs text-brand-200">{t("layout.clinicOps")}</p>
+          <p className="text-[17px] font-bold leading-none tracking-tight text-white">
+            Clinika
+          </p>
+          <p className="mt-1 text-[11px] font-medium uppercase tracking-wider text-brand-300/80">
+            {t("layout.clinicOps")}
+          </p>
         </div>
       </div>
 
-      <nav className="flex-1 space-y-1 px-3">
+      <div className="mx-5 mb-4 h-px bg-white/10" />
+
+      <p className="mb-2 px-6 text-[10px] font-semibold uppercase tracking-[0.14em] text-brand-300/60">
+        {t("layout.menu")}
+      </p>
+
+      <nav className="flex-1 space-y-0.5 px-3">
         {items.map(({ to, labelKey, icon: Icon, end, tour }, i) => (
           <NavLink
             key={to}
@@ -68,24 +78,48 @@ function SidebarContent({ onNavigate, t, items = nav }) {
             end={end}
             data-tour={tour}
             onClick={onNavigate}
-            style={{ animationDelay: `${0.12 + i * 0.07}s` }}
+            style={{ animationDelay: `${0.1 + i * 0.05}s` }}
             className={({ isActive }) =>
               [
-                "animate-fade-up flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-colors duration-200",
+                "animate-fade-up group relative flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-colors duration-200",
                 isActive
-                  ? "bg-white/10 text-white shadow-sm"
-                  : "text-brand-100 hover:bg-white/5 hover:text-white hover:translate-x-0.5",
+                  ? "bg-white/[0.12] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
+                  : "text-brand-100/75 hover:bg-white/[0.06] hover:text-white",
               ].join(" ")
             }
           >
-            <Icon size={18} />
-            {t(labelKey)}
+            {({ isActive }) => (
+              <>
+                <span
+                  className={`absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-brand-300 transition-opacity ${
+                    isActive ? "opacity-100" : "opacity-0"
+                  }`}
+                />
+                <Icon
+                  size={18}
+                  className={isActive ? "text-brand-300" : "text-brand-200/60 transition-colors group-hover:text-brand-200"}
+                />
+                {t(labelKey)}
+              </>
+            )}
           </NavLink>
         ))}
       </nav>
 
-      <div className="px-6 py-5 text-xs text-brand-200/80">
-        {t("layout.localData")}
+      <div className="mx-3 mb-4 mt-4 rounded-xl bg-white/[0.06] p-3">
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-300/20 text-sm font-semibold text-brand-200">
+            {initials(userName || "DR")}
+          </div>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold leading-tight text-white">
+              {userName || t("common.doctor")}
+            </p>
+            <p className="truncate text-[11px] text-brand-200/70">
+              {userSpecialty || t("common.clinician")}
+            </p>
+          </div>
+        </div>
       </div>
     </>
   );
@@ -228,9 +262,14 @@ export default function Layout({ children }) {
           on <aside> tags, which would hide the whole nav in some Chrome setups. */}
       <div
         ref={sidebarRef}
-        className="hidden w-64 shrink-0 flex-col bg-gradient-to-b from-brand-800 to-brand-900 md:flex"
+        className="hidden w-64 shrink-0 flex-col bg-gradient-to-b from-brand-900 via-brand-950 to-brand-950 md:flex"
       >
-        <SidebarContent t={t} items={navItems} />
+        <SidebarContent
+          t={t}
+          items={navItems}
+          userName={currentUser?.name}
+          userSpecialty={currentUser?.specialty}
+        />
       </div>
 
       {/* Slide-in nav drawer — phone only (the burger that opens it is
@@ -241,7 +280,7 @@ export default function Layout({ children }) {
             className="absolute inset-0 bg-slate-900/50"
             onClick={() => setMobileOpen(false)}
           />
-          <div className="absolute left-0 top-0 flex h-full w-64 flex-col bg-gradient-to-b from-brand-800 to-brand-900">
+          <div className="absolute left-0 top-0 flex h-full w-64 flex-col bg-gradient-to-b from-brand-900 via-brand-950 to-brand-950">
             <button
               className="absolute right-3 top-5 rounded-lg p-1.5 text-brand-100 hover:bg-white/10"
               onClick={() => setMobileOpen(false)}
@@ -249,15 +288,21 @@ export default function Layout({ children }) {
             >
               <X size={18} />
             </button>
-            <SidebarContent t={t} items={navItems} onNavigate={() => setMobileOpen(false)} />
+            <SidebarContent
+              t={t}
+              items={navItems}
+              userName={currentUser?.name}
+              userSpecialty={currentUser?.specialty}
+              onNavigate={() => setMobileOpen(false)}
+            />
           </div>
         </div>
       )}
 
       {/* Main column */}
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-slate-200 bg-white/80 px-4 py-3.5 backdrop-blur md:px-8">
-          <div className="flex items-center gap-3">
+        <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-slate-200/80 bg-white/85 px-4 py-3 backdrop-blur-md md:px-8">
+          <div className="flex min-w-0 items-center gap-3">
             <button
               className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 py-2 text-slate-600 hover:bg-slate-100 md:hidden"
               onClick={() => setMobileOpen(true)}
@@ -266,57 +311,59 @@ export default function Layout({ children }) {
               <Menu size={20} />
               <span className="text-sm font-medium">{t("layout.menu")}</span>
             </button>
-            <h1 className="text-xl font-bold text-slate-900">{title}</h1>
+            <div className="min-w-0">
+              <h1 className="truncate text-lg font-bold tracking-tight text-slate-900">
+                {title}
+              </h1>
+              <p className="hidden text-[11px] capitalize leading-none text-slate-400 sm:block">
+                {formatLongDate()}
+              </p>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5">
             {isAdmin && !receptionMode && (
               <button
-                className="btn-ghost text-xs"
+                className="btn-ghost px-3 py-2 text-xs"
                 onClick={() => navigate("/admin")}
                 title={t("admin.title")}
               >
                 <ShieldCheck size={15} />
-                <span className="hidden sm:inline">{t("nav.admin")}</span>
+                <span className="hidden lg:inline">{t("nav.admin")}</span>
               </button>
             )}
             {!receptionMode && canSwitchRoles && (
               <button
-                className="btn-ghost text-xs text-portal-700 hover:bg-portal-50"
+                className="btn-ghost px-3 py-2 text-xs text-portal-700 hover:bg-portal-50"
                 onClick={() => navigate("/me")}
                 title={t("layout.switchToPatient")}
               >
                 <HeartPulse size={15} />
-                <span className="hidden sm:inline">{t("layout.patientPortal")}</span>
+                <span className="hidden lg:inline">{t("layout.patientPortal")}</span>
               </button>
             )}
             <button
-              className="btn-ghost text-xs"
+              className="btn-ghost px-3 py-2 text-xs"
               onClick={() => setTourOpen(true)}
               title={t("layout.replayTour")}
             >
               <HelpCircle size={15} />
-              <span className="hidden sm:inline">{t("layout.tour")}</span>
+              <span className="hidden lg:inline">{t("layout.tour")}</span>
             </button>
-            <div className="flex items-center gap-2.5 rounded-full border border-slate-200 bg-white py-1 pl-1 pr-3.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-100 text-sm font-semibold text-brand-700">
-                {currentUser ? initials(currentUser.name) : "DR"}
-              </div>
-              <div className="hidden text-left sm:block">
-                <p className="text-sm font-semibold leading-none text-slate-800">
-                  {currentUser?.name ?? t("common.doctor")}
-                </p>
-                <p className="mt-0.5 text-xs text-slate-400">
-                  {currentUser?.specialty ?? t("common.clinician")}
-                </p>
-              </div>
+
+            <div className="mx-1.5 hidden h-6 w-px bg-slate-200 sm:block" />
+
+            {/* Compact identity on phones (the sidebar card covers md+) */}
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-100 text-sm font-semibold text-brand-700 md:hidden">
+              {currentUser ? initials(currentUser.name) : "DR"}
             </div>
+
             <button
-              className="btn-ghost text-xs"
+              className="btn-ghost px-3 py-2 text-xs"
               onClick={signOut}
               title={t("layout.signOut")}
             >
               <LogOut size={15} />
-              <span className="hidden sm:inline">{t("layout.signOut")}</span>
+              <span className="hidden lg:inline">{t("layout.signOut")}</span>
             </button>
           </div>
         </header>
@@ -341,7 +388,10 @@ export default function Layout({ children }) {
         )}
 
         <main className="flex-1 px-4 py-6 md:px-8 md:py-8">
-          <div key={location.pathname} className="animate-fade-up">
+          <div
+            key={location.pathname}
+            className="animate-fade-up mx-auto w-full max-w-[1440px]"
+          >
             {children}
           </div>
         </main>

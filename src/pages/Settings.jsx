@@ -158,7 +158,8 @@ export default function Settings() {
 
   return (
     <div className="space-y-6">
-      <div className="gap-6 xl:columns-2 [&>*]:mb-6 [&>*]:break-inside-avoid">
+      {/* Row 1: compact cards — public profile link + language */}
+      <div className="grid gap-6 lg:grid-cols-2">
       {/* Public profile */}
       <div className="card p-6">
         <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
@@ -187,6 +188,51 @@ export default function Settings() {
             <ExternalLink size={16} /> {t("settings.viewProfile")}
           </Link>
         </div>
+      </div>
+
+      {/* Language */}
+      <div className="card p-6">
+        <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+            <Languages size={20} />
+          </div>
+          <div>
+            <h2 className="font-semibold text-slate-900">{t("settings.language")}</h2>
+            <p className="text-sm text-slate-500">{t("settings.languageHint")}</p>
+          </div>
+        </div>
+
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          {LANGS.map((l) => {
+            const active = lang === l.code;
+            return (
+              <button
+                key={l.code}
+                onClick={() => setLang(l.code)}
+                className={`flex items-center justify-between rounded-xl border px-4 py-3 text-left transition ${
+                  active
+                    ? "border-brand-500 bg-brand-50/60"
+                    : "border-slate-200 bg-white hover:border-brand-300"
+                }`}
+              >
+                <span>
+                  <span className="block text-sm font-semibold text-slate-800">
+                    {l.native}
+                  </span>
+                  <span className="block text-xs text-slate-400">
+                    {t(l.labelKey)}
+                  </span>
+                </span>
+                {active && (
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-600 text-white">
+                    <Check size={14} />
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
       </div>
 
       {/* Plan tier (internal flag until billing is connected) */}
@@ -228,56 +274,37 @@ export default function Settings() {
           </div>
         )}
 
-        <div className="mt-4 grid gap-3">
+        <div className="mt-5 grid items-stretch gap-4 lg:grid-cols-3">
           {PLANS.map((p) => {
             const active = currentPlan === p.id;
             return (
               <div
                 key={p.id}
-                className={`rounded-xl border p-4 transition ${
+                className={`flex flex-col rounded-xl border p-5 transition ${
                   active
-                    ? "border-brand-500 bg-brand-50/50"
+                    ? "border-brand-500 bg-brand-50/50 ring-1 ring-brand-500"
                     : "border-slate-200"
                 }`}
               >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <p className="font-semibold text-slate-900">{p.name}</p>
-                      {p.highlight && (
-                        <span className="rounded-full bg-brand-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-brand-700">
-                          {t("plan.popular")}
-                        </span>
-                      )}
-                    </div>
-                    <p className="mt-0.5 text-sm text-slate-500">
-                      <span className="text-lg font-bold text-slate-900">
-                        ${p.price}
-                      </span>
-                      {t("plan.perMonth")}
-                    </p>
-                  </div>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="font-semibold text-slate-900">{p.name}</p>
                   {active ? (
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-3 py-1 text-xs font-semibold text-white">
-                      <Check size={14} /> {t("plan.current")}
+                    <span className="inline-flex items-center gap-1 rounded-full bg-brand-600 px-2.5 py-0.5 text-[11px] font-semibold text-white">
+                      <Check size={12} /> {t("plan.current")}
                     </span>
-                  ) : (
-                    <button
-                      type="button"
-                      disabled={planBusy}
-                      onClick={() => subscribe(p.id)}
-                      className="btn-primary shrink-0 text-sm disabled:opacity-60"
-                    >
-                      {planBusy ? (
-                        <Loader2 size={15} className="animate-spin" />
-                      ) : (
-                        <CreditCard size={15} />
-                      )}
-                      {t("plan.subscribe")}
-                    </button>
-                  )}
+                  ) : p.highlight ? (
+                    <span className="rounded-full bg-brand-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-brand-700">
+                      {t("plan.popular")}
+                    </span>
+                  ) : null}
                 </div>
-                <ul className="mt-3 grid gap-1.5 text-sm text-slate-600">
+                <p className="mt-1.5 text-sm text-slate-500">
+                  <span className="text-2xl font-bold text-slate-900">
+                    ${p.price}
+                  </span>
+                  {t("plan.perMonth")}
+                </p>
+                <ul className="mt-4 grid flex-1 content-start gap-1.5 text-sm text-slate-600">
                   {planFeatures(p.id, lang).map((f) => (
                     <li key={f} className="flex items-start gap-2">
                       <Check
@@ -288,6 +315,21 @@ export default function Settings() {
                     </li>
                   ))}
                 </ul>
+                {!active && (
+                  <button
+                    type="button"
+                    disabled={planBusy}
+                    onClick={() => subscribe(p.id)}
+                    className="btn-primary mt-4 w-full justify-center text-sm disabled:opacity-60"
+                  >
+                    {planBusy ? (
+                      <Loader2 size={15} className="animate-spin" />
+                    ) : (
+                      <CreditCard size={15} />
+                    )}
+                    {t("plan.subscribe")}
+                  </button>
+                )}
               </div>
             );
           })}
@@ -349,50 +391,6 @@ export default function Settings() {
       {/* Commission calculator — temporarily hidden (code kept). */}
       {SHOW_COMMISSION && <CommissionCalculator />}
 
-      {/* Language */}
-      <div className="card p-6">
-        <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
-            <Languages size={20} />
-          </div>
-          <div>
-            <h2 className="font-semibold text-slate-900">{t("settings.language")}</h2>
-            <p className="text-sm text-slate-500">{t("settings.languageHint")}</p>
-          </div>
-        </div>
-
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          {LANGS.map((l) => {
-            const active = lang === l.code;
-            return (
-              <button
-                key={l.code}
-                onClick={() => setLang(l.code)}
-                className={`flex items-center justify-between rounded-xl border px-4 py-3 text-left transition ${
-                  active
-                    ? "border-brand-500 bg-brand-50/60"
-                    : "border-slate-200 bg-white hover:border-brand-300"
-                }`}
-              >
-                <span>
-                  <span className="block text-sm font-semibold text-slate-800">
-                    {l.native}
-                  </span>
-                  <span className="block text-xs text-slate-400">
-                    {t(l.labelKey)}
-                  </span>
-                </span>
-                {active && (
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-600 text-white">
-                    <Check size={14} />
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
       {/* Account: pause public bookings or delete permanently */}
       <div className="card border-rose-200 p-6">
         <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
@@ -405,50 +403,51 @@ export default function Settings() {
           </div>
         </div>
 
-        <div className="mt-4 flex flex-col gap-3 rounded-xl border border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-sm font-semibold text-slate-800">
-              {suspended ? t("account.pausedTitle") : t("account.activeTitle")}
-            </p>
-            <p className="text-xs text-slate-500">
-              {suspended ? t("account.pausedHint") : t("account.activeHint")}
-            </p>
+        <div className="mt-4 grid gap-3 lg:grid-cols-2">
+          <div className="flex flex-col justify-between gap-3 rounded-xl border border-slate-200 p-4 sm:flex-row sm:items-center">
+            <div>
+              <p className="text-sm font-semibold text-slate-800">
+                {suspended ? t("account.pausedTitle") : t("account.activeTitle")}
+              </p>
+              <p className="text-xs text-slate-500">
+                {suspended ? t("account.pausedHint") : t("account.activeHint")}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={togglePause}
+              disabled={pauseBusy}
+              className="btn-outline shrink-0 disabled:opacity-60"
+            >
+              {pauseBusy ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : suspended ? (
+                <PlayCircle size={16} />
+              ) : (
+                <PauseCircle size={16} />
+              )}
+              {suspended ? t("account.reactivate") : t("account.pause")}
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={togglePause}
-            disabled={pauseBusy}
-            className="btn-outline shrink-0 disabled:opacity-60"
-          >
-            {pauseBusy ? (
-              <Loader2 size={16} className="animate-spin" />
-            ) : suspended ? (
-              <PlayCircle size={16} />
-            ) : (
-              <PauseCircle size={16} />
-            )}
-            {suspended ? t("account.reactivate") : t("account.pause")}
-          </button>
-        </div>
 
-        <div className="mt-3 flex flex-col gap-3 rounded-xl border border-rose-200 bg-rose-50/40 p-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-sm font-semibold text-rose-700">{t("account.deleteTitle")}</p>
-            <p className="text-xs text-rose-600/80">{t("account.deleteHint")}</p>
+          <div className="flex flex-col justify-between gap-3 rounded-xl border border-rose-200 bg-rose-50/40 p-4 sm:flex-row sm:items-center">
+            <div>
+              <p className="text-sm font-semibold text-rose-700">{t("account.deleteTitle")}</p>
+              <p className="text-xs text-rose-600/80">{t("account.deleteHint")}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setConfirmText("");
+                setDeleteError("");
+                setDeleteOpen(true);
+              }}
+              className="btn-danger shrink-0"
+            >
+              <Trash2 size={16} /> {t("account.delete")}
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={() => {
-              setConfirmText("");
-              setDeleteError("");
-              setDeleteOpen(true);
-            }}
-            className="btn-danger shrink-0"
-          >
-            <Trash2 size={16} /> {t("account.delete")}
-          </button>
         </div>
-      </div>
       </div>
 
       <Modal

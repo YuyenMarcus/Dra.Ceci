@@ -28,26 +28,32 @@ import { funGreeting } from "../lib/funGreeting.js";
 
 function StatCard({ icon: Icon, label, value, tone, to }) {
   const tones = {
-    brand: "bg-brand-50 text-brand-700",
-    amber: "bg-amber-50 text-amber-700",
-    sky: "bg-sky-50 text-sky-700",
-    rose: "bg-rose-50 text-rose-700",
+    brand: "bg-brand-50 text-brand-600 ring-brand-100",
+    amber: "bg-amber-50 text-amber-600 ring-amber-100",
+    sky: "bg-sky-50 text-sky-600 ring-sky-100",
+    rose: "bg-rose-50 text-rose-600 ring-rose-100",
   };
   return (
     <Link
       to={to}
-      className="card group flex items-center gap-4 p-5 transition hover:-translate-y-0.5 hover:shadow-md"
+      className="card group flex items-center gap-4 p-5 transition duration-200 hover:-translate-y-0.5 hover:border-slate-300/80 hover:shadow-[0_2px_4px_rgba(15,23,42,0.05),0_14px_32px_-12px_rgba(15,23,42,0.12)]"
     >
-      <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${tones[tone]}`}>
-        <Icon size={22} />
+      <div
+        className={`flex h-11 w-11 items-center justify-center rounded-xl ring-1 ring-inset ${tones[tone]}`}
+      >
+        <Icon size={20} />
       </div>
       <div className="min-w-0">
-        <p className="text-sm text-slate-500">{label}</p>
-        <p className="text-2xl font-bold text-slate-900">{value}</p>
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+          {label}
+        </p>
+        <p className="mt-0.5 text-2xl font-bold leading-none tracking-tight text-slate-900">
+          {value}
+        </p>
       </div>
       <ArrowRight
-        size={18}
-        className="ml-auto text-slate-300 transition group-hover:translate-x-1 group-hover:text-slate-500"
+        size={17}
+        className="ml-auto text-slate-300 transition group-hover:translate-x-1 group-hover:text-brand-500"
       />
     </Link>
   );
@@ -133,17 +139,26 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       {/* Greeting hero */}
-      <section className="card animate-fade-up overflow-hidden bg-gradient-to-br from-brand-600 to-brand-800 p-6 text-white sm:p-8">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+      <section className="animate-fade-up relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand-700 via-brand-800 to-brand-950 p-6 text-white shadow-[0_8px_30px_-12px_rgba(13,148,136,0.45)] sm:p-8">
+        {/* Subtle decorative texture */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#ffffff0a_1px,transparent_1px),linear-gradient(to_bottom,#ffffff0a_1px,transparent_1px)] bg-[size:44px_44px]"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-24 -top-32 h-80 w-80 rounded-full bg-brand-400/20 blur-3xl"
+        />
+        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <p className="text-sm font-medium capitalize text-brand-100">
+            <p className="text-[13px] font-medium capitalize text-brand-200">
               {formatLongDate()}
             </p>
-            <h1 className="mt-1 text-2xl font-bold leading-tight sm:text-3xl">
+            <h1 className="mt-1.5 text-2xl font-bold leading-tight tracking-tight sm:text-3xl">
               {funLine}
             </h1>
-            <p className="mt-2 flex items-center gap-2 text-brand-100">
-              <CalendarDays size={16} /> {summary}
+            <p className="mt-2.5 flex items-center gap-2 text-sm text-brand-100/90">
+              <CalendarDays size={15} /> {summary}
             </p>
           </div>
           <div className="flex flex-wrap gap-2.5">
@@ -153,8 +168,8 @@ export default function Dashboard() {
                 to={a.to}
                 className={`btn px-4 py-2.5 ${
                   a.solid
-                    ? "bg-white text-brand-700 hover:bg-brand-50"
-                    : "bg-white/15 text-white hover:bg-white/25"
+                    ? "bg-white text-brand-800 shadow-sm hover:bg-brand-50"
+                    : "bg-white/10 text-white ring-1 ring-inset ring-white/25 hover:bg-white/20"
                 }`}
               >
                 <a.icon size={16} /> {a.label}

@@ -4,6 +4,7 @@ import { LiquidButton } from "../components/ui/liquid-glass-button.jsx";
 import AppPreview from "../components/ui/app-preview.jsx";
 import HeroScroll from "../components/ui/hero-scroll-animation.jsx";
 import { Footer2 } from "../components/ui/footer2.jsx";
+import Reveal from "../components/ui/reveal.jsx";
 import {
   ArrowRight,
   Boxes,
@@ -15,13 +16,18 @@ import {
   Share2,
   Globe2,
   Stethoscope,
+  Check,
+  ChevronDown,
+  UserPlus,
+  Link2,
 } from "lucide-react";
 import { useLang } from "../i18n/LanguageContext.jsx";
 import { useAuth } from "../auth/AuthContext.jsx";
 import LanguageToggle from "../components/LanguageToggle.jsx";
+import { PLANS, planFeatures } from "../lib/plans.js";
 
 export default function AppLanding() {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const { isDoctor, isClient, canAccessPatientPortal, clinic } = useAuth();
   const profileTo = isDoctor && clinic?.slug ? `/c/${clinic.slug}` : "/signup";
   // Secondary CTA: doctors view their own public profile, everyone else is
@@ -72,6 +78,7 @@ export default function AppLanding() {
       title: t("footer.product"),
       links: [
         { text: t("footer.features"), url: "#features" },
+        { text: t("app.navPricing"), url: "#pricing" },
         { text: t("footer.booking"), url: "/find" },
         { text: t("footer.portal"), url: portalTo },
         { text: t("footer.signin"), url: primaryTo },
@@ -81,13 +88,13 @@ export default function AppLanding() {
       title: t("footer.company"),
       links: [
         { text: t("footer.about"), url: "/coming-soon" },
-        { text: t("footer.contact"), url: "mailto:hola@clinika.health" },
+        { text: t("footer.contact"), url: "mailto:team@clinika.health" },
       ],
     },
     {
       title: t("footer.resources"),
       links: [
-        { text: t("footer.help"), url: "mailto:hola@clinika.health" },
+        { text: t("footer.help"), url: "mailto:team@clinika.health" },
         { text: t("footer.privacy"), url: "/coming-soon" },
       ],
     },
@@ -117,6 +124,9 @@ export default function AppLanding() {
           </Link>
           <div className="flex items-center gap-2">
             <LanguageToggle className="mr-1" />
+            <a href="#pricing" className="btn-ghost hidden md:inline-flex">
+              {t("app.navPricing")}
+            </a>
             <Link
               to={canAccessPatientPortal ? "/me" : "/me/login"}
               className="btn-ghost hidden sm:inline-flex"
@@ -135,7 +145,7 @@ export default function AppLanding() {
 
       {/* Hero */}
       <section className="relative overflow-hidden">
-        <div className="pointer-events-none absolute -top-24 left-1/2 h-72 w-[42rem] -translate-x-1/2 rounded-full bg-brand-200/40 blur-3xl" />
+        <div className="pointer-events-none absolute -top-24 left-1/2 h-72 w-[42rem] -translate-x-1/2 transform-gpu rounded-full bg-brand-200/40 blur-3xl" />
         {/* Diagonal teal light beams (adapted from the hero-section-9 backdrop) */}
         <div
           aria-hidden
@@ -171,6 +181,12 @@ export default function AppLanding() {
                 {secondaryLabel}
               </LiquidButton>
             </div>
+            <p
+              className="animate-fade-up mt-5 flex items-center justify-center gap-1.5 text-sm text-slate-400 lg:justify-start"
+              style={{ animationDelay: ".34s" }}
+            >
+              <Check size={15} className="text-brand-500" /> {t("app.heroNote")}
+            </p>
           </div>
 
           {/* Right: angled product preview, off to the side for depth/style
@@ -179,7 +195,7 @@ export default function AppLanding() {
             className="animate-fade-up [perspective:2200px]"
             style={{ animationDelay: ".34s" }}
           >
-            <div className="origin-center transition-transform duration-500 lg:[transform:rotateY(-22deg)_rotateX(6deg)_rotate(-1deg)] lg:scale-110">
+            <div className="origin-center transform-gpu lg:[transform:rotateY(-22deg)_rotateX(6deg)_rotate(-1deg)] lg:scale-110">
               <AppPreview />
             </div>
           </div>
@@ -197,9 +213,44 @@ export default function AppLanding() {
         />
       </div>
 
+      {/* How it works */}
+      <section className="mx-auto max-w-6xl px-5 py-16">
+        <Reveal className="text-center">
+          <h2 className="text-3xl font-bold tracking-tight text-slate-900">
+            {t("how.title")}
+          </h2>
+          <p className="mx-auto mt-3 max-w-md text-slate-500">{t("how.sub")}</p>
+        </Reveal>
+        <div className="relative mt-12 grid gap-8 sm:grid-cols-3">
+          {/* Connector line (desktop) */}
+          <div
+            aria-hidden
+            className="absolute left-[16%] right-[16%] top-7 hidden border-t-2 border-dashed border-brand-200 sm:block"
+          />
+          {[
+            { icon: UserPlus, title: t("how.1.title"), desc: t("how.1.desc") },
+            { icon: Link2, title: t("how.2.title"), desc: t("how.2.desc") },
+            { icon: CalendarCheck2, title: t("how.3.title"), desc: t("how.3.desc") },
+          ].map(({ icon: Icon, title, desc }, i) => (
+            <Reveal key={title} delay={i * 120} className="relative text-center">
+              <div className="relative z-10 mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-brand-600 shadow-[0_1px_2px_rgba(15,23,42,0.06),0_8px_20px_-8px_rgba(13,148,136,0.25)] ring-1 ring-brand-100">
+                <Icon size={24} />
+              </div>
+              <span className="mt-4 inline-block rounded-full bg-brand-50 px-2.5 py-0.5 text-[11px] font-bold text-brand-700">
+                {i + 1}
+              </span>
+              <h3 className="mt-2 font-semibold text-slate-900">{title}</h3>
+              <p className="mx-auto mt-1.5 max-w-xs text-sm leading-relaxed text-slate-500">
+                {desc}
+              </p>
+            </Reveal>
+          ))}
+        </div>
+      </section>
+
       {/* Shareable profile highlight */}
       <section className="mx-auto max-w-6xl px-5 py-16">
-        <div className="card grid items-center gap-8 overflow-hidden p-8 sm:p-10 lg:grid-cols-2">
+        <Reveal className="card grid items-center gap-8 overflow-hidden p-8 sm:p-10 lg:grid-cols-2">
           <div>
             <span className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-3.5 py-1.5 text-xs font-semibold text-brand-700">
               <Share2 size={14} /> {t("app.feat.bookingTitle")}
@@ -232,7 +283,167 @@ export default function AppLanding() {
               </div>
             </div>
           </div>
+        </Reveal>
+      </section>
+
+      {/* Pricing */}
+      <section id="pricing" className="border-y border-slate-200/70 bg-white py-16">
+        <div className="mx-auto max-w-6xl px-5">
+          <Reveal className="text-center">
+            <h2 className="text-3xl font-bold tracking-tight text-slate-900">
+              {t("pricing.title")}
+            </h2>
+            <p className="mx-auto mt-3 max-w-md text-slate-500">{t("pricing.sub")}</p>
+          </Reveal>
+          <div className="mt-12 grid items-stretch gap-6 lg:grid-cols-3">
+            {PLANS.map((p, i) => {
+              const feats = planFeatures(p.id, lang);
+              const shown = feats.slice(0, 6);
+              const extra = feats.length - shown.length;
+              return (
+                <Reveal
+                  key={p.id}
+                  delay={i * 120}
+                  className={`relative flex flex-col rounded-2xl p-7 ${
+                    p.highlight
+                      ? "bg-gradient-to-b from-brand-700 to-brand-900 text-white shadow-[0_20px_50px_-20px_rgba(13,148,136,0.5)] lg:-my-3 lg:py-10"
+                      : "border border-slate-200 bg-white shadow-sm"
+                  }`}
+                >
+                  {p.highlight && (
+                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-brand-400 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-brand-950">
+                      {t("plan.popular")}
+                    </span>
+                  )}
+                  <h3
+                    className={`font-semibold ${
+                      p.highlight ? "text-white" : "text-slate-900"
+                    }`}
+                  >
+                    {p.name}
+                  </h3>
+                  <p className="mt-2.5">
+                    <span
+                      className={`text-4xl font-extrabold tracking-tight ${
+                        p.highlight ? "text-white" : "text-slate-900"
+                      }`}
+                    >
+                      ${p.price}
+                    </span>
+                    <span
+                      className={`text-sm ${
+                        p.highlight ? "text-brand-200" : "text-slate-400"
+                      }`}
+                    >
+                      {t("plan.perMonth")}
+                    </span>
+                  </p>
+                  <ul className="mt-6 flex-1 space-y-2.5 text-sm">
+                    {shown.map((f) => (
+                      <li key={f} className="flex items-start gap-2.5">
+                        <Check
+                          size={15}
+                          className={`mt-0.5 shrink-0 ${
+                            p.highlight ? "text-brand-300" : "text-brand-500"
+                          }`}
+                        />
+                        <span className={p.highlight ? "text-brand-50" : "text-slate-600"}>
+                          {f}
+                        </span>
+                      </li>
+                    ))}
+                    {extra > 0 && (
+                      <li
+                        className={`pl-[26px] text-xs font-medium ${
+                          p.highlight ? "text-brand-200" : "text-slate-400"
+                        }`}
+                      >
+                        {t("pricing.moreFeatures", { n: extra })}
+                      </li>
+                    )}
+                  </ul>
+                  <Link
+                    to={isDoctor ? "/app/settings" : "/signup"}
+                    className={`btn mt-7 w-full px-5 py-3 ${
+                      p.highlight
+                        ? "bg-white text-brand-800 hover:bg-brand-50"
+                        : "border border-brand-200 bg-brand-50 text-brand-700 hover:bg-brand-100"
+                    }`}
+                  >
+                    {t("pricing.cta")} <ArrowRight size={16} />
+                  </Link>
+                </Reveal>
+              );
+            })}
+          </div>
         </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="mx-auto max-w-3xl px-5 py-16">
+        <Reveal>
+          <h2 className="text-center text-3xl font-bold tracking-tight text-slate-900">
+            {t("faq.title")}
+          </h2>
+        </Reveal>
+        <div className="mt-10 space-y-3">
+          {[1, 2, 3, 4].map((n, i) => (
+            <Reveal
+              as="details"
+              key={n}
+              delay={i * 90}
+              className="group rounded-2xl border border-slate-200 bg-white px-6 py-1 open:shadow-sm"
+            >
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-4 font-semibold text-slate-900 [&::-webkit-details-marker]:hidden">
+                {t(`faq.q${n}`)}
+                <ChevronDown
+                  size={18}
+                  className="shrink-0 text-slate-400 transition-transform group-open:rotate-180"
+                />
+              </summary>
+              <p className="pb-5 text-sm leading-relaxed text-slate-500">
+                {t(`faq.a${n}`)}
+              </p>
+            </Reveal>
+          ))}
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="mx-auto max-w-6xl px-5 pb-20">
+        <Reveal className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-brand-700 via-brand-800 to-brand-950 px-8 py-14 text-center text-white sm:px-12">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#ffffff0a_1px,transparent_1px),linear-gradient(to_bottom,#ffffff0a_1px,transparent_1px)] bg-[size:44px_44px]"
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -top-24 left-1/2 h-64 w-[36rem] -translate-x-1/2 transform-gpu rounded-full bg-brand-400/25 blur-3xl"
+          />
+          <div className="relative">
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+              {t("cta.title")}
+            </h2>
+            <p className="mx-auto mt-3 max-w-lg text-brand-100/90">{t("cta.sub")}</p>
+            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <Link
+                to={primaryTo}
+                className="btn bg-white px-7 py-3.5 text-base text-brand-800 hover:bg-brand-50"
+              >
+                {t("app.getStarted")} <ArrowRight size={18} />
+              </Link>
+              <a
+                href="#pricing"
+                className="btn bg-white/10 px-7 py-3.5 text-base text-white ring-1 ring-inset ring-white/25 hover:bg-white/20"
+              >
+                {t("app.navPricing")}
+              </a>
+            </div>
+            <p className="mt-5 flex items-center justify-center gap-1.5 text-sm text-brand-200">
+              <Check size={15} /> {t("app.heroNote")}
+            </p>
+          </div>
+        </Reveal>
       </section>
 
       <Footer2

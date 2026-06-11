@@ -294,10 +294,9 @@ export default function ProfileEdit() {
         </Link>
       </div>
 
-      <div className="gap-6 xl:columns-2 [&>*]:mb-6 [&>*]:break-inside-avoid">
-      {/* Identity */}
+      {/* Identity — full width */}
       <Section icon={User} title={t("pedit.identityTitle")} hint={t("pedit.identityHint")}>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           <Field label={t("pedit.displayName")}>
             <input className="input" value={form.name} onChange={(e) => set("name", e.target.value)} placeholder={t("pedit.displayNamePh")} />
           </Field>
@@ -319,22 +318,25 @@ export default function ProfileEdit() {
         </p>
       </Section>
 
-      {/* About */}
+      {/* About + Location side by side on wide screens */}
+      <div className="grid items-start gap-6 xl:grid-cols-2">
       <Section icon={FileText} title={t("pedit.aboutTitle")} hint={t("pedit.aboutHint")}>
         <div className="space-y-4">
-          <Field label={t("pedit.kicker")}>
-            <input className="input" value={form.kicker} onChange={(e) => set("kicker", e.target.value)} placeholder={t("pedit.kickerPh")} />
-            <p className="mt-1 text-xs text-slate-400">{t("pedit.kickerHint")}</p>
-          </Field>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label={t("pedit.kicker")}>
+              <input className="input" value={form.kicker} onChange={(e) => set("kicker", e.target.value)} placeholder={t("pedit.kickerPh")} />
+              <p className="mt-1 text-xs text-slate-400">{t("pedit.kickerHint")}</p>
+            </Field>
+            <Field label={t("pedit.professionLabel")}>
+              <input className="input" value={form.professionLabel} onChange={(e) => set("professionLabel", e.target.value)} placeholder={t("pedit.professionLabelPh")} />
+              <p className="mt-1 text-xs text-slate-400">{t("pedit.professionLabelHint")}</p>
+            </Field>
+          </div>
           <Field label={t("pedit.headline")}>
             <input className="input" value={form.headline} onChange={(e) => set("headline", e.target.value)} placeholder={t("pedit.headlinePh")} />
           </Field>
           <Field label={t("pedit.tagline")}>
             <input className="input" value={form.tagline} onChange={(e) => set("tagline", e.target.value)} placeholder={t("pedit.taglinePh")} />
-          </Field>
-          <Field label={t("pedit.professionLabel")}>
-            <input className="input" value={form.professionLabel} onChange={(e) => set("professionLabel", e.target.value)} placeholder={t("pedit.professionLabelPh")} />
-            <p className="mt-1 text-xs text-slate-400">{t("pedit.professionLabelHint")}</p>
           </Field>
           <Field label={t("pedit.bio")}>
             <textarea className="input min-h-[6rem]" value={form.bio} onChange={(e) => set("bio", e.target.value)} placeholder={t("pedit.bioPh")} />
@@ -434,10 +436,11 @@ export default function ProfileEdit() {
           </div>
         </div>
       </Section>
+      </div>
 
-      {/* Photos */}
+      {/* Photos — full width */}
       <Section icon={ImageIcon} title={t("pedit.photosTitle")} hint={t("pedit.photosHint")}>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           {IMAGE_FIELDS.map((field) => (
             <ImageField
               key={field.key}
@@ -488,7 +491,6 @@ export default function ProfileEdit() {
           )}
         </div>
       </Section>
-      </div>
 
       {/* Sticky save bar */}
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white/90 px-4 py-3 backdrop-blur md:pl-64">

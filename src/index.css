@@ -11,6 +11,7 @@
   --color-brand-700: #0f766e;
   --color-brand-800: #115e59;
   --color-brand-900: #134e4a;
+  --color-brand-950: #042f2e;
 
   /* Patient portal accent — violet, to visually differentiate the
      patient-facing experience from the doctor's teal dashboard. */
@@ -47,7 +48,7 @@
   }
 
   body {
-    @apply bg-slate-100 text-slate-800 font-sans;
+    @apply bg-slate-50 text-slate-800 font-sans;
   }
 
   /* Nicer scrollbars */
@@ -64,7 +65,8 @@
 }
 
 @utility card {
-  @apply bg-white rounded-2xl border border-slate-200 shadow-sm;
+  @apply bg-white rounded-2xl border border-slate-200/80
+    shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-12px_rgba(15,23,42,0.08)];
 }
 
 @utility input {
@@ -240,12 +242,35 @@
   animation-delay: 0.5s;
 }
 
+/* Scroll-reveal (IntersectionObserver driven — see components/ui/reveal.jsx).
+   Only opacity + transform animate, so the work stays on the compositor and
+   never causes layout/paint during scroll. will-change is released after the
+   transition so GPU layers don't pile up. */
+.reveal {
+  opacity: 0;
+  transform: translateY(26px);
+  transition:
+    opacity 0.7s cubic-bezier(0.21, 1.02, 0.73, 1),
+    transform 0.7s cubic-bezier(0.21, 1.02, 0.73, 1);
+  will-change: opacity, transform;
+}
+.reveal-in {
+  opacity: 1;
+  transform: none;
+  will-change: auto;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-in,
   .animate-fade-up,
   .animate-scale-in,
   .stagger > * {
     animation: none !important;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
   }
 }
 
