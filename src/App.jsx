@@ -24,6 +24,10 @@ import FindDoctor from "./pages/FindDoctor.jsx";
 import Admin from "./pages/Admin.jsx";
 import ComingSoon from "./pages/ComingSoon.jsx";
 import NotFound from "./pages/NotFound.jsx";
+import About from "./pages/About.jsx";
+import Privacy from "./pages/Privacy.jsx";
+import Terms from "./pages/Terms.jsx";
+import Help from "./pages/Help.jsx";
 import CookieConsent from "./components/CookieConsent.jsx";
 
 const SPLASH_KEY = "medtrack.splashed";
@@ -110,7 +114,13 @@ export default function App() {
         {/* Public doctor directory */}
         <Route path="/find" element={<FindDoctor />} />
 
-        {/* Placeholder for not-yet-built pages (social, about, legal) */}
+        {/* Company / legal / support content */}
+        <Route path="/about" element={<About />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/help" element={<Help />} />
+
+        {/* Placeholder for not-yet-built pages (social links) */}
         <Route path="/coming-soon" element={<ComingSoon />} />
 
         {/* Public clinic profile + booking (slug-scoped) */}

@@ -19,6 +19,10 @@ Key facts:
 - [Create a clinic](https://www.clinika.health/signup): Doctor sign-up; a clinic is set up in minutes with its own public booking page
 - [Doctor sign-in](https://www.clinika.health/login): Access to the clinic dashboard
 - [Patient portal](https://www.clinika.health/me/login): Patients check appointments, treatment history and records
+- [About](https://www.clinika.health/about): Mission and product principles
+- [Help Center](https://www.clinika.health/help): Setup and usage guides
+- [Privacy Policy](https://www.clinika.health/privacy): Data handling, security and patient-data roles
+- [Terms & Conditions](https://www.clinika.health/terms): Service rules, billing and liability
 
 ## Features
 
@@ -31,9 +35,9 @@ Key facts:
 
 ## Pricing (USD, per month)
 
-- Starter — $25: scheduling for up to 2 doctors, token/queue system, 100 WhatsApp reminders/month, basic patient records, email support, 1GB document storage
-- Profesional — $35: unlimited doctors, full patient ficha, interactive odontogram + treatment plans, budgeting, digital informed consent, prescription PDFs, inventory with treatment-linked deductions, patient timeline, patient portal with WhatsApp OTP, 500 WhatsApp reminders/month, dashboard and reports, commission calculator, 10GB storage, priority support
-- Hacienda-Ready — $55: everything in Profesional plus full DTE electronic invoicing with Hacienda (El Salvador), Sello de Recepción storage, Wompi payment integration, 10-year fiscal document archive, unlimited storage, multi-doctor commission tracking, dedicated onboarding, unlimited WhatsApp reminders
+- Starter — $25 (available now): scheduling for up to 2 doctors, token/queue system, 100 WhatsApp reminders/month, basic patient records, email support, 1GB document storage
+- Profesional — $35 (coming soon, not yet purchasable): unlimited doctors, full patient ficha, interactive odontogram + treatment plans, budgeting, digital informed consent, prescription PDFs, inventory with treatment-linked deductions, patient timeline, patient portal with WhatsApp OTP, 500 WhatsApp reminders/month, dashboard and reports, commission calculator, 10GB storage, priority support
+- Hacienda-Ready — $55 (coming soon, not yet purchasable): everything in Profesional plus full DTE electronic invoicing with Hacienda (El Salvador), Sello de Recepción storage, Wompi payment integration, 10-year fiscal document archive, unlimited storage, multi-doctor commission tracking, dedicated onboarding, unlimited WhatsApp reminders
 
 ## FAQ
 

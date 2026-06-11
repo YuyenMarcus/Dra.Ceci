@@ -107,15 +107,15 @@ export default function AppLanding() {
     {
       title: t("footer.company"),
       links: [
-        { text: t("footer.about"), url: "/coming-soon" },
+        { text: t("footer.about"), url: "/about" },
         { text: t("footer.contact"), url: "mailto:team@clinika.health" },
       ],
     },
     {
       title: t("footer.resources"),
       links: [
-        { text: t("footer.help"), url: "mailto:team@clinika.health" },
-        { text: t("footer.privacy"), url: "/coming-soon" },
+        { text: t("footer.help"), url: "/help" },
+        { text: t("footer.privacy"), url: "/privacy" },
       ],
     },
     {
@@ -217,7 +217,11 @@ export default function AppLanding() {
             style={{ animationDelay: ".34s" }}
           >
             <div className="origin-center transform-gpu lg:[transform:rotateY(-22deg)_rotateX(6deg)_rotate(-1deg)] lg:scale-110">
-              <AppPreview />
+              {/* Float inside the tilt so the drift follows the panel's own
+                  (rotated) axis — reads as hovering in 3D, not sliding. */}
+              <div className="animate-float">
+                <AppPreview />
+              </div>
             </div>
           </div>
         </div>
@@ -243,11 +247,15 @@ export default function AppLanding() {
           <p className="mx-auto mt-3 max-w-md text-slate-500">{t("how.sub")}</p>
         </Reveal>
         <div className="relative mt-12 grid gap-8 sm:grid-cols-3">
-          {/* Connector line (desktop) */}
+          {/* Connector line (desktop) with a pulse traveling step 1 → 3 */}
           <div
             aria-hidden
             className="absolute left-[16%] right-[16%] top-7 hidden border-t-2 border-dashed border-brand-200 sm:block"
-          />
+          >
+            <div className="absolute -top-[2px] left-0 right-0 h-[2px] overflow-hidden">
+              <div className="line-sweep" />
+            </div>
+          </div>
           {[
             { icon: UserPlus, title: t("how.1.title"), desc: t("how.1.desc") },
             { icon: Link2, title: t("how.2.title"), desc: t("how.2.desc") },
@@ -331,11 +339,21 @@ export default function AppLanding() {
                       : "border border-slate-200 bg-white shadow-sm"
                   }`}
                 >
-                  {p.highlight && (
+                  {p.comingSoon ? (
+                    <span
+                      className={`absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wide ${
+                        p.highlight
+                          ? "bg-brand-400 text-brand-950"
+                          : "bg-slate-900 text-white"
+                      }`}
+                    >
+                      {t("plan.comingSoon")}
+                    </span>
+                  ) : p.highlight ? (
                     <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-brand-400 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-brand-950">
                       {t("plan.popular")}
                     </span>
-                  )}
+                  ) : null}
                   <h3
                     className={`font-semibold ${
                       p.highlight ? "text-white" : "text-slate-900"
@@ -383,16 +401,28 @@ export default function AppLanding() {
                       </li>
                     )}
                   </ul>
-                  <Link
-                    to={isDoctor ? "/app/settings" : "/signup"}
-                    className={`btn mt-7 w-full px-5 py-3 ${
-                      p.highlight
-                        ? "bg-white text-brand-800 hover:bg-brand-50"
-                        : "border border-brand-200 bg-brand-50 text-brand-700 hover:bg-brand-100"
-                    }`}
-                  >
-                    {t("pricing.cta")} <ArrowRight size={16} />
-                  </Link>
+                  {p.comingSoon ? (
+                    <span
+                      className={`btn mt-7 w-full cursor-default px-5 py-3 ${
+                        p.highlight
+                          ? "border border-white/25 bg-white/10 text-brand-100"
+                          : "border border-slate-200 bg-slate-50 text-slate-400"
+                      }`}
+                    >
+                      {t("plan.comingSoon")}
+                    </span>
+                  ) : (
+                    <Link
+                      to={isDoctor ? "/app/settings" : "/signup"}
+                      className={`btn mt-7 w-full px-5 py-3 ${
+                        p.highlight
+                          ? "bg-white text-brand-800 hover:bg-brand-50"
+                          : "border border-brand-200 bg-brand-50 text-brand-700 hover:bg-brand-100"
+                      }`}
+                    >
+                      {t("pricing.cta")} <ArrowRight size={16} />
+                    </Link>
+                  )}
                 </Reveal>
               );
             })}
@@ -473,8 +503,8 @@ export default function AppLanding() {
         menuItems={footerMenu}
         copyright={`© ${new Date().getFullYear()} Clinika. ${t("footer.rights")}`}
         bottomLinks={[
-          { text: t("footer.terms"), url: "/coming-soon" },
-          { text: t("footer.privacy"), url: "/coming-soon" },
+          { text: t("footer.terms"), url: "/terms" },
+          { text: t("footer.privacy"), url: "/privacy" },
         ]}
       />
     </div>

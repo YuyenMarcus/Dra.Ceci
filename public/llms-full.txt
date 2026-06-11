@@ -59,6 +59,8 @@ The interface is fully bilingual: Spanish is the default and English can be togg
 
 ## Pricing (USD per month, 14-day free trial on all plans, no credit card to start)
 
+Only the Starter plan is currently purchasable. Profesional and Hacienda-Ready are on the public roadmap and shown as "Coming soon" until their flagship features ship.
+
 ### Starter — $25/month
 - Scheduling for up to 2 doctors
 - Token / queue system
@@ -67,7 +69,7 @@ The interface is fully bilingual: Spanish is the default and English can be togg
 - Email support
 - 1GB document storage
 
-### Profesional — $35/month (most popular)
+### Profesional — $35/month (most popular — COMING SOON, not yet purchasable)
 - Scheduling with unlimited doctors
 - Token / queue system
 - Full patient ficha
@@ -84,7 +86,7 @@ The interface is fully bilingual: Spanish is the default and English can be togg
 - 10GB document storage
 - Priority support
 
-### Hacienda-Ready — $55/month
+### Hacienda-Ready — $55/month (COMING SOON, not yet purchasable)
 - Everything in Profesional
 - Full DTE pipeline (JSON → digital signature → Hacienda API → UUID)
 - Sello de Recepción storage
@@ -116,6 +118,10 @@ Yes. Change plans or cancel from Settings → Manage billing, with no lock-in or
 - Create a clinic (doctor sign-up): https://www.clinika.health/signup
 - Doctor sign-in: https://www.clinika.health/login
 - Patient portal sign-in: https://www.clinika.health/me/login
+- About: https://www.clinika.health/about
+- Help Center: https://www.clinika.health/help
+- Privacy Policy: https://www.clinika.health/privacy
+- Terms & Conditions: https://www.clinika.health/terms
 - Public clinic profiles: https://www.clinika.health/c/{clinic-slug}
 - Online booking for a clinic: https://www.clinika.health/c/{clinic-slug}/book
 - Compact LLM summary: https://www.clinika.health/llms.txt

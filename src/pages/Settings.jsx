@@ -59,6 +59,7 @@ export default function Settings() {
 
   async function subscribe(plan) {
     if (planBusy) return;
+    if (PLANS.find((p) => p.id === plan)?.comingSoon) return;
     setPlanBusy(true);
     setBillingError("");
     const res = await startCheckout(plan);
@@ -292,6 +293,10 @@ export default function Settings() {
                     <span className="inline-flex items-center gap-1 rounded-full bg-brand-600 px-2.5 py-0.5 text-[11px] font-semibold text-white">
                       <Check size={12} /> {t("plan.current")}
                     </span>
+                  ) : p.comingSoon ? (
+                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-500">
+                      {t("plan.comingSoon")}
+                    </span>
                   ) : p.highlight ? (
                     <span className="rounded-full bg-brand-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-brand-700">
                       {t("plan.popular")}
@@ -315,21 +320,30 @@ export default function Settings() {
                     </li>
                   ))}
                 </ul>
-                {!active && (
-                  <button
-                    type="button"
-                    disabled={planBusy}
-                    onClick={() => subscribe(p.id)}
-                    className="btn-primary mt-4 w-full justify-center text-sm disabled:opacity-60"
-                  >
-                    {planBusy ? (
-                      <Loader2 size={15} className="animate-spin" />
-                    ) : (
-                      <CreditCard size={15} />
-                    )}
-                    {t("plan.subscribe")}
-                  </button>
-                )}
+                {!active &&
+                  (p.comingSoon ? (
+                    <button
+                      type="button"
+                      disabled
+                      className="btn mt-4 w-full cursor-default justify-center border border-slate-200 bg-slate-50 text-sm text-slate-400"
+                    >
+                      {t("plan.comingSoon")}
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled={planBusy}
+                      onClick={() => subscribe(p.id)}
+                      className="btn-primary mt-4 w-full justify-center text-sm disabled:opacity-60"
+                    >
+                      {planBusy ? (
+                        <Loader2 size={15} className="animate-spin" />
+                      ) : (
+                        <CreditCard size={15} />
+                      )}
+                      {t("plan.subscribe")}
+                    </button>
+                  ))}
               </div>
             );
           })}

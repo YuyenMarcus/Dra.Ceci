@@ -88,6 +88,10 @@ export const PLANS = [
     name: "Profesional",
     price: 35,
     highlight: true,
+    // Not purchasable yet — the tier's flagship features (odontogram plans,
+    // budgeting, digital consent, WhatsApp OTP portal) are still being built.
+    // Admins can still assign it manually from the console.
+    comingSoon: true,
     capabilities: profesionalCaps,
     features: {
       es: [
@@ -130,6 +134,7 @@ export const PLANS = [
     id: "hacienda",
     name: "Hacienda-Ready",
     price: 55,
+    comingSoon: true,
     capabilities: haciendaCaps,
     features: {
       es: [

@@ -200,6 +200,49 @@
   }
 }
 
+/* Gentle hover/levitation for the hero mockup. transform-only so it stays on
+   the compositor; slow + small so it reads as "floating", not bouncing. */
+@keyframes mt-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+.animate-float {
+  animation: mt-float 6.5s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* "How it works" connector: a teal pulse that travels the dashed line from
+   step 1 to step 3 on a linear loop. The sweep element is 22% of the track
+   wide, so translateX(-120%) starts it fully off the left edge and ~580%
+   carries it fully past the right edge. transform-only = compositor-only. */
+@keyframes mt-line-sweep {
+  from {
+    transform: translateX(-120%);
+  }
+  to {
+    transform: translateX(580%);
+  }
+}
+.line-sweep {
+  height: 100%;
+  width: 22%;
+  border-radius: 9999px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(20, 184, 166, 0.95),
+    transparent
+  );
+  box-shadow: 0 0 12px 2px rgba(20, 184, 166, 0.4);
+  animation: mt-line-sweep 3s linear infinite;
+  will-change: transform;
+}
+
 .animate-fade-in {
   animation: mt-fade-in 0.5s ease both;
 }
@@ -264,8 +307,12 @@
   .animate-fade-in,
   .animate-fade-up,
   .animate-scale-in,
+  .animate-float,
   .stagger > * {
     animation: none !important;
+  }
+  .line-sweep {
+    display: none;
   }
   .reveal {
     opacity: 1;
