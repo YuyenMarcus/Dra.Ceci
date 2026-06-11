@@ -81,7 +81,7 @@ export default function Paywall() {
       <header className="flex items-center justify-between px-5 py-4">
         <div className="flex items-center gap-2.5">
           <BrandMark size={34} />
-          <span className="text-lg font-bold text-slate-900 dark:text-white">Clinika</span>
+          <span className="brand-text text-lg">Clinika</span>
         </div>
         <div className="flex items-center gap-2">
           <LanguageToggle />

@@ -756,6 +756,8 @@ export async function adminOverview() {
     inventoryCount: Number(r.inventory_count || 0),
     lastEventAt: r.last_event_at,
     lastEventType: r.last_event_type,
+    promoUsed: Boolean(r.promo_used),
+    promoCode: r.promo_code || "",
   }));
 }
 

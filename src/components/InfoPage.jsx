@@ -31,7 +31,7 @@ export default function InfoPage({ content, path, seoDescription }) {
         <div className="mx-auto flex max-w-4xl items-center justify-between px-5 py-4">
           <Link to="/" className="flex items-center gap-2.5">
             <BrandMark size={34} />
-            <span className="text-lg font-bold text-slate-900">Clinika</span>
+            <span className="brand-text text-lg">Clinika</span>
           </Link>
           <div className="flex items-center gap-2">
             <LanguageToggle />

@@ -51,6 +51,41 @@ async function patchProfile(
   return data.id as string;
 }
 
+// Inspect a completed Checkout Session for any redeemed discount (referral
+// coupon or a manually-entered promotion code) and return a compact summary
+// stored on the clinic profile so the admin console can flag it.
+async function readPromo(sessionId: string): Promise<{
+  used: boolean;
+  code: string | null;
+  couponId: string | null;
+  amount: number;
+  at: string;
+}> {
+  const at = new Date().toISOString();
+  try {
+    const full = await stripe.checkout.sessions.retrieve(sessionId, {
+      expand: ["total_details.breakdown", "discounts.promotion_code"],
+    });
+    const amount = (full.total_details?.amount_discount || 0) / 100;
+    const d = (full.discounts && full.discounts[0]) || undefined;
+    const couponId = d
+      ? typeof d.coupon === "string"
+        ? d.coupon
+        : d.coupon?.id || null
+      : null;
+    const pc = d?.promotion_code;
+    const promoCode =
+      pc && typeof pc !== "string" ? pc.code : typeof pc === "string" ? pc : null;
+    const couponName =
+      d && typeof d.coupon !== "string" ? d.coupon?.name || null : null;
+    const used = amount > 0 || !!couponId || !!promoCode;
+    return { used, code: promoCode || couponName || couponId, couponId, amount, at };
+  } catch (err) {
+    console.error("readPromo failed:", (err as Error).message);
+    return { used: false, code: null, couponId: null, amount: 0, at };
+  }
+}
+
 // Append a row to the billing_events log (growth / churn metrics).
 async function logBilling(
   clinicId: string | null,
@@ -87,6 +122,26 @@ Deno.serve(async (req) => {
         const metaClinicId = s.client_reference_id || (s.metadata?.clinic_id as string);
         const plan = s.metadata?.plan as string | undefined;
         const cycle = (s.metadata?.cycle as string) || "monthly";
+
+        // Detect whether a referral/promo discount was actually redeemed at
+        // checkout (our auto-applied affiliate coupon OR a promo code the user
+        // typed in). We re-fetch the session with the discount expanded so we
+        // can read the human-readable code and amount.
+        const promo = await readPromo(s.id);
+
+        // If the redeemed coupon belongs to one of our affiliate codes, make
+        // sure the clinic is attributed to that partner (covers cases where the
+        // code wasn't captured at signup).
+        let refPatch: Record<string, unknown> = {};
+        if (promo.couponId) {
+          const { data: aff } = await admin
+            .from("affiliates")
+            .select("code")
+            .eq("stripe_coupon_id", promo.couponId)
+            .maybeSingle();
+          if (aff?.code) refPatch = { referralCode: aff.code, referralSource: "partner" };
+        }
+
         const clinicId = await patchProfile(
           { clinicId: metaClinicId, customerId: s.customer as string },
           {
@@ -94,6 +149,8 @@ Deno.serve(async (req) => {
             planCycle: cycle,
             billing: "stripe",
             suspended: false,
+            promo,
+            ...refPatch,
             stripe: {
               customerId: s.customer as string,
               subscriptionId: s.subscription as string,

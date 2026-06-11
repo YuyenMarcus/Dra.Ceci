@@ -118,6 +118,16 @@
     disabled:pointer-events-none bg-rose-50 text-rose-600 hover:bg-rose-100;
 }
 
+/* Brand wordmark — teal gradient text for "Clinika" next to the logo on light
+   surfaces. Use brand-text-light on dark/teal surfaces (auth brand panels). */
+@utility brand-text {
+  @apply bg-gradient-to-r from-brand-700 via-brand-500 to-brand-400 bg-clip-text font-bold tracking-tight text-transparent;
+}
+
+@utility brand-text-light {
+  @apply bg-gradient-to-r from-white via-brand-100 to-brand-300 bg-clip-text font-bold tracking-tight text-transparent;
+}
+
 @utility btn-outline {
   @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl px-4 py-2.5
     text-sm font-semibold transition active:scale-[.98] disabled:opacity-50
@@ -201,6 +211,36 @@
   }
 }
 
+/* Splash content lifts away slightly as the overlay fades, so the exit reads
+   as "taking off" instead of a flat fade. */
+@keyframes mt-splash-lift {
+  to {
+    opacity: 0;
+    transform: translateY(-14px) scale(1.04);
+  }
+}
+
+/* Diagonal light streak sweeping across the splash logo tile. */
+@keyframes mt-shine {
+  0% {
+    transform: translateX(-180%) skewX(-18deg);
+  }
+  55%,
+  100% {
+    transform: translateX(340%) skewX(-18deg);
+  }
+}
+
+/* Slow horizontal pan for shimmering gradient text (needs bg-size 200%). */
+@keyframes mt-gradient-pan {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
 /* Gentle hover/levitation for the hero mockup. transform-only so it stays on
    the compositor; slow + small so it reads as "floating", not bouncing. */
 @keyframes mt-float {
@@ -244,6 +284,21 @@
   /* No `will-change`/layer promotion here on purpose: a tiny promoted gradient
      layer fails to rasterize on some Chrome + GPU combos (the pulse vanished
      only in Chrome). Animating transform on the main layer paints reliably. */
+}
+
+/* Auth page entrance: brand panel slides in from the left edge. */
+@keyframes mt-slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+.animate-slide-in-left {
+  animation: mt-slide-in-left 0.55s cubic-bezier(0.21, 1.02, 0.73, 1) both;
 }
 
 .animate-fade-in {
@@ -311,6 +366,7 @@
   .animate-fade-up,
   .animate-scale-in,
   .animate-float,
+  .animate-slide-in-left,
   .stagger > * {
     animation: none !important;
   }
@@ -359,6 +415,13 @@
 }
 
 /* --- component utilities ------------------------------------------ */
+/* Brighten the wordmark gradient so it reads on dark surfaces. */
+.dark .brand-text {
+  --tw-gradient-from: var(--color-brand-300);
+  --tw-gradient-via: var(--color-brand-400);
+  --tw-gradient-to: var(--color-brand-500);
+}
+
 .dark .card {
   background-color: #1e293b;
   border-color: rgba(51, 65, 85, 0.8);

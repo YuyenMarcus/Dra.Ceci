@@ -1196,6 +1196,17 @@ export default function Admin() {
                               </option>
                             ))}
                           </select>
+                          {r.promoUsed && (
+                            <div
+                              className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300"
+                              title={t("admin.promoUsedTitle")}
+                            >
+                              <Tag size={11} />
+                              {r.promoCode
+                                ? t("admin.promoUsedCode", { code: r.promoCode })
+                                : t("admin.promoUsed")}
+                            </div>
+                          )}
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex flex-wrap gap-1.5">

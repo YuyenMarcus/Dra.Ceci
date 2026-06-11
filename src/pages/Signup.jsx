@@ -129,20 +129,47 @@ export default function Signup() {
 
   return (
     <div className="flex min-h-screen flex-col bg-slate-100 lg:flex-row">
-      <div className="relative hidden flex-col justify-between bg-gradient-to-br from-brand-600 to-brand-800 p-10 text-white lg:flex lg:w-2/5">
-        <Link to="/" className="flex items-center gap-2.5">
+      <div className="animate-slide-in-left relative hidden flex-col justify-between overflow-hidden bg-gradient-to-br from-brand-600 to-brand-800 p-10 text-white lg:flex lg:w-2/5">
+        {/* Soft drifting glows for a bit of life behind the copy */}
+        <div
+          aria-hidden
+          className="animate-float pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-white/10 blur-3xl"
+        />
+        <div
+          aria-hidden
+          className="animate-float pointer-events-none absolute -bottom-28 -left-20 h-80 w-80 rounded-full bg-brand-400/25 blur-3xl"
+          style={{ animationDuration: "9s", animationDelay: "1.2s" }}
+        />
+        <Link to="/" className="animate-fade-in relative flex items-center gap-2.5">
           <BrandMark size={40} />
-          <span className="text-xl font-bold">Clinika</span>
+          <span className="brand-text-light text-xl">Clinika</span>
         </Link>
-        <div>
-          <h2 className="text-3xl font-bold leading-tight">{t("auth.signupTitle")}</h2>
+        <div className="stagger relative">
+          <h2
+            className="bg-gradient-to-r from-white via-brand-200 to-white bg-clip-text text-3xl font-bold leading-tight text-transparent"
+            style={{
+              backgroundSize: "200% 100%",
+              animation:
+                "mt-fade-up .5s cubic-bezier(.21,1.02,.73,1) .04s both, mt-gradient-pan 5s linear 1.2s infinite",
+            }}
+          >
+            {t("auth.signupTitle")}
+          </h2>
           <p className="mt-3 max-w-sm text-white/80">{t("auth.signupSub")}</p>
         </div>
-        <p className="text-sm text-white/60">{t("app.tagline")}</p>
+        <p
+          className="animate-fade-in relative text-sm text-white/60"
+          style={{ animationDelay: "0.5s" }}
+        >
+          {t("app.tagline")}
+        </p>
       </div>
 
       <div className="flex flex-1 items-center justify-center p-6">
-        <div className="w-full max-w-md">
+        <div
+          className="animate-fade-up w-full max-w-md"
+          style={{ animationDelay: "0.12s" }}
+        >
           <div className="mb-6 flex items-center justify-between">
             <Link
               to="/login"

@@ -136,7 +136,7 @@ export default function AppLanding() {
           <Link to="/" className="flex items-center gap-2.5">
             <BrandMark size={36} />
             <span className="flex flex-col leading-none">
-              <span className="text-lg font-bold text-slate-900">Clinika</span>
+              <span className="brand-text text-lg">Clinika</span>
               <span className="text-[11px] font-medium text-slate-400">
                 {t("app.tagline")}
               </span>

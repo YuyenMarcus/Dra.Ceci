@@ -59,7 +59,7 @@ function SidebarContent({ onNavigate, t, items = nav, userName, userSpecialty })
       <div className="flex items-center gap-3 px-5 pb-5 pt-6">
         <BrandMark size={38} rounded="rounded-xl" />
         <div>
-          <p className="text-[17px] font-bold leading-none tracking-tight text-white">
+          <p className="brand-text-light text-[17px] leading-none">
             Clinika
           </p>
           <p className="mt-1 text-[11px] font-medium uppercase tracking-wider text-brand-300/80">

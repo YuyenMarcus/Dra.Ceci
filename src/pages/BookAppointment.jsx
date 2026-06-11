@@ -32,7 +32,7 @@ function PublicHeader({ slug, onReplayTour }) {
       <div className="mx-auto flex max-w-3xl items-center justify-between px-5 py-3.5">
         <Link to={`/c/${slug}`} className="flex items-center gap-2.5">
           <BrandMark size={36} />
-          <span className="text-lg font-bold text-slate-900">Clinika</span>
+          <span className="brand-text text-lg">Clinika</span>
         </Link>
         <div className="flex items-center gap-2">
           <LanguageToggle />
