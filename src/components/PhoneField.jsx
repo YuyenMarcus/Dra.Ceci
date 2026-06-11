@@ -17,6 +17,22 @@ function regionName(code, lang) {
   }
 }
 
+// Seed the picker + national input from an existing value. When the value is
+// already in international form (starts with +) we recover the country and the
+// national digits so the field shows e.g. "GT +502" with "1234 5678" — instead
+// of dumping the whole +502... string into the national box with the wrong
+// country selected.
+function deriveInitial(value, defaultCountry) {
+  const v = String(value || "").trim();
+  if (v.startsWith("+")) {
+    const pn = parsePhoneNumberFromString(v);
+    if (pn) {
+      return { country: pn.country || defaultCountry, national: pn.nationalNumber || "" };
+    }
+  }
+  return { country: defaultCountry, national: v };
+}
+
 // Phone input that always emits a canonical E.164 value (e.g. +50355551234)
 // plus a validity flag, so matching across visits is reliable regardless of how
 // the patient types their number.
@@ -29,8 +45,9 @@ export default function PhoneField({
   required = false,
   id,
 }) {
-  const [country, setCountry] = useState(defaultCountry);
-  const [national, setNational] = useState(value);
+  const [init] = useState(() => deriveInitial(value, defaultCountry));
+  const [country, setCountry] = useState(init.country);
+  const [national, setNational] = useState(init.national);
 
   const countries = useMemo(() => {
     const list = getCountries().map((c) => ({
@@ -64,7 +81,7 @@ export default function PhoneField({
   return (
     <div className="flex gap-2">
       <select
-        className="input w-36 shrink-0"
+        className="input w-28 shrink-0 sm:w-36"
         value={country}
         onChange={(e) => setCountry(e.target.value)}
         aria-label="country code"

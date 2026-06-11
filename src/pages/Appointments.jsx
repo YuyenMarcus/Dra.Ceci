@@ -178,12 +178,12 @@ export default function Appointments() {
   return (
     <div className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="inline-flex rounded-xl border border-slate-200 bg-white p-1">
+        <div className="flex w-full rounded-xl border border-slate-200 bg-white p-1 sm:inline-flex sm:w-auto">
           {TABS.map((tabItem) => (
             <button
               key={tabItem.id}
               onClick={() => setTab(tabItem.id)}
-              className={`rounded-lg px-4 py-1.5 text-sm font-medium transition ${
+              className={`flex-1 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition sm:flex-none sm:px-4 ${
                 tab === tabItem.id
                   ? "bg-brand-600 text-white shadow-sm"
                   : "text-slate-500 hover:text-slate-800"
@@ -289,9 +289,12 @@ export default function Appointments() {
                         <>
                           <button
                             onClick={() => openFicha(client.id)}
-                            className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-700 hover:bg-brand-100"
+                            className="inline-flex max-w-full items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-700 hover:bg-brand-100"
                           >
-                            <FileText size={12} /> {t("appt.fichaTag")}: {client.name}
+                            <FileText size={12} className="shrink-0" />
+                            <span className="truncate">
+                              {t("appt.fichaTag")}: {client.name}
+                            </span>
                           </button>
                           <button
                             onClick={() => openAssign(a)}
@@ -436,7 +439,7 @@ export default function Appointments() {
                 placeholder={t("appt.notesPlaceholder")}
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label className="label">{t("appt.provider")}</label>
                 <input className="input bg-slate-50" value={currentUser.name} readOnly />

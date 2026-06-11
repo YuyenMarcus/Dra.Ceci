@@ -15,12 +15,15 @@ import {
   AlertTriangle,
   Loader2,
   CreditCard,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { useLang } from "../i18n/LanguageContext.jsx";
 import { useAuth } from "../auth/AuthContext.jsx";
 import { updateClinic } from "../store/db.js";
 import { startCheckout, openBillingPortal } from "../lib/billing.js";
 import CommissionCalculator from "../components/CommissionCalculator.jsx";
+import FeedbackCard from "../components/FeedbackCard.jsx";
 import Modal from "../components/Modal.jsx";
 import { PLANS, planFeatures } from "../lib/plans.js";
 
@@ -33,6 +36,9 @@ const LANGS = [
 const SHOW_RECEPTION = false;
 const SHOW_COMMISSION = false;
 
+// Only ask for an app review once the doctor has had real time on Clinika.
+const FEEDBACK_AFTER_DAYS = 30;
+
 export default function Settings() {
   const { lang, setLang, t } = useLang();
   const { clinic, refreshClinic, enterReception, deleteAccount } = useAuth();
@@ -43,6 +49,11 @@ export default function Settings() {
   const [billingError, setBillingError] = useState("");
   const currentPlan = clinic?.profile?.plan || "starter";
   const hasBillingCustomer = Boolean(clinic?.profile?.stripe?.customerId);
+
+  // Days since the clinic was created (gates the feedback/review card).
+  const accountAgeDays = clinic?.createdAt
+    ? (Date.now() - new Date(clinic.createdAt).getTime()) / 86400000
+    : 0;
 
   // Show a banner after returning from Stripe Checkout, and refresh the clinic
   // so the webhook-applied plan shows up (it may land a moment after redirect).
@@ -77,6 +88,24 @@ export default function Settings() {
   }
 
   const suspended = Boolean(clinic?.profile?.suspended);
+  const unlisted = Boolean(clinic?.profile?.unlisted);
+  const [listedBusy, setListedBusy] = useState(false);
+
+  async function toggleListed() {
+    if (!clinic || listedBusy) return;
+    setListedBusy(true);
+    try {
+      await updateClinic(clinic.id, {
+        profile: { ...(clinic.profile || {}), unlisted: !unlisted },
+      });
+      await refreshClinic();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setListedBusy(false);
+    }
+  }
+
   const [pauseBusy, setPauseBusy] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [confirmText, setConfirmText] = useState("");
@@ -189,6 +218,43 @@ export default function Settings() {
             <ExternalLink size={16} /> {t("settings.viewProfile")}
           </Link>
         </div>
+
+        {/* Directory visibility — hide from "Find a doctor" without pausing
+            bookings. The profile stays reachable by its direct link. */}
+        <div className="mt-4 flex flex-col justify-between gap-3 rounded-xl border border-slate-200 p-4 sm:flex-row sm:items-center">
+          <div className="flex items-start gap-3">
+            <div
+              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
+                unlisted ? "bg-slate-100 text-slate-500" : "bg-brand-50 text-brand-600"
+              }`}
+            >
+              {unlisted ? <EyeOff size={17} /> : <Eye size={17} />}
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-slate-800">
+                {t("settings.directoryTitle")}
+              </p>
+              <p className="text-xs text-slate-500">
+                {unlisted ? t("settings.directoryHiddenHint") : t("settings.directoryListedHint")}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={toggleListed}
+            disabled={listedBusy}
+            className="btn-outline shrink-0 disabled:opacity-60"
+          >
+            {listedBusy ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : unlisted ? (
+              <Eye size={16} />
+            ) : (
+              <EyeOff size={16} />
+            )}
+            {unlisted ? t("settings.directoryShow") : t("settings.directoryHide")}
+          </button>
+        </div>
       </div>
 
       {/* Language */}
@@ -238,11 +304,11 @@ export default function Settings() {
 
       {/* Plan tier (internal flag until billing is connected) */}
       <div className="card p-6">
-        <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+        <div className="flex flex-wrap items-center gap-3 border-b border-slate-100 pb-4">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
             <Layers size={20} />
           </div>
-          <div className="flex-1">
+          <div className="min-w-0 flex-1">
             <h2 className="font-semibold text-slate-900">{t("plan.title")}</h2>
             <p className="text-sm text-slate-500">{t("plan.hint")}</p>
           </div>
@@ -404,6 +470,10 @@ export default function Settings() {
 
       {/* Commission calculator — temporarily hidden (code kept). */}
       {SHOW_COMMISSION && <CommissionCalculator />}
+
+      {/* In-app feedback: only ask after the doctor has used Clinika for a
+          while (30 days since signup) so reviews reflect real experience. */}
+      {accountAgeDays >= FEEDBACK_AFTER_DAYS && <FeedbackCard />}
 
       {/* Account: pause public bookings or delete permanently */}
       <div className="card border-rose-200 p-6">

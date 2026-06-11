@@ -139,14 +139,17 @@ export default function PatientHome() {
                 className="btn-ghost text-brand-700 hover:bg-brand-50"
                 title={t("patient.switchToDoctor")}
               >
-                <LayoutDashboard size={16} /> {t("patient.doctorDashboard")}
+                <LayoutDashboard size={16} />
+                <span className="hidden sm:inline">{t("patient.doctorDashboard")}</span>
               </Link>
             )}
-            <Link to="/" className="btn-ghost">
-              <Home size={16} /> {t("patient.backHome")}
+            <Link to="/" className="btn-ghost" title={t("patient.backHome")}>
+              <Home size={16} />
+              <span className="hidden sm:inline">{t("patient.backHome")}</span>
             </Link>
             <button onClick={logout} className="btn-outline" title={t("layout.signOut")}>
-              <LogOut size={16} /> {t("layout.signOut")}
+              <LogOut size={16} />
+              <span className="hidden sm:inline">{t("layout.signOut")}</span>
             </button>
           </div>
         </div>
@@ -154,17 +157,26 @@ export default function PatientHome() {
 
       <main className="mx-auto max-w-5xl px-5 py-8">
         {/* Greeting hero */}
-        <section className="card animate-fade-up overflow-hidden bg-gradient-to-br from-brand-600 via-brand-700 to-portal-700 p-6 text-white sm:p-8">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+        <section className="animate-fade-up relative overflow-hidden rounded-2xl bg-gradient-to-br from-portal-600 via-portal-700 to-portal-900 p-6 text-white shadow-[0_8px_30px_-12px_rgba(124,58,237,0.45)] sm:p-8">
+          {/* Subtle decorative texture */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#ffffff0a_1px,transparent_1px),linear-gradient(to_bottom,#ffffff0a_1px,transparent_1px)] bg-[size:44px_44px]"
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -right-24 -top-32 h-80 w-80 rounded-full bg-portal-400/20 blur-3xl"
+          />
+          <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <p className="text-sm font-medium capitalize text-brand-100">
+              <p className="text-[13px] font-medium capitalize text-portal-200">
                 {formatLongDate()}
               </p>
-              <h1 className="mt-1 text-2xl font-bold leading-tight sm:text-3xl">
+              <h1 className="mt-1.5 text-2xl font-bold leading-tight tracking-tight sm:text-3xl">
                 {funLine}
               </h1>
-              <p className="mt-2 flex items-center gap-2 text-brand-100">
-                <CalendarClock size={16} />
+              <p className="mt-2.5 flex items-center gap-2 text-sm text-portal-100/90">
+                <CalendarClock size={15} />
                 {nextAppt
                   ? t("patient.nextSummary", {
                       when: `${relativeDay(nextAppt.start)}, ${formatTime(nextAppt.start)}`,
@@ -176,13 +188,13 @@ export default function PatientHome() {
               <div className="flex flex-wrap gap-2.5">
                 <Link
                   to={`/c/${primaryDoctor.slug}/book`}
-                  className="btn bg-white px-4 py-2.5 text-brand-700 hover:bg-brand-50"
+                  className="btn bg-white px-4 py-2.5 text-portal-700 shadow-sm hover:bg-portal-50"
                 >
                   <CalendarPlus size={16} /> {t("patient.bookNew")}
                 </Link>
                 <Link
                   to={`/c/${primaryDoctor.slug}/manage`}
-                  className="btn bg-white/15 px-4 py-2.5 text-white hover:bg-white/25"
+                  className="btn bg-white/10 px-4 py-2.5 text-white ring-1 ring-inset ring-white/25 hover:bg-white/20"
                 >
                   {t("landing.manageBooking")}
                 </Link>
@@ -195,7 +207,7 @@ export default function PatientHome() {
           {/* Your details */}
           <div className="card animate-fade-up p-7" style={{ animationDelay: ".05s" }}>
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-portal-600 text-lg font-bold text-white">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-portal-500 to-portal-700 text-lg font-bold text-white">
                 {firstName.charAt(0) || "?"}
               </div>
               <div>
@@ -223,14 +235,22 @@ export default function PatientHome() {
 
           {/* My doctors */}
           <div className="card animate-fade-up p-7 lg:col-span-2" style={{ animationDelay: ".1s" }}>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-2">
               <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
                 <Users size={14} /> {t("patient.myDoctors")}
+                {doctors.length > 0 && (
+                  <span className="rounded-full bg-portal-50 px-2.5 py-0.5 text-xs font-semibold text-portal-700">
+                    {doctors.length}
+                  </span>
+                )}
               </p>
               {doctors.length > 0 && (
-                <span className="rounded-full bg-portal-50 px-2.5 py-0.5 text-xs font-semibold text-portal-700">
-                  {doctors.length}
-                </span>
+                <Link
+                  to="/find"
+                  className="inline-flex shrink-0 items-center gap-1 text-sm font-medium text-portal-600 hover:text-portal-700 dark:text-portal-300 dark:hover:text-portal-200"
+                >
+                  {t("patient.findMore")} <ArrowRight size={14} />
+                </Link>
               )}
             </div>
 

@@ -15,6 +15,7 @@ import {
   amIAdmin,
 } from "../store/db.js";
 import { DEFAULT_PLAN_ID, hasCapability } from "../lib/plans.js";
+import { trialAccess } from "../lib/access.js";
 
 const AuthContext = createContext(null);
 
@@ -174,6 +175,11 @@ export function AuthProvider({ children }) {
   const plan = clinic?.profile?.plan || DEFAULT_PLAN_ID;
   const can = useCallback((capability) => hasCapability(plan, capability), [plan]);
 
+  // Trial / subscription access state (drives the paywall + trial banner).
+  // Recomputed whenever the clinic profile changes (e.g. after refreshClinic
+  // following a successful checkout).
+  const access = useMemo(() => trialAccess(clinic?.profile), [clinic]);
+
   // Lock the app into reception mode. Requires a PIN to have been set so the
   // doctor can later unlock it. Returns false if no PIN is configured.
   const enterReception = useCallback(() => {
@@ -272,14 +278,20 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
-  const signUp = useCallback(async ({ email, password, name, slug }) => {
+  const signUp = useCallback(async ({ email, password, name, slug, referralCode }) => {
     if (!isSupabaseEnabled) return { ok: false, error: "err.noBackend" };
     const finalSlug = slugify(slug || name) || `clinic-${Date.now().toString(36)}`;
+    const ref = (referralCode || "").replace(/\s/g, "").toUpperCase();
     const { data, error } = await supabase.auth.signUp({
       email: email.trim(),
       password,
       options: {
-        data: { role: "doctor", name: name?.trim() || "", slug: finalSlug },
+        data: {
+          role: "doctor",
+          name: name?.trim() || "",
+          slug: finalSlug,
+          ...(ref ? { referralCode: ref } : {}),
+        },
         emailRedirectTo: appUrl("/login"),
       },
     });
@@ -421,6 +433,7 @@ export function AuthProvider({ children }) {
       exitReception,
       plan,
       can,
+      access,
       isAdmin,
       backendEnabled: isSupabaseEnabled,
       login,
@@ -452,6 +465,7 @@ export function AuthProvider({ children }) {
       exitReception,
       plan,
       can,
+      access,
       isAdmin,
       login,
       signUp,

@@ -19,6 +19,8 @@ import { useAuth } from "../auth/AuthContext.jsx";
 import { useLang } from "../i18n/LanguageContext.jsx";
 import { updateClinic, uploadProfileImage } from "../store/db.js";
 import ClinicMap from "../components/ClinicMap.jsx";
+import PhoneField from "../components/PhoneField.jsx";
+import { ServiceIconPicker, DEFAULT_SERVICE_ICON } from "../components/serviceIcons.jsx";
 
 const IMAGE_FIELDS = [
   { key: "hero", labelKey: "pedit.imgHero" },
@@ -136,7 +138,7 @@ function ImageField({ field, value, ownerId, onChange, t }) {
 
 export default function ProfileEdit() {
   const { clinic, refreshClinic } = useAuth();
-  const { t } = useLang();
+  const { t, lang } = useLang();
 
   const p = clinic?.profile || {};
   const [form, setForm] = useState({
@@ -225,7 +227,7 @@ export default function ProfileEdit() {
     setForm((f) =>
       f.services.length >= MAX_SERVICES
         ? f
-        : { ...f, services: [...f.services, { name: "", desc: "" }] }
+        : { ...f, services: [...f.services, { name: "", desc: "", icon: DEFAULT_SERVICE_ICON }] }
     );
   const removeService = (i) =>
     setForm((f) => ({ ...f, services: f.services.filter((_, idx) => idx !== i) }));
@@ -250,7 +252,11 @@ export default function ProfileEdit() {
       hours: form.hours.trim(),
       highlights: form.highlights.map((h) => h.trim()).filter(Boolean),
       services: form.services
-        .map((s) => ({ name: (s.name || "").trim(), desc: (s.desc || "").trim() }))
+        .map((s) => ({
+          name: (s.name || "").trim(),
+          desc: (s.desc || "").trim(),
+          icon: s.icon || DEFAULT_SERVICE_ICON,
+        }))
         .filter((s) => s.name),
       images: Object.fromEntries(
         Object.entries(form.images).filter(([, v]) => v && v.trim())
@@ -307,7 +313,15 @@ export default function ProfileEdit() {
             <input className="input" value={form.clinic} onChange={(e) => set("clinic", e.target.value)} placeholder={t("pedit.clinicNamePh")} />
           </Field>
           <Field label={t("pedit.phone")}>
-            <input className="input" value={form.phone} onChange={(e) => set("phone", e.target.value)} placeholder="+503 0000 0000" />
+            <PhoneField
+              key={clinic?.id || "new"}
+              lang={lang}
+              defaultCountry="SV"
+              value={form.phone}
+              placeholder="0000 0000"
+              onChange={({ e164, national }) => set("phone", e164 || national)}
+            />
+            <p className="mt-1 text-xs text-slate-400">{t("pedit.phoneHint")}</p>
           </Field>
           <Field label={t("pedit.email")}>
             <input className="input" type="email" value={form.email} onChange={(e) => set("email", e.target.value)} placeholder="you@clinic.com" />
@@ -334,6 +348,7 @@ export default function ProfileEdit() {
           </div>
           <Field label={t("pedit.headline")}>
             <input className="input" value={form.headline} onChange={(e) => set("headline", e.target.value)} placeholder={t("pedit.headlinePh")} />
+            <p className="mt-1 text-xs text-slate-400">{t("pedit.headlineHint")}</p>
           </Field>
           <Field label={t("pedit.tagline")}>
             <input className="input" value={form.tagline} onChange={(e) => set("tagline", e.target.value)} placeholder={t("pedit.taglinePh")} />
@@ -461,7 +476,12 @@ export default function ProfileEdit() {
             <p className="text-sm text-slate-500">{t("pedit.servicesEmpty")}</p>
           )}
           {form.services.map((s, i) => (
-            <div key={i} className="flex flex-col gap-2 rounded-2xl border border-slate-200 p-3 sm:flex-row sm:items-start">
+            <div key={i} className="flex flex-col gap-2 rounded-2xl border border-slate-200 p-3 dark:border-slate-700 sm:flex-row sm:items-start">
+              <ServiceIconPicker
+                value={s.icon}
+                onChange={(key) => setService(i, "icon", key)}
+                label={t("pedit.serviceIcon")}
+              />
               <input
                 className="input sm:w-1/3"
                 value={s.name || ""}

@@ -1,21 +1,18 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Search, Clock, X, CalendarPlus, CalendarX, ClipboardList, FileText } from "lucide-react";
+import { Search, Clock, X, CalendarPlus, CalendarX, ShieldCheck, ArrowRight } from "lucide-react";
 import BrandMark from "../components/BrandMark.jsx";
 import { useLang } from "../i18n/LanguageContext.jsx";
 import { useSeo } from "../lib/seo.js";
 import Confirm from "../components/Confirm.jsx";
 import LanguageToggle from "../components/LanguageToggle.jsx";
 import PhoneField from "../components/PhoneField.jsx";
-import TreatmentTimeline from "../components/TreatmentTimeline.jsx";
 import {
   getClinicBySlug,
   getBookingsByPhone,
   cancelBookingByPhone,
-  getTreatmentsByPhone,
-  getConsentsByPhone,
 } from "../store/db.js";
-import { formatDate, formatTime, relativeDay, formatDateTime } from "../lib/format.js";
+import { formatDate, formatTime, relativeDay } from "../lib/format.js";
 
 function PublicHeader({ slug }) {
   const { t } = useLang();
@@ -46,8 +43,6 @@ export default function ManageBooking() {
   const [phoneValid, setPhoneValid] = useState(false);
   const [searched, setSearched] = useState(false);
   const [results, setResults] = useState([]);
-  const [treatments, setTreatments] = useState([]);
-  const [consents, setConsents] = useState([]);
   const [busy, setBusy] = useState(false);
   const [toCancel, setToCancel] = useState(null);
 
@@ -66,22 +61,14 @@ export default function ManageBooking() {
     if (!clinic?.id || !phoneValid) return;
     setBusy(true);
     try {
-      const [all, tx, cs] = await Promise.all([
-        getBookingsByPhone(clinic.id, phone),
-        getTreatmentsByPhone(clinic.id, phone),
-        getConsentsByPhone(clinic.id, phone),
-      ]);
+      const all = await getBookingsByPhone(clinic.id, phone);
       const upcoming = all
         .filter((a) => a.status === "scheduled" && new Date(a.start).getTime() >= Date.now())
         .sort((a, b) => new Date(a.start) - new Date(b.start));
       setResults(upcoming);
-      setTreatments(tx);
-      setConsents(cs);
     } catch (err) {
       console.error(err);
       setResults([]);
-      setTreatments([]);
-      setConsents([]);
     } finally {
       setBusy(false);
       setSearched(true);
@@ -158,38 +145,23 @@ export default function ManageBooking() {
               ))
             )}
 
-            {(treatments.length > 0 || consents.length > 0) && (
-              <>
-                {treatments.length > 0 && (
-                  <div className="card p-5">
-                    <h2 className="mb-4 flex items-center gap-2 font-semibold text-slate-900">
-                      <ClipboardList size={18} className="text-brand-600" />
-                      {t("patient.careHistory")}
-                    </h2>
-                    <TreatmentTimeline items={treatments} />
-                  </div>
-                )}
-                {consents.length > 0 && (
-                  <div className="card p-5">
-                    <h2 className="mb-4 flex items-center gap-2 font-semibold text-slate-900">
-                      <FileText size={18} className="text-brand-600" />
-                      {t("patient.documents")}
-                    </h2>
-                    <ul className="space-y-3 text-sm">
-                      {consents.map((c) => (
-                        <li key={c.id} className="rounded-xl bg-slate-50 p-4">
-                          <p className="font-semibold text-slate-900">{c.procedure}</p>
-                          <p className="text-xs text-slate-400">
-                            {c.signedName} — {formatDateTime(c.signedAt)}
-                          </p>
-                          <p className="mt-2 whitespace-pre-wrap text-slate-600">{c.body}</p>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </>
-            )}
+            {/* Clinical history and signed consents are PHI: never shown from a
+                phone lookup. Patients view them in their own portal, after
+                signing in and linking their records to their account. */}
+            <div className="card flex flex-col gap-4 border-portal-100 bg-portal-50/60 p-5 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-portal-100 text-portal-600">
+                  <ShieldCheck size={20} />
+                </div>
+                <div>
+                  <p className="font-semibold text-slate-900">{t("manage.recordsTitle")}</p>
+                  <p className="mt-0.5 text-sm text-slate-500">{t("manage.recordsBody")}</p>
+                </div>
+              </div>
+              <Link to="/me/login" className="btn-portal shrink-0">
+                {t("manage.recordsCta")} <ArrowRight size={16} />
+              </Link>
+            </div>
           </div>
         )}
       </main>

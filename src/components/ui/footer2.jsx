@@ -78,7 +78,7 @@ export function Footer2({
 
         <div className="mt-16 flex flex-col justify-between gap-4 border-t border-slate-200 pt-8 text-sm font-medium text-slate-400 md:flex-row md:items-center">
           <p>{copyright}</p>
-          <ul className="flex gap-4">
+          <ul className="flex flex-wrap gap-x-4 gap-y-2">
             {bottomLinks.map((link, linkIdx) => (
               <li key={linkIdx}>
                 <FooterLink

@@ -17,6 +17,16 @@ import {
   Activity,
   ShieldCheck,
   BarChart3,
+  Flag,
+  ExternalLink,
+  Star,
+  MessageSquareHeart,
+  EyeOff,
+  Tag,
+  Copy,
+  Trash2,
+  Plus,
+  Power,
 } from "lucide-react";
 import { useAuth } from "../auth/AuthContext.jsx";
 import { useLang } from "../i18n/LanguageContext.jsx";
@@ -26,6 +36,13 @@ import {
   adminGrowth,
   adminTimeseries,
   adminUpdateClinic,
+  adminReports,
+  adminResolveReport,
+  adminTestimonials,
+  adminSetTestimonialStatus,
+  adminAffiliates,
+  adminSaveAffiliate,
+  adminDeleteAffiliate,
 } from "../store/db.js";
 import TrendChart from "../components/ui/trend-chart.jsx";
 import { ThemeToggle } from "../theme/ThemeContext.jsx";
@@ -166,11 +183,209 @@ function ClinicAvatar({ name }) {
   );
 }
 
+function AffiliatesPanel({ t, stats, totalCommission, onSave, onDelete, money }) {
+  const blank = { code: "", name: "", pct: 20, discount: 20, active: true };
+  const [form, setForm] = useState(blank);
+  const [editing, setEditing] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [copied, setCopied] = useState("");
+
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  const linkFor = (code) => `${origin}/signup?ref=${encodeURIComponent(code)}`;
+
+  function edit(a) {
+    setForm({
+      code: a.code,
+      name: a.name,
+      pct: Math.round(a.commissionPct * 100),
+      discount: Math.round((a.discountPct || 0) * 100),
+      active: a.active,
+    });
+    setEditing(true);
+  }
+
+  async function submit(e) {
+    e.preventDefault();
+    const code = (form.code || "").replace(/\s/g, "").toUpperCase();
+    if (!code) return;
+    setBusy(true);
+    const ok = await onSave({
+      code,
+      name: form.name,
+      commissionPct: Math.max(0, Math.min(100, Number(form.pct) || 0)) / 100,
+      discountPct: Math.max(0, Math.min(100, Number(form.discount) || 0)) / 100,
+      active: form.active,
+    });
+    setBusy(false);
+    if (ok) {
+      setForm(blank);
+      setEditing(false);
+    }
+  }
+
+  function copy(code) {
+    navigator.clipboard?.writeText(linkFor(code)).then(() => {
+      setCopied(code);
+      setTimeout(() => setCopied(""), 1500);
+    });
+  }
+
+  return (
+    <section className="card mt-6 p-5 dark:bg-slate-900">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <h2 className="flex items-center gap-2 font-semibold text-slate-900 dark:text-white">
+          <Handshake size={18} className="text-brand-600" /> {t("admin.affiliates.title")}
+        </h2>
+        <span className="rounded-full bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+          {t("admin.affiliates.totalOwed", { amount: money(totalCommission) })}
+        </span>
+      </div>
+
+      {/* Add / edit a code */}
+      <form
+        onSubmit={submit}
+        className="mb-5 grid gap-2 rounded-xl border border-slate-200 p-3 dark:border-slate-700 sm:grid-cols-[1fr_1fr_auto_auto_auto]"
+      >
+        <input
+          className="input uppercase"
+          placeholder={t("admin.affiliates.codePh")}
+          value={form.code}
+          disabled={editing}
+          onChange={(e) =>
+            setForm((f) => ({ ...f, code: e.target.value.replace(/\s/g, "").toUpperCase() }))
+          }
+        />
+        <input
+          className="input"
+          placeholder={t("admin.affiliates.namePh")}
+          value={form.name}
+          onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+        />
+        <div className="flex items-center rounded-xl border border-slate-300 bg-white px-3 dark:border-slate-600 dark:bg-slate-800">
+          <input
+            className="w-16 bg-transparent py-2.5 text-sm outline-none"
+            type="number"
+            min={0}
+            max={100}
+            value={form.pct}
+            onChange={(e) => setForm((f) => ({ ...f, pct: e.target.value }))}
+          />
+          <span className="text-sm text-slate-400">% {t("admin.affiliates.perMonth")}</span>
+        </div>
+        <div className="flex items-center rounded-xl border border-slate-300 bg-white px-3 dark:border-slate-600 dark:bg-slate-800">
+          <input
+            className="w-16 bg-transparent py-2.5 text-sm outline-none"
+            type="number"
+            min={0}
+            max={100}
+            value={form.discount}
+            onChange={(e) => setForm((f) => ({ ...f, discount: e.target.value }))}
+          />
+          <span className="text-sm text-slate-400">% {t("admin.affiliates.firstMonthOff")}</span>
+        </div>
+        <button type="submit" disabled={busy} className="btn-primary disabled:opacity-60">
+          <Plus size={16} /> {editing ? t("common.save") : t("admin.affiliates.add")}
+        </button>
+      </form>
+
+      {stats.length === 0 ? (
+        <p className="py-6 text-center text-sm text-slate-400">{t("admin.affiliates.empty")}</p>
+      ) : (
+        <div className="space-y-2">
+          {stats.map((a) => (
+            <div
+              key={a.code}
+              className={`flex flex-col gap-3 rounded-xl border p-3 sm:flex-row sm:items-center sm:justify-between ${
+                a.active
+                  ? "border-slate-200 dark:border-slate-700"
+                  : "border-slate-200 bg-slate-50 opacity-70 dark:border-slate-800 dark:bg-slate-800/40"
+              }`}
+            >
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 rounded-lg bg-brand-50 px-2.5 py-1 font-mono text-sm font-semibold text-brand-700 dark:bg-brand-500/10 dark:text-brand-300">
+                    <Tag size={13} /> {a.code}
+                  </span>
+                  {a.name && <span className="text-sm font-medium text-slate-700 dark:text-slate-200">{a.name}</span>}
+                  {!a.active && (
+                    <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs text-slate-500 dark:bg-slate-700">
+                      {t("admin.affiliates.inactive")}
+                    </span>
+                  )}
+                </div>
+                <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
+                  <span>{t("admin.affiliates.referred", { n: a.referredCount })}</span>
+                  <span>{t("admin.affiliates.paying", { n: a.payingCount })}</span>
+                  <span>{t("admin.affiliates.trialing", { n: a.trialCount })}</span>
+                  <span className="font-semibold text-emerald-700 dark:text-emerald-300">
+                    {t("admin.affiliates.owed", {
+                      amount: money(a.monthlyCommission),
+                      pct: Math.round(a.commissionPct * 100),
+                    })}
+                  </span>
+                  {a.discountPct > 0 && (
+                    <span className="text-brand-600 dark:text-brand-300">
+                      {t("admin.affiliates.discount", {
+                        pct: Math.round(a.discountPct * 100),
+                      })}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="flex shrink-0 items-center gap-1">
+                <button
+                  className="btn-ghost px-2.5 py-2 text-xs"
+                  onClick={() => copy(a.code)}
+                  title={t("admin.affiliates.copyLink")}
+                >
+                  {copied === a.code ? <CheckCircle2 size={15} className="text-emerald-600" /> : <Copy size={15} />}
+                </button>
+                <button
+                  className="btn-ghost px-2.5 py-2 text-xs"
+                  onClick={() => edit(a)}
+                  title={t("common.edit")}
+                >
+                  {t("common.edit")}
+                </button>
+                <button
+                  className="btn-ghost px-2.5 py-2 text-xs"
+                  onClick={() =>
+                    onSave({
+                      code: a.code,
+                      name: a.name,
+                      commissionPct: a.commissionPct,
+                      discountPct: a.discountPct,
+                      active: !a.active,
+                    })
+                  }
+                  title={a.active ? t("admin.affiliates.deactivate") : t("admin.affiliates.activate")}
+                >
+                  <Power size={15} className={a.active ? "text-emerald-600" : "text-slate-400"} />
+                </button>
+                <button
+                  className="btn-ghost px-2.5 py-2 text-xs text-rose-600 hover:bg-rose-50"
+                  onClick={() => onDelete(a.code)}
+                  title={t("common.delete")}
+                >
+                  <Trash2 size={15} />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
 export default function Admin() {
   const { t, lang } = useLang();
   useSeo({ title: "Admin | Clinika", noindex: true });
   const { isAdmin } = useAuth();
   const [rows, setRows] = useState([]);
+  const [reports, setReports] = useState([]);
+  const [testimonials, setTestimonials] = useState([]);
+  const [affiliates, setAffiliates] = useState([]);
   const [growth, setGrowth] = useState(null);
   const [ts, setTs] = useState(null);
   const [range, setRange] = useState(30);
@@ -184,9 +399,18 @@ export default function Admin() {
     setLoading(true);
     setError("");
     try {
-      const [overview, g] = await Promise.all([adminOverview(), adminGrowth()]);
+      const [overview, g, reps, tms, affs] = await Promise.all([
+        adminOverview(),
+        adminGrowth(),
+        adminReports(),
+        adminTestimonials(),
+        adminAffiliates(),
+      ]);
       setRows(overview);
       setGrowth(g);
+      setReports(reps);
+      setTestimonials(tms);
+      setAffiliates(affs);
     } catch (err) {
       console.error(err);
       setError(err?.message || "admin.loadError");
@@ -234,6 +458,88 @@ export default function Admin() {
     patch(row.id, { trialEndsAt: next, billing: "", suspended: false });
   };
   const setReferral = (id, referralSource) => patch(id, { referralSource });
+
+  // Triage a report: optimistically update its status, roll back on failure.
+  const resolveReport = useCallback(async (id, status) => {
+    setReports((prev) => prev.map((r) => (r.id === id ? { ...r, status } : r)));
+    const res = await adminResolveReport(id, status);
+    if (!res?.ok) {
+      setError(res?.error || "admin.saveError");
+      const reps = await adminReports();
+      setReports(reps);
+    }
+  }, []);
+
+  const openReports = useMemo(
+    () => reports.filter((r) => r.status === "open"),
+    [reports]
+  );
+
+  // Curate testimonials: optimistic status update, roll back on failure.
+  const setTestimonialStatus = useCallback(async (id, status) => {
+    setTestimonials((prev) => prev.map((tm) => (tm.id === id ? { ...tm, status } : tm)));
+    const res = await adminSetTestimonialStatus(id, status);
+    if (!res?.ok) {
+      setError(res?.error || "admin.saveError");
+      const tms = await adminTestimonials();
+      setTestimonials(tms);
+    }
+  }, []);
+
+  const avgRating = useMemo(() => {
+    if (testimonials.length === 0) return 0;
+    return testimonials.reduce((s, tm) => s + (tm.rating || 0), 0) / testimonials.length;
+  }, [testimonials]);
+
+  // Per-affiliate stats: how many clinics each code referred, how many are
+  // actively paying (Stripe), and the recurring monthly commission owed
+  // (commission % of each paying referral's monthly plan price). Manual comps
+  // are excluded from commission since no revenue is collected.
+  const affiliateStats = useMemo(() => {
+    return affiliates.map((a) => {
+      const referred = rows.filter((r) => (r.referralCode || "") === a.code);
+      const paying = referred.filter((r) => r.billing === "stripe" && !r.suspended);
+      const trialing = referred.filter((r) => statusOf(r) === "trial");
+      const monthlyCommission = paying.reduce(
+        (s, r) => s + getPlan(r.plan).price * a.commissionPct,
+        0
+      );
+      return {
+        ...a,
+        referredCount: referred.length,
+        payingCount: paying.length,
+        trialCount: trialing.length,
+        monthlyCommission,
+      };
+    });
+  }, [affiliates, rows]);
+
+  const totalAffiliateCommission = useMemo(
+    () => affiliateStats.reduce((s, a) => s + a.monthlyCommission, 0),
+    [affiliateStats]
+  );
+
+  const saveAffiliate = useCallback(
+    async (payload) => {
+      const res = await adminSaveAffiliate(payload);
+      if (!res.ok) {
+        setError(res.error || "admin.saveError");
+        return false;
+      }
+      setAffiliates(await adminAffiliates());
+      return true;
+    },
+    []
+  );
+
+  const removeAffiliate = useCallback(async (code) => {
+    setAffiliates((prev) => prev.filter((a) => a.code !== code));
+    const res = await adminDeleteAffiliate(code);
+    if (!res.ok) {
+      setError(res.error || "admin.saveError");
+      setAffiliates(await adminAffiliates());
+    }
+  }, []);
 
   // Derived business metrics. Real MRR only counts Stripe-billed clinics;
   // manually-set (comped) plans are tracked separately so revenue is honest.
@@ -358,13 +664,14 @@ export default function Admin() {
             className="inline-flex items-center gap-1.5 rounded-xl border border-white/15 bg-white/5 px-3.5 py-2 text-sm font-medium text-white transition hover:bg-white/10 disabled:opacity-50"
           >
             <RefreshCw size={15} className={loading ? "animate-spin" : ""} />
-            {t("admin.refresh")}
+            <span className="hidden sm:inline">{t("admin.refresh")}</span>
           </button>
           <Link
             to="/app"
             className="inline-flex items-center gap-1.5 rounded-xl border border-white/15 bg-white/5 px-3.5 py-2 text-sm font-medium text-white transition hover:bg-white/10"
           >
-            <ArrowLeft size={15} /> {t("admin.backToApp")}
+            <ArrowLeft size={15} />
+            <span className="hidden sm:inline">{t("admin.backToApp")}</span>
           </Link>
         </div>
       </header>
@@ -544,6 +851,191 @@ export default function Admin() {
                 />
               </ChartCard>
             </div>
+          </section>
+        )}
+
+        {/* Affiliate / referral codes (needs affiliates from 0014) */}
+        <AffiliatesPanel
+          t={t}
+          stats={affiliateStats}
+          totalCommission={totalAffiliateCommission}
+          onSave={saveAffiliate}
+          onDelete={removeAffiliate}
+          money={money}
+        />
+
+        {/* Reported profiles (needs clinic_reports from 0010) */}
+        {reports.length > 0 && (
+          <section className="card mt-6 overflow-hidden p-0">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 px-5 py-3.5">
+              <h2 className="flex items-center gap-2 text-sm font-semibold text-slate-800">
+                <Flag size={16} className="text-rose-500" />
+                {t("admin.reports.title")}
+              </h2>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-2.5 py-1 text-[11px] font-semibold text-rose-700 ring-1 ring-rose-600/15">
+                {t("admin.reports.openCount", { n: openReports.length })}
+              </span>
+            </div>
+            <ul className="divide-y divide-slate-100">
+              {reports.map((rep) => (
+                <li
+                  key={rep.id}
+                  className={`flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-start ${
+                    rep.status !== "open" ? "opacity-60" : ""
+                  }`}
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Link
+                        to={`/c/${rep.clinicSlug}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 font-semibold text-slate-900 hover:text-brand-600"
+                      >
+                        {rep.clinicName} <ExternalLink size={12} />
+                      </Link>
+                      <span className="rounded-full bg-rose-50 px-2 py-0.5 text-[11px] font-semibold text-rose-700">
+                        {rep.reason}
+                      </span>
+                      {rep.status !== "open" && (
+                        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                          {t(`admin.reports.status.${rep.status}`)}
+                        </span>
+                      )}
+                      <span className="text-xs text-slate-400">{relativeDay(rep.createdAt)}</span>
+                    </div>
+                    {rep.details && (
+                      <p className="mt-1 whitespace-pre-line text-sm text-slate-600">{rep.details}</p>
+                    )}
+                    {rep.reporter && (
+                      <p className="mt-1 text-xs text-slate-400">
+                        {t("admin.reports.reporter", { c: rep.reporter })}
+                      </p>
+                    )}
+                  </div>
+                  {rep.status === "open" && (
+                    <div className="flex shrink-0 gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => resolveReport(rep.id, "reviewed")}
+                        className="inline-flex items-center gap-1 rounded-lg bg-emerald-50 px-2.5 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-100"
+                      >
+                        <CheckCircle2 size={13} /> {t("admin.reports.markReviewed")}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => resolveReport(rep.id, "dismissed")}
+                        className="inline-flex items-center gap-1 rounded-lg bg-slate-100 px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-200"
+                      >
+                        <Ban size={13} /> {t("admin.reports.dismiss")}
+                      </button>
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {/* Testimonials (needs app_testimonials from 0011) */}
+        {testimonials.length > 0 && (
+          <section className="card mt-6 overflow-hidden p-0">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 px-5 py-3.5">
+              <h2 className="flex items-center gap-2 text-sm font-semibold text-slate-800">
+                <MessageSquareHeart size={16} className="text-brand-600" />
+                {t("admin.testimonials.title")}
+              </h2>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-700 ring-1 ring-amber-600/15">
+                <Star size={12} className="fill-amber-400 text-amber-400" />
+                {avgRating.toFixed(1)} · {t("admin.testimonials.count", { n: testimonials.length })}
+              </span>
+            </div>
+            <ul className="divide-y divide-slate-100">
+              {testimonials.map((tm) => (
+                <li
+                  key={tm.id}
+                  className={`flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-start ${
+                    tm.status === "hidden" ? "opacity-50" : ""
+                  }`}
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="flex items-center gap-0.5">
+                        {[1, 2, 3, 4, 5].map((n) => (
+                          <Star
+                            key={n}
+                            size={14}
+                            className={
+                              n <= tm.rating
+                                ? "fill-amber-400 text-amber-400"
+                                : "text-slate-300"
+                            }
+                          />
+                        ))}
+                      </span>
+                      {tm.clinicSlug ? (
+                        <Link
+                          to={`/c/${tm.clinicSlug}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 text-sm font-semibold text-slate-900 hover:text-brand-600"
+                        >
+                          {tm.displayName || tm.clinicSlug} <ExternalLink size={12} />
+                        </Link>
+                      ) : (
+                        <span className="text-sm font-semibold text-slate-900">
+                          {tm.displayName || "—"}
+                        </span>
+                      )}
+                      {tm.status === "approved" && (
+                        <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
+                          {t("admin.testimonials.status.approved")}
+                        </span>
+                      )}
+                      {tm.status === "hidden" && (
+                        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                          {t("admin.testimonials.status.hidden")}
+                        </span>
+                      )}
+                      <span className="text-xs text-slate-400">{relativeDay(tm.createdAt)}</span>
+                    </div>
+                    {tm.comment && (
+                      <p className="mt-1 whitespace-pre-line text-sm text-slate-600">
+                        “{tm.comment}”
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex shrink-0 gap-1.5">
+                    {tm.status !== "approved" && (
+                      <button
+                        type="button"
+                        onClick={() => setTestimonialStatus(tm.id, "approved")}
+                        className="inline-flex items-center gap-1 rounded-lg bg-emerald-50 px-2.5 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-100"
+                      >
+                        <CheckCircle2 size={13} /> {t("admin.testimonials.approve")}
+                      </button>
+                    )}
+                    {tm.status !== "hidden" ? (
+                      <button
+                        type="button"
+                        onClick={() => setTestimonialStatus(tm.id, "hidden")}
+                        className="inline-flex items-center gap-1 rounded-lg bg-slate-100 px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-200"
+                      >
+                        <EyeOff size={13} /> {t("admin.testimonials.hide")}
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setTestimonialStatus(tm.id, "new")}
+                        className="inline-flex items-center gap-1 rounded-lg bg-slate-100 px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-200"
+                      >
+                        {t("admin.testimonials.restore")}
+                      </button>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
           </section>
         )}
 

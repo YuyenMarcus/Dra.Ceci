@@ -1,6 +1,6 @@
 # Clinika — full reference for LLMs
 
-> Clinika (https://www.clinika.health) is a bilingual (Spanish/English) practice-management platform for dental clinics: scheduling, online booking, patient records with interactive odontogram, treatment plans, inventory, billing and a patient portal in one web app. Built for Latin America — Spanish-first, WhatsApp-native reminders, and El Salvador DTE electronic invoicing on the top plan. 14-day free trial on every plan, no credit card required. Contact: team@clinika.health.
+> Clinika (https://www.clinika.health) is a bilingual (Spanish/English) practice-management platform for dental clinics: scheduling, online booking, patient records with interactive odontogram, treatment plans, inventory, billing and a patient portal in one web app. Built for Latin America — Spanish-first, WhatsApp-native reminders, and El Salvador DTE electronic invoicing on the top plan. 14-day free trial on every plan, no credit card required. Developed and operated by Nitron Digital LLC (all rights reserved). Contact: team@clinika.health.
 
 ## What Clinika is
 

@@ -11,7 +11,7 @@ const content = {
       {
         h: "1. Quiénes somos",
         body: [
-          "Clinika (clinika.health) es una plataforma de gestión para clínicas dentales. Para consultas de privacidad escríbenos a team@clinika.health.",
+          "Clinika (clinika.health) es una plataforma de gestión para clínicas dentales, desarrollada y operada por Nitron Digital LLC, titular de todos los derechos sobre el software. Para consultas de privacidad escríbenos a team@clinika.health.",
         ],
       },
       {
@@ -98,7 +98,7 @@ const content = {
       {
         h: "1. Who we are",
         body: [
-          "Clinika (clinika.health) is a management platform for dental clinics. For privacy inquiries write to team@clinika.health.",
+          "Clinika (clinika.health) is a management platform for dental clinics, developed and operated by Nitron Digital LLC, which holds all rights to the software. For privacy inquiries write to team@clinika.health.",
         ],
       },
       {

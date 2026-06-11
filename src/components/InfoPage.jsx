@@ -36,8 +36,9 @@ export default function InfoPage({ content, path, seoDescription }) {
           <div className="flex items-center gap-2">
             <LanguageToggle />
             <ThemeToggle className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100" />
-            <Link to="/" className="btn-ghost hidden text-sm sm:inline-flex">
-              <ArrowLeft size={15} /> {t("common.back")}
+            <Link to="/" className="btn-ghost text-sm" title={t("common.back")}>
+              <ArrowLeft size={15} />
+              <span className="hidden sm:inline">{t("common.back")}</span>
             </Link>
           </div>
         </div>
@@ -103,7 +104,10 @@ export default function InfoPage({ content, path, seoDescription }) {
       {/* Footer strip */}
       <footer className="border-t border-slate-200 bg-white">
         <div className="mx-auto flex max-w-4xl flex-col items-center justify-between gap-3 px-5 py-8 text-sm text-slate-400 sm:flex-row">
-          <p>© {new Date().getFullYear()} Clinika</p>
+          <p>
+            © {new Date().getFullYear()} Nitron Digital LLC · Clinika.{" "}
+            {t("footer.rights")}
+          </p>
           <nav className="flex flex-wrap items-center gap-4">
             <Link to="/about" className="hover:text-brand-700">{t("footer.about")}</Link>
             <Link to="/help" className="hover:text-brand-700">{t("footer.help")}</Link>

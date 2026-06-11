@@ -1,3 +1,5 @@
+import { parsePhoneNumberFromString } from "libphonenumber-js";
+
 // Current locale, kept in sync by the language provider via setLocale().
 let currentLang = "es";
 const LOCALES = { es: "es-ES", en: "en-US" };
@@ -95,6 +97,16 @@ export function toLocalInput(iso) {
 // Reduce a phone number to its digits for reliable comparison.
 export function normalizePhone(phone = "") {
   return String(phone).replace(/\D/g, "");
+}
+
+// Pretty international phone, e.g. "+502 1234 5678". Falls back to the raw
+// value (with a leading +) when it can't be parsed, so we never lose the
+// country code the user entered.
+export function formatPhoneIntl(phone = "") {
+  const raw = String(phone).trim();
+  if (!raw) return "";
+  const pn = parsePhoneNumberFromString(raw.startsWith("+") ? raw : `+${raw}`);
+  return pn ? pn.formatInternational() : raw;
 }
 
 export function initials(name = "") {

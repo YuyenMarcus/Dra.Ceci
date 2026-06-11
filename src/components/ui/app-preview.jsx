@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import {
   LayoutDashboard,
   Boxes,
@@ -15,6 +16,24 @@ import BrandMark from "../BrandMark.jsx";
  */
 export default function AppPreview() {
   const navIcons = [LayoutDashboard, Boxes, Users, CalendarDays];
+
+  // Some ad-block / content-filter extensions inject `display:none !important`
+  // on sidebar-like elements (this hid the real portal sidebar in some Chrome
+  // setups too). A stylesheet rule can't beat an extension's author-origin
+  // !important, but an INLINE !important does. Drive it from a media query so
+  // the mock sidebar still only shows from the `sm` breakpoint up.
+  const sidebarRef = useRef(null);
+  useEffect(() => {
+    const el = sidebarRef.current;
+    if (!el) return undefined;
+    const mq = window.matchMedia("(min-width: 640px)");
+    const apply = () =>
+      el.style.setProperty("display", mq.matches ? "flex" : "none", "important");
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, []);
+
   const stats = [
     { v: "8", Icon: CalendarDays, tone: "bg-brand-50 text-brand-600" },
     { v: "1.2k", Icon: Users, tone: "bg-portal-100 text-portal-600" },
@@ -32,8 +51,12 @@ export default function AppPreview() {
       </div>
 
       <div className="flex min-h-[19rem]">
-        {/* Sidebar */}
-        <aside className="hidden w-48 shrink-0 flex-col bg-gradient-to-b from-brand-800 to-brand-900 p-4 sm:flex">
+        {/* Sidebar — a <div>, not <aside>: ad-block/content filters sometimes
+            target `aside`/nav-like tags and hide the whole panel in Chrome. */}
+        <div
+          ref={sidebarRef}
+          className="hidden w-48 shrink-0 flex-col bg-gradient-to-b from-brand-800 to-brand-900 p-4 sm:flex"
+        >
           <div className="mb-6 flex items-center gap-2">
             <BrandMark size={26} />
             <span className="text-sm font-bold text-white">Clinika</span>
@@ -58,7 +81,7 @@ export default function AppPreview() {
               </div>
             ))}
           </nav>
-        </aside>
+        </div>
 
         {/* Main */}
         <main className="flex-1 space-y-4 p-5">

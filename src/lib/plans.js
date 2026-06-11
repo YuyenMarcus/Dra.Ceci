@@ -165,6 +165,14 @@ export const PLANS = [
 
 export const DEFAULT_PLAN_ID = "starter";
 
+// Whether a clinic is an active paying subscriber (vs. a free trial). Used to
+// give paying clinics priority placement in the public directory. This signal
+// must never be surfaced to patients in the UI.
+export function isPaidClinic(profile) {
+  if (!profile) return false;
+  return profile.billing === "stripe" && profile.stripe?.status === "active";
+}
+
 export function getPlan(planId) {
   return PLANS.find((p) => p.id === planId) || PLANS[0];
 }

@@ -17,7 +17,7 @@ const content = {
       {
         h: "2. El servicio",
         body: [
-          "Clinika es una plataforma de gestión para clínicas dentales: agenda, reservas en línea, fichas de pacientes, inventario y portal del paciente. Clinika es una herramienta de software; no es un proveedor de servicios de salud y no participa en la relación médico-paciente.",
+          "Clinika es una plataforma de gestión para clínicas dentales: agenda, reservas en línea, fichas de pacientes, inventario y portal del paciente. Clinika es desarrollada y operada por Nitron Digital LLC, titular de todos los derechos sobre el software. Clinika es una herramienta de software; no es un proveedor de servicios de salud y no participa en la relación médico-paciente.",
         ],
       },
       {
@@ -73,7 +73,7 @@ const content = {
       {
         h: "10. Cambios y ley aplicable",
         body: [
-          "Podemos actualizar estos términos; los cambios relevantes se anunciarán en la aplicación con antelación. Estos términos se rigen por las leyes de la República de El Salvador.",
+          "Podemos actualizar estos términos; los cambios relevantes se anunciarán en la aplicación con antelación. Estos términos se rigen por las leyes del Estado de Nueva Hampshire, Estados Unidos, sin dar efecto a sus normas sobre conflictos de leyes.",
         ],
       },
     ],
@@ -94,7 +94,7 @@ const content = {
       {
         h: "2. The service",
         body: [
-          "Clinika is a management platform for dental clinics: scheduling, online booking, patient records, inventory and a patient portal. Clinika is a software tool; it is not a healthcare provider and takes no part in the doctor-patient relationship.",
+          "Clinika is a management platform for dental clinics: scheduling, online booking, patient records, inventory and a patient portal. Clinika is developed and operated by Nitron Digital LLC, which holds all rights to the software. Clinika is a software tool; it is not a healthcare provider and takes no part in the doctor-patient relationship.",
         ],
       },
       {
@@ -150,7 +150,7 @@ const content = {
       {
         h: "10. Changes and governing law",
         body: [
-          "We may update these terms; meaningful changes will be announced in the app in advance. These terms are governed by the laws of the Republic of El Salvador.",
+          "We may update these terms; meaningful changes will be announced in the app in advance. These terms are governed by the laws of the State of New Hampshire, United States, without regard to its conflict-of-law rules.",
         ],
       },
     ],

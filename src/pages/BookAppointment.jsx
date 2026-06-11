@@ -16,6 +16,7 @@ import LanguageToggle from "../components/LanguageToggle.jsx";
 import Calendar from "../components/Calendar.jsx";
 import PhoneField from "../components/PhoneField.jsx";
 import { useLang } from "../i18n/LanguageContext.jsx";
+import { useAuth } from "../auth/AuthContext.jsx";
 import { useSeo } from "../lib/seo.js";
 import { getClinicBySlug, getTakenSlots, requestAppointmentRpc } from "../store/db.js";
 import { formatDate, formatTime, relativeDay } from "../lib/format.js";
@@ -41,8 +42,13 @@ function PublicHeader({ slug, onReplayTour }) {
               <span className="hidden sm:inline">{t("book.howItWorks")}</span>
             </button>
           )}
-          <Link to={`/c/${slug}/manage`} className="btn-ghost text-sm">
-            {t("book.manageBooking")}
+          <Link
+            to={`/c/${slug}/manage`}
+            className="btn-ghost text-sm"
+            title={t("book.manageBooking")}
+          >
+            <CalendarDays size={16} />
+            <span className="hidden sm:inline">{t("book.manageBooking")}</span>
           </Link>
         </div>
       </div>
@@ -78,6 +84,13 @@ function Stepper({ step }) {
 export default function BookAppointment() {
   const { slug } = useParams();
   const { t, lang } = useLang();
+  const { patient, canAccessPatientPortal } = useAuth();
+
+  // A signed-in patient (or dual-role doctor) already has their contact details
+  // on file, so we prefill them and skip asking for phone / email again.
+  const loggedInPatient = canAccessPatientPortal ? patient : null;
+  const hasSavedPhone = Boolean(loggedInPatient?.phone);
+  const hasSavedEmail = Boolean(loggedInPatient?.email);
 
   const [clinic, setClinic] = useState(null);
   const [loadingClinic, setLoadingClinic] = useState(true);
@@ -142,6 +155,18 @@ export default function BookAppointment() {
       active = false;
     };
   }, [clinic?.id, confirmation]);
+
+  // Prefill contact details from the signed-in patient's account.
+  useEffect(() => {
+    if (!loggedInPatient) return;
+    setForm((f) => ({
+      ...f,
+      name: f.name || loggedInPatient.name || "",
+      phone: loggedInPatient.phone || f.phone,
+      email: loggedInPatient.email || f.email,
+    }));
+    if (loggedInPatient.phone) setPhoneValid(true);
+  }, [loggedInPatient]);
 
   useEffect(() => {
     if (localStorage.getItem(TOUR_KEY)) return undefined;
@@ -216,8 +241,14 @@ export default function BookAppointment() {
     setStep("slot");
     setSelectedDay("");
     setSlot(null);
-    setForm({ name: "", phone: "", email: "", reason: "", notes: "" });
-    setPhoneValid(false);
+    setForm({
+      name: loggedInPatient?.name || "",
+      phone: loggedInPatient?.phone || "",
+      email: loggedInPatient?.email || "",
+      reason: "",
+      notes: "",
+    });
+    setPhoneValid(Boolean(loggedInPatient?.phone));
     setPhoneKey((k) => k + 1);
     setError(null);
     setConfirmation(null);
@@ -393,42 +424,62 @@ export default function BookAppointment() {
               </div>
 
               <form onSubmit={submit} className="space-y-4">
-                <div>
-                  <label className="label">{t("book.yourName")}</label>
-                  <input
-                    className="input"
-                    required
-                    value={form.name}
-                    onChange={(e) => {
-                      setForm({ ...form, name: e.target.value });
-                      setError(null);
-                    }}
-                    placeholder={t("book.fullName")}
-                  />
-                </div>
-                <div>
-                  <label className="label">{t("book.phoneNumber")}</label>
-                  <PhoneField
-                    key={phoneKey}
-                    lang={lang}
-                    onChange={({ e164, valid }) => {
-                      setForm((f) => ({ ...f, phone: e164 }));
-                      setPhoneValid(valid);
-                      setError(null);
-                    }}
-                  />
-                  <p className="mt-1 text-xs text-slate-400">{t("book.phoneHint")}</p>
-                </div>
-                <div>
-                  <label className="label">{t("book.emailOptional")}</label>
-                  <input
-                    className="input"
-                    type="email"
-                    value={form.email}
-                    onChange={(e) => setForm({ ...form, email: e.target.value })}
-                    placeholder="you@example.com"
-                  />
-                </div>
+                {loggedInPatient && hasSavedPhone ? (
+                  <div className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                    <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-brand-600" />
+                    <div className="min-w-0 text-sm">
+                      <p className="font-semibold text-slate-800">
+                        {t("book.bookingAs", { name: loggedInPatient.name || form.name })}
+                      </p>
+                      <p className="mt-0.5 truncate text-slate-500">
+                        {[loggedInPatient.phone, loggedInPatient.email]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <label className="label">{t("book.yourName")}</label>
+                    <input
+                      className="input"
+                      required
+                      value={form.name}
+                      onChange={(e) => {
+                        setForm({ ...form, name: e.target.value });
+                        setError(null);
+                      }}
+                      placeholder={t("book.fullName")}
+                    />
+                  </div>
+                )}
+                {!hasSavedPhone && (
+                  <div>
+                    <label className="label">{t("book.phoneNumber")}</label>
+                    <PhoneField
+                      key={phoneKey}
+                      lang={lang}
+                      onChange={({ e164, valid }) => {
+                        setForm((f) => ({ ...f, phone: e164 }));
+                        setPhoneValid(valid);
+                        setError(null);
+                      }}
+                    />
+                    <p className="mt-1 text-xs text-slate-400">{t("book.phoneHint")}</p>
+                  </div>
+                )}
+                {!hasSavedEmail && (
+                  <div>
+                    <label className="label">{t("book.emailOptional")}</label>
+                    <input
+                      className="input"
+                      type="email"
+                      value={form.email}
+                      onChange={(e) => setForm({ ...form, email: e.target.value })}
+                      placeholder="you@example.com"
+                    />
+                  </div>
+                )}
                 <div>
                   <label className="label">{t("book.reasonLabel")}</label>
                   <select

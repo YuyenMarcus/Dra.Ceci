@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, LogIn, CalendarPlus } from "lucide-react";
+import { ArrowLeft, LogIn, HeartPulse } from "lucide-react";
 import BrandMark from "../components/BrandMark.jsx";
 import { useAuth } from "../auth/AuthContext.jsx";
 import { useLang } from "../i18n/LanguageContext.jsx";
@@ -68,13 +68,7 @@ export default function Login() {
           </div>
 
           <h1 className="text-2xl font-bold text-slate-900">{t("login.doctorTitle")}</h1>
-          <p className="mt-1 text-sm text-slate-500">
-            {t("login.patientsNoAccount")}{" "}
-            <Link to="/" className="font-medium text-brand-600 hover:text-brand-700">
-              {t("login.bookHere")}
-            </Link>
-            .
-          </p>
+          <p className="mt-1 text-sm text-slate-500">{t("login.doctorSubtitle")}</p>
 
           <form onSubmit={submit} className="mt-6 space-y-4">
             <div>
@@ -133,12 +127,25 @@ export default function Login() {
             </span>
           </div>
 
-          <Link
-            to="/me/login"
-            className="mt-6 flex items-center justify-center gap-2 rounded-xl border border-dashed border-slate-300 py-3 text-sm font-medium text-slate-600 hover:border-brand-300 hover:text-brand-700"
-          >
-            <CalendarPlus size={16} /> {t("login.patientSignIn")}
-          </Link>
+          <p className="mt-6 text-center text-xs text-slate-400">{t("login.doctorOnlyNote")}</p>
+
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 border-t border-slate-100 pt-5 text-sm text-slate-500 dark:border-slate-800">
+            <HeartPulse size={14} className="text-portal-500" />
+            <span>{t("login.patientPrompt")}</span>
+            <Link
+              to="/find"
+              className="font-medium text-portal-600 hover:text-portal-700 dark:text-portal-300 dark:hover:text-portal-200"
+            >
+              {t("login.patientBook")}
+            </Link>
+            <span className="text-slate-300 dark:text-slate-600">·</span>
+            <Link
+              to="/me/login"
+              className="font-medium text-portal-600 hover:text-portal-700 dark:text-portal-300 dark:hover:text-portal-200"
+            >
+              {t("login.patientPortal")}
+            </Link>
+          </div>
         </div>
       </div>
     </div>

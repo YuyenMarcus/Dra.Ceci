@@ -10,6 +10,7 @@ Key facts:
 - Billing: monthly subscriptions via Stripe; cancel anytime, no lock-in
 - Each clinic gets a shareable public booking page at clinika.health/c/{clinic-slug}
 - Patients can book online without creating an account
+- Developed and operated by Nitron Digital LLC (all rights reserved)
 - Contact: team@clinika.health
 
 ## Product

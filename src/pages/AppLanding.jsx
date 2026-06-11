@@ -148,16 +148,10 @@ export default function AppLanding() {
             <a href="#pricing" className="btn-ghost hidden md:inline-flex">
               {t("app.navPricing")}
             </a>
-            <Link
-              to={canAccessPatientPortal ? "/me" : "/me/login"}
-              className="btn-ghost hidden sm:inline-flex"
-            >
-              {t("app.patientPortal")}
-            </Link>
             <Link to={profileTo} className="btn-ghost hidden sm:inline-flex">
               {t("app.navProfile")}
             </Link>
-            <Link to={primaryTo} className="btn-primary">
+            <Link to={primaryTo} className="btn-primary shrink-0">
               {isClient ? t("app.goToPortal") : t("app.login")}
             </Link>
           </div>
@@ -252,7 +246,7 @@ export default function AppLanding() {
             aria-hidden
             className="absolute left-[16%] right-[16%] top-7 hidden border-t-2 border-dashed border-brand-200 sm:block"
           >
-            <div className="absolute -top-[2px] left-0 right-0 h-[2px] overflow-hidden">
+            <div className="absolute -top-1 left-0 right-0 h-2 overflow-hidden rounded-full">
               <div className="line-sweep" />
             </div>
           </div>
@@ -298,11 +292,11 @@ export default function AppLanding() {
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-600 text-white">
                   <Stethoscope size={18} />
                 </div>
-                <div>
-                  <p className="text-sm font-bold text-slate-900">{sampleName}</p>
-                  <p className="text-xs text-slate-400">{sampleUrl}</p>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-bold text-slate-900">{sampleName}</p>
+                  <p className="truncate text-xs text-slate-400">{sampleUrl}</p>
                 </div>
-                <span className="ml-auto rounded-full bg-brand-50 px-2.5 py-1 text-[11px] font-semibold text-brand-700">
+                <span className="ml-auto shrink-0 rounded-full bg-brand-50 px-2.5 py-1 text-[11px] font-semibold text-brand-700">
                   {t("landing.bookAppointment")}
                 </span>
               </div>
@@ -501,7 +495,7 @@ export default function AppLanding() {
         logo={{ url: "/", title: "Clinika" }}
         tagline={t("footer.tagline")}
         menuItems={footerMenu}
-        copyright={`© ${new Date().getFullYear()} Clinika. ${t("footer.rights")}`}
+        copyright={`© ${new Date().getFullYear()} Nitron Digital LLC · Clinika. ${t("footer.rights")}`}
         bottomLinks={[
           { text: t("footer.terms"), url: "/terms" },
           { text: t("footer.privacy"), url: "/privacy" },

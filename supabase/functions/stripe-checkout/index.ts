@@ -66,13 +66,45 @@ Deno.serve(async (req) => {
         .eq("id", clinic.id);
     }
 
+    // Referral first-month discount: if this clinic signed up with an affiliate
+    // code that grants a discount, apply it as a one-time Stripe coupon (cached
+    // on the affiliate row). `discounts` and `allow_promotion_codes` are
+    // mutually exclusive in Checkout, so we only allow manual promo codes when
+    // no referral discount applies.
+    const refCode = String(profile?.referralCode || "").toUpperCase();
+    let discounts: { coupon: string }[] | undefined;
+    if (refCode) {
+      const { data: aff } = await admin
+        .from("affiliates")
+        .select("code, discount_pct, stripe_coupon_id, active")
+        .eq("code", refCode)
+        .maybeSingle();
+      const pct = Number(aff?.discount_pct || 0);
+      if (aff?.active && pct > 0) {
+        let couponId = aff.stripe_coupon_id as string | null;
+        if (!couponId) {
+          const coupon = await stripe.coupons.create({
+            percent_off: Math.min(100, Math.max(0, pct * 100)),
+            duration: "once",
+            name: `Referral ${aff.code}`,
+          });
+          couponId = coupon.id;
+          await admin
+            .from("affiliates")
+            .update({ stripe_coupon_id: couponId })
+            .eq("code", aff.code);
+        }
+        discounts = [{ coupon: couponId }];
+      }
+    }
+
     const base = origin || `${supabaseUrl}`;
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       customer: customerId,
       client_reference_id: clinic.id,
       line_items: [{ price: priceId, quantity: 1 }],
-      allow_promotion_codes: true,
+      ...(discounts ? { discounts } : { allow_promotion_codes: true }),
       success_url: `${base}/app/settings?billing=success`,
       cancel_url: `${base}/app/settings?billing=cancel`,
       metadata: { clinic_id: clinic.id, plan, cycle },

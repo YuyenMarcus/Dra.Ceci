@@ -21,15 +21,28 @@ import {
   Link2,
   Check,
   Pencil,
+  Flag,
 } from "lucide-react";
 import { useLang } from "../i18n/LanguageContext.jsx";
 import { useAuth } from "../auth/AuthContext.jsx";
-import { getClinicBySlug } from "../store/db.js";
+import { getServiceIcon } from "../components/serviceIcons.jsx";
+import { getClinicBySlug, reportClinic } from "../store/db.js";
 import LanguageToggle from "../components/LanguageToggle.jsx";
+import Modal from "../components/Modal.jsx";
 import ClinicMap from "../components/ClinicMap.jsx";
 import Reveal from "../components/ui/reveal.jsx";
 import { ThemeToggle } from "../theme/ThemeContext.jsx";
+import { formatPhoneIntl } from "../lib/format.js";
 import { useSeo, SITE_URL } from "../lib/seo.js";
+
+const REPORT_REASONS = [
+  "report.reason.fake",
+  "report.reason.inappropriate",
+  "report.reason.wrongInfo",
+  "report.reason.impersonation",
+  "report.reason.notDentist",
+  "report.reason.other",
+];
 
 const U = (id) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=1200&q=80`;
 const STOCK = {
@@ -84,6 +97,49 @@ export default function Profile() {
   const [clinic, setClinic] = useState(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+
+  // Abuse-report modal state.
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+  const [reportDetails, setReportDetails] = useState("");
+  const [reportContact, setReportContact] = useState("");
+  const [reportBusy, setReportBusy] = useState(false);
+  const [reportError, setReportError] = useState("");
+  const [reportDone, setReportDone] = useState(false);
+
+  async function submitReport(e) {
+    e.preventDefault();
+    if (!reportReason) {
+      setReportError("err.reportReason");
+      return;
+    }
+    setReportBusy(true);
+    setReportError("");
+    const res = await reportClinic({
+      clinicId: clinic.id,
+      reason: t(reportReason),
+      details: reportDetails,
+      contact: reportContact,
+    });
+    setReportBusy(false);
+    if (!res?.ok) {
+      setReportError(res?.error || "err.reportFailed");
+      return;
+    }
+    setReportDone(true);
+  }
+
+  function closeReport() {
+    setReportOpen(false);
+    // Reset after the close transition so the form is fresh next time.
+    setTimeout(() => {
+      setReportReason("");
+      setReportDetails("");
+      setReportContact("");
+      setReportError("");
+      setReportDone(false);
+    }, 200);
+  }
 
   useEffect(() => {
     let active = true;
@@ -225,7 +281,7 @@ export default function Profile() {
   const hoursValue = cp.hours?.trim() || t("landing.hoursValue");
   const serviceList =
     Array.isArray(cp.services) && cp.services.length
-      ? cp.services.map((s) => ({ icon: Sparkles, name: s.name, desc: s.desc }))
+      ? cp.services.map((s) => ({ icon: getServiceIcon(s.icon), name: s.name, desc: s.desc }))
       : defaultServices;
 
   return (
@@ -328,7 +384,7 @@ export default function Profile() {
             {clinic.phone && (
               <p className="animate-fade-up mt-5 flex items-center gap-2 text-sm text-slate-500">
                 <Phone size={15} className="text-brand-600" /> {t("landing.callUs")}:{" "}
-                <span className="font-medium text-slate-700">{clinic.phone}</span>
+                <span className="font-medium text-slate-700">{formatPhoneIntl(clinic.phone)}</span>
               </p>
             )}
           </div>
@@ -367,7 +423,7 @@ export default function Profile() {
                 value: [clinic.address, clinic.city].filter(Boolean).join(", ") || clinic.clinic,
               },
               { icon: Clock, label: t("landing.hours"), value: hoursValue },
-              clinic.phone && { icon: Phone, label: t("landing.phone"), value: clinic.phone },
+              clinic.phone && { icon: Phone, label: t("landing.phone"), value: formatPhoneIntl(clinic.phone) },
             ]
               .filter(Boolean)
               .map(({ icon: Icon, label, value }) => (
@@ -508,7 +564,7 @@ export default function Profile() {
                 </div>
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">{t("landing.phone")}</p>
-                  <p className="text-sm text-slate-600">{clinic.phone}</p>
+                  <p className="text-sm text-slate-600">{formatPhoneIntl(clinic.phone)}</p>
                 </div>
               </div>
             )}
@@ -598,15 +654,103 @@ export default function Profile() {
           <span>
             © {new Date().getFullYear()} {clinicName} · {t("landing.footerNote")}
           </span>
-          <Link
-            to="/"
-            className="inline-flex items-center gap-1.5 font-medium text-slate-500 transition hover:text-brand-600"
-          >
-            {t("landing.poweredBy")} <BrandMark size={18} rounded="rounded-md" />
-            <span className="font-semibold">Clinika</span>
-          </Link>
+          <div className="flex items-center gap-4">
+            {!isOwner && (
+              <button
+                type="button"
+                onClick={() => setReportOpen(true)}
+                className="inline-flex items-center gap-1.5 font-medium text-slate-400 transition hover:text-rose-600"
+              >
+                <Flag size={14} /> {t("report.cta")}
+              </button>
+            )}
+            <Link
+              to="/"
+              className="inline-flex items-center gap-1.5 font-medium text-slate-500 transition hover:text-brand-600"
+            >
+              {t("landing.poweredBy")} <BrandMark size={18} rounded="rounded-md" />
+              <span className="font-semibold">Clinika</span>
+            </Link>
+          </div>
         </div>
       </footer>
+
+      <Modal
+        open={reportOpen}
+        onClose={closeReport}
+        title={t("report.title")}
+        size="md"
+      >
+        {reportDone ? (
+          <div className="py-4 text-center">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+              <CheckCircle2 size={28} />
+            </div>
+            <p className="font-semibold text-slate-900">{t("report.thanksTitle")}</p>
+            <p className="mt-1 text-sm text-slate-500">{t("report.thanksBody")}</p>
+            <button onClick={closeReport} className="btn-primary mt-6">
+              {t("common.close")}
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={submitReport} className="space-y-4">
+            <p className="text-sm text-slate-500">{t("report.intro", { name: clinicName })}</p>
+            <div>
+              <label className="label">{t("report.reasonLabel")}</label>
+              <select
+                className="input"
+                value={reportReason}
+                onChange={(e) => {
+                  setReportReason(e.target.value);
+                  setReportError("");
+                }}
+              >
+                <option value="" disabled>
+                  {t("common.select")}
+                </option>
+                {REPORT_REASONS.map((key) => (
+                  <option key={key} value={key}>
+                    {t(key)}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="label">{t("report.detailsLabel")}</label>
+              <textarea
+                className="input min-h-[90px] resize-y"
+                value={reportDetails}
+                onChange={(e) => setReportDetails(e.target.value)}
+                placeholder={t("report.detailsPh")}
+                maxLength={1000}
+              />
+            </div>
+            <div>
+              <label className="label">{t("report.contactLabel")}</label>
+              <input
+                className="input"
+                value={reportContact}
+                onChange={(e) => setReportContact(e.target.value)}
+                placeholder={t("report.contactPh")}
+                maxLength={200}
+              />
+            </div>
+            {reportError && (
+              <p className="rounded-xl bg-rose-50 px-3.5 py-2.5 text-sm font-medium text-rose-600">
+                {t(reportError)}
+              </p>
+            )}
+            <div className="flex justify-end gap-2">
+              <button type="button" onClick={closeReport} className="btn-ghost">
+                {t("common.cancel")}
+              </button>
+              <button type="submit" disabled={reportBusy} className="btn-danger disabled:opacity-60">
+                <Flag size={16} /> {t("report.submit")}
+              </button>
+            </div>
+          </form>
+        )}
+      </Modal>
     </div>
   );
 }

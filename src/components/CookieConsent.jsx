@@ -34,13 +34,13 @@ export default function CookieConsent() {
         </div>
         <div className="flex shrink-0 items-center gap-2.5">
           <button
-            className="btn-ghost text-sm"
+            className="btn-ghost flex-1 justify-center text-sm sm:flex-none"
             onClick={() => decide("essential")}
           >
             {t("cookie.essential")}
           </button>
           <button
-            className="btn-primary text-sm"
+            className="btn-primary flex-1 justify-center text-sm sm:flex-none"
             onClick={() => decide("all")}
           >
             {t("cookie.acceptAll")}

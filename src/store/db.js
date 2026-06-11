@@ -173,6 +173,24 @@ export async function updateClinic(clinicId, patch) {
   if (error) throw error;
 }
 
+// A clinic must have been active within this many days to stay listed in the
+// public "find a doctor" directory. Clinics that sign up but never come back
+// drop off automatically (their activity ages out).
+export const ACTIVE_WINDOW_DAYS = 30;
+
+// Stamp the clinic's last-active time so it keeps showing in the directory.
+// Merges into the existing profile (the owner's own session is the only writer
+// of their profile, so a shallow client-side merge is safe). Best-effort: any
+// failure is swallowed so it never interrupts the app.
+export async function touchClinicActivity(clinicId, currentProfile = {}) {
+  if (!isSupabaseEnabled || !clinicId) return;
+  const { error } = await supabase
+    .from("clinics")
+    .update({ profile: { ...currentProfile, lastActiveAt: new Date().toISOString() } })
+    .eq("id", clinicId);
+  if (error) console.debug("touchClinicActivity failed:", error.message);
+}
+
 // Public directory of clinics for the "find a doctor" page. Returns only the
 // non-sensitive marketing fields (no email/phone). Clinics are publicly
 // readable, so this works for anonymous visitors and logged-in patients alike.
@@ -180,9 +198,10 @@ export async function listClinics() {
   if (!isSupabaseEnabled) return [];
   const { data, error } = await supabase
     .from("clinics")
-    .select("id, slug, name, specialty, clinic_name, city, profile")
+    .select("id, slug, name, specialty, clinic_name, city, profile, created_at")
     .order("created_at", { ascending: true });
   if (error) throw error;
+  const cutoff = Date.now() - ACTIVE_WINDOW_DAYS * 86400000;
   return (data ?? [])
     .map((row) => ({
       id: row.id,
@@ -192,9 +211,21 @@ export async function listClinics() {
       clinic: row.clinic_name,
       city: row.city,
       profile: row.profile ?? {},
+      createdAt: row.created_at,
     }))
     // Hide clinics that have paused their public presence.
-    .filter((c) => !c.profile?.suspended);
+    .filter((c) => !c.profile?.suspended)
+    // Hide clinics that opted out of the public directory (still reachable by
+    // direct link / bookable — this only removes them from "Find a doctor").
+    .filter((c) => !c.profile?.unlisted)
+    // Hide dormant clinics: they must have been active (or just signed up)
+    // within the activity window. Falls back to created_at so brand-new
+    // clinics that haven't recorded activity yet still get a grace period.
+    .filter((c) => {
+      const stamp = c.profile?.lastActiveAt || c.createdAt;
+      const ts = stamp ? new Date(stamp).getTime() : NaN;
+      return Number.isFinite(ts) ? ts >= cutoff : true;
+    });
 }
 
 // Public profile by slug (PII-safe RPC).
@@ -341,6 +372,44 @@ export async function requestAppointmentRpc(params) {
   });
   if (error) return { ok: false, error: "err.bookingFailed" };
   return data;
+}
+
+// Submit an abuse report for a clinic's public profile (anonymous allowed).
+export async function reportClinic({ clinicId, reason, details, contact }) {
+  if (!isSupabaseEnabled) return { ok: false, error: "err.noBackend" };
+  const { data, error } = await supabase.rpc("report_clinic", {
+    p_clinic_id: clinicId,
+    p_reason: reason ?? "",
+    p_details: details ?? "",
+    p_contact: contact ?? "",
+  });
+  if (error) return { ok: false, error: "err.reportFailed" };
+  return data;
+}
+
+// In-app feedback (rating + comment about Clinika) from a logged-in user.
+export async function submitTestimonial({ rating, comment }) {
+  if (!isSupabaseEnabled) return { ok: false, error: "err.noBackend" };
+  const { data, error } = await supabase.rpc("submit_testimonial", {
+    p_rating: rating,
+    p_comment: comment ?? "",
+  });
+  if (error) return { ok: false, error: "err.feedbackFailed" };
+  return data;
+}
+
+// The caller's existing testimonial (for prefill), or null.
+export async function getMyTestimonial() {
+  if (!isSupabaseEnabled) return null;
+  const { data, error } = await supabase
+    .from("app_testimonials")
+    .select("rating, comment, status")
+    .maybeSingle();
+  if (error) {
+    console.debug("getMyTestimonial failed:", error.message);
+    return null;
+  }
+  return data || null;
 }
 
 export async function getBookingsByPhone(clinicId, phone) {
@@ -562,24 +631,10 @@ export async function getMyTreatments() {
   }));
 }
 
-export async function getTreatmentsByPhone(clinicId, phone) {
-  if (!isSupabaseEnabled || !clinicId) return [];
-  const { data, error } = await supabase.rpc("public_treatments_by_phone", {
-    p_clinic_id: clinicId,
-    p_phone: phone,
-  });
-  if (error) throw error;
-  return (data ?? []).map((r) => ({
-    id: r.id,
-    date: r.treatment_date,
-    provider: r.provider,
-    tooth: r.tooth,
-    procedure: r.procedure,
-    followUp: r.follow_up,
-    patientNote: r.patient_note,
-    status: r.status,
-  }));
-}
+// NOTE: treatments are intentionally NOT exposed by phone to anonymous callers.
+// Clinical history is PHI and is only available to an authenticated patient via
+// getMyTreatments()/my_treatments() after they link their records (see
+// migration 0013_lock_phone_records.sql).
 
 // ---------------------------------------------------------------------------
 // Informed consent records
@@ -644,21 +699,9 @@ export async function getMyConsents() {
   }));
 }
 
-export async function getConsentsByPhone(clinicId, phone) {
-  if (!isSupabaseEnabled || !clinicId) return [];
-  const { data, error } = await supabase.rpc("public_consents_by_phone", {
-    p_clinic_id: clinicId,
-    p_phone: phone,
-  });
-  if (error) throw error;
-  return (data ?? []).map((r) => ({
-    id: r.id,
-    procedure: r.procedure,
-    body: r.body,
-    signedName: r.signed_name,
-    signedAt: r.signed_at,
-  }));
-}
+// NOTE: signed consents are intentionally NOT exposed by phone to anonymous
+// callers (PHI). They are only available to an authenticated patient via
+// getMyConsents()/my_consents() after linking. See migration 0013.
 
 // ---------------------------------------------------------------------------
 // Product usage events (migration 0008). Fire-and-forget: never throws, never
@@ -704,6 +747,7 @@ export async function adminOverview() {
     suspended: r.suspended,
     trialEndsAt: r.trial_ends_at,
     referralSource: r.referral_source,
+    referralCode: r.referral_code || "",
     planCycle: r.plan_cycle,
     lastSignInAt: r.last_sign_in_at,
     patientCount: Number(r.patient_count || 0),
@@ -751,6 +795,123 @@ export async function adminUpdateClinic(clinicId, patch) {
     console.error("admin_update_clinic failed:", error);
     return { ok: false, error: error.message || error.code || "error" };
   }
+  return { ok: true };
+}
+
+// Reports queue (admin only): list flagged clinic profiles.
+export async function adminReports() {
+  if (!isSupabaseEnabled) return [];
+  const { data, error } = await supabase.rpc("admin_reports");
+  if (error) {
+    console.debug("admin_reports failed:", error.message);
+    return [];
+  }
+  return (data ?? []).map((r) => ({
+    id: r.id,
+    clinicId: r.clinic_id,
+    clinicName: r.clinic_name,
+    clinicSlug: r.clinic_slug,
+    reason: r.reason,
+    details: r.details,
+    reporter: r.reporter,
+    status: r.status,
+    createdAt: r.created_at,
+  }));
+}
+
+export async function adminResolveReport(id, status) {
+  if (!isSupabaseEnabled) return { ok: false, error: "err.noBackend" };
+  const { data, error } = await supabase.rpc("admin_resolve_report", {
+    p_id: id,
+    p_status: status,
+  });
+  if (error) return { ok: false, error: error.message || "error" };
+  return data;
+}
+
+// Testimonials queue (admin only).
+export async function adminTestimonials() {
+  if (!isSupabaseEnabled) return [];
+  const { data, error } = await supabase.rpc("admin_testimonials");
+  if (error) {
+    console.debug("admin_testimonials failed:", error.message);
+    return [];
+  }
+  return (data ?? []).map((tm) => ({
+    id: tm.id,
+    clinicId: tm.clinic_id,
+    clinicSlug: tm.clinic_slug,
+    displayName: tm.display_name,
+    rating: tm.rating,
+    comment: tm.comment,
+    status: tm.status,
+    createdAt: tm.created_at,
+  }));
+}
+
+export async function adminSetTestimonialStatus(id, status) {
+  if (!isSupabaseEnabled) return { ok: false, error: "err.noBackend" };
+  const { data, error } = await supabase.rpc("admin_set_testimonial_status", {
+    p_id: id,
+    p_status: status,
+  });
+  if (error) return { ok: false, error: error.message || "error" };
+  return data;
+}
+
+// ---------------------------------------------------------------------------
+// Affiliate / referral codes (migration 0014). Admin-managed; counts and
+// commission are computed client-side by grouping clinics on referralCode.
+// ---------------------------------------------------------------------------
+
+// Public: look up a referral code for the signup form. Returns its validity and
+// the first-month discount (fraction 0..1) it grants.
+export async function checkAffiliateCode(code) {
+  if (!isSupabaseEnabled || !code) return { valid: false, discountPct: 0 };
+  const { data, error } = await supabase.rpc("public_affiliate_info", { p_code: code });
+  if (error) {
+    console.debug("public_affiliate_info failed:", error.message);
+    return { valid: false, discountPct: 0 };
+  }
+  const row = Array.isArray(data) ? data[0] : data;
+  if (!row?.valid) return { valid: false, discountPct: 0 };
+  return { valid: true, discountPct: Number(row.discount_pct || 0) };
+}
+
+export async function adminAffiliates() {
+  if (!isSupabaseEnabled) return [];
+  const { data, error } = await supabase.rpc("admin_affiliates");
+  if (error) {
+    console.debug("admin_affiliates failed:", error.message);
+    return [];
+  }
+  return (data ?? []).map((a) => ({
+    code: a.code,
+    name: a.name || "",
+    commissionPct: Number(a.commission_pct ?? 0.2),
+    discountPct: Number(a.discount_pct ?? 0),
+    active: a.active,
+    createdAt: a.created_at,
+  }));
+}
+
+export async function adminSaveAffiliate({ code, name, commissionPct, discountPct, active }) {
+  if (!isSupabaseEnabled) return { ok: false, error: "err.noBackend" };
+  const { error } = await supabase.rpc("admin_save_affiliate", {
+    p_code: code,
+    p_name: name ?? "",
+    p_pct: commissionPct ?? 0.2,
+    p_discount: discountPct ?? 0,
+    p_active: active ?? true,
+  });
+  if (error) return { ok: false, error: error.message || "error" };
+  return { ok: true };
+}
+
+export async function adminDeleteAffiliate(code) {
+  if (!isSupabaseEnabled) return { ok: false, error: "err.noBackend" };
+  const { error } = await supabase.rpc("admin_delete_affiliate", { p_code: code });
+  if (error) return { ok: false, error: error.message || "error" };
   return { ok: true };
 }
 

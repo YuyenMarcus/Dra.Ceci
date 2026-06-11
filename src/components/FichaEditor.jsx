@@ -147,7 +147,7 @@ export default function FichaEditor({ form, setForm, formId, onSubmit }) {
       {/* Revisión por sistemas */}
       <section>
         <SectionTitle>Revisión por sistemas</SectionTitle>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           {SISTEMAS.map((s) => (
             <div key={s.key}>
               <label className="label mb-1" title={s.hint || undefined}>

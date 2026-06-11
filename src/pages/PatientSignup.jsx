@@ -20,6 +20,7 @@ export default function PatientSignup() {
   const [phoneValid, setPhoneValid] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [agreed, setAgreed] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
@@ -32,6 +33,10 @@ export default function PatientSignup() {
     e.preventDefault();
     if (!phoneValid) {
       setError("err.validPhone");
+      return;
+    }
+    if (!agreed) {
+      setError("err.acceptTerms");
       return;
     }
     setBusy(true);
@@ -144,6 +149,36 @@ export default function PatientSignup() {
                 placeholder="••••••••"
               />
             </div>
+            <label className="flex items-start gap-2.5 text-sm text-slate-600">
+              <input
+                type="checkbox"
+                className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+                checked={agreed}
+                onChange={(e) => {
+                  setAgreed(e.target.checked);
+                  setError("");
+                }}
+              />
+              <span>
+                {t("auth.agreePre")}
+                <Link
+                  to="/terms"
+                  target="_blank"
+                  className="font-medium text-brand-600 hover:text-brand-700"
+                >
+                  {t("auth.agreeTerms")}
+                </Link>
+                {t("auth.agreeMid")}
+                <Link
+                  to="/privacy"
+                  target="_blank"
+                  className="font-medium text-brand-600 hover:text-brand-700"
+                >
+                  {t("auth.agreePrivacy")}
+                </Link>
+                .
+              </span>
+            </label>
             {error && (
               <p className="rounded-xl bg-rose-50 px-3.5 py-2.5 text-sm font-medium text-rose-600">
                 {t(error)}
@@ -161,7 +196,11 @@ export default function PatientSignup() {
                 </Link>
               </div>
             )}
-            <button type="submit" disabled={busy} className="btn-primary w-full py-3 disabled:opacity-60">
+            <button
+              type="submit"
+              disabled={busy || !agreed}
+              className="btn-primary w-full py-3 disabled:opacity-60"
+            >
               <UserPlus size={18} /> {t("auth.createAccount")}
             </button>
           </form>

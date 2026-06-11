@@ -19,9 +19,11 @@ import {
 import { useAuth } from "../auth/AuthContext.jsx";
 import { useLang } from "../i18n/LanguageContext.jsx";
 import { initials, formatLongDate } from "../lib/format.js";
-import { updateClinic, logEvent } from "../store/db.js";
+import { updateClinic, logEvent, touchClinicActivity } from "../store/db.js";
 import Tour from "./Tour.jsx";
 import Modal from "./Modal.jsx";
+import Paywall from "./Paywall.jsx";
+import TrialBanner from "./TrialBanner.jsx";
 import BrandMark from "./BrandMark.jsx";
 import { ThemeToggle } from "../theme/ThemeContext.jsx";
 import { useSeo } from "../lib/seo.js";
@@ -140,6 +142,7 @@ export default function Layout({ children }) {
     receptionMode,
     exitReception,
     isAdmin,
+    access,
   } = useAuth();
   const { t } = useLang();
   const title = titles[location.pathname]
@@ -166,6 +169,17 @@ export default function Layout({ children }) {
     lastFeatureLog[key] = now;
     logEvent("feature.open", { feature }, clinicIdForLog);
   }, [location.pathname, clinicIdForLog]);
+
+  // Stamp the clinic as "active today" so it stays in the public directory.
+  // Throttled to once per calendar day per clinic to avoid needless writes.
+  useEffect(() => {
+    if (!clinic?.id) return;
+    const today = new Date().toISOString().slice(0, 10);
+    const key = `medtrack.activeTouch.${clinic.id}`;
+    if (localStorage.getItem(key) === today) return;
+    localStorage.setItem(key, today);
+    touchClinicActivity(clinic.id, clinic.profile || {});
+  }, [clinic?.id]);
 
   // Some ad-block / content-filter extensions inject `display:none !important`
   // on the sidebar (it survived even after switching <aside> to <div>). A
@@ -263,6 +277,10 @@ export default function Layout({ children }) {
     navigate("/", { replace: true });
   }
 
+  // Trial + 24-hour grace period have lapsed with no active subscription: lock
+  // the whole doctor app behind the paywall until billing is active.
+  if (access?.state === "locked") return <Paywall />;
+
   return (
     <div className="min-h-screen md:flex">
       {/* Desktop sidebar. Intentionally a <div>, not <aside>: ad-block/content
@@ -328,7 +346,7 @@ export default function Layout({ children }) {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex shrink-0 items-center gap-1.5">
             {isAdmin && !receptionMode && (
               <button
                 className="btn-ghost px-3 py-2 text-xs"
@@ -377,8 +395,10 @@ export default function Layout({ children }) {
           </div>
         </header>
 
+        <TrialBanner access={access} />
+
         {receptionMode && (
-          <div className="flex items-center justify-between gap-3 border-b border-amber-200 bg-amber-50 px-4 py-2.5 md:px-8">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-amber-200 bg-amber-50 px-4 py-2.5 md:px-8">
             <p className="flex items-center gap-2 text-sm font-medium text-amber-800">
               <ConciergeBell size={16} />
               {t("reception.banner")}
