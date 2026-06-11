@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { Search, Clock, X, CalendarPlus, CalendarX, ClipboardList, FileText } from "lucide-react";
 import BrandMark from "../components/BrandMark.jsx";
 import { useLang } from "../i18n/LanguageContext.jsx";
+import { useSeo } from "../lib/seo.js";
 import Confirm from "../components/Confirm.jsx";
 import LanguageToggle from "../components/LanguageToggle.jsx";
 import PhoneField from "../components/PhoneField.jsx";
@@ -39,6 +40,7 @@ function PublicHeader({ slug }) {
 export default function ManageBooking() {
   const { slug } = useParams();
   const { t, lang } = useLang();
+  useSeo({ title: "Clinika", noindex: true });
   const [clinic, setClinic] = useState(null);
   const [phone, setPhone] = useState("");
   const [phoneValid, setPhoneValid] = useState(false);

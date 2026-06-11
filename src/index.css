@@ -274,6 +274,334 @@
   }
 }
 
+/* ------------------------------------------------------------------ */
+/* Dark mode                                                           */
+/*                                                                     */
+/* Driven by a `dark` class on <html> (see theme/ThemeContext.jsx).    */
+/* Instead of adding dark: variants to thousands of class usages, we   */
+/* re-point the small set of light-surface utilities the app actually  */
+/* uses. These rules are unlayered, so they win over Tailwind's        */
+/* layered utilities. White-on-dark utilities (bg-white/10 etc.) and   */
+/* the dark gradient bands already look right and are left alone.     */
+/* ------------------------------------------------------------------ */
+
+:root {
+  --chart-grid: #e2e8f0;
+  --chart-text: #94a3b8;
+}
+
+.dark {
+  color-scheme: dark;
+  --chart-grid: #334155;
+  --chart-text: #64748b;
+}
+
+.dark body {
+  background-color: #0f172a;
+  color: #cbd5e1;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background-color: #334155;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background-color: #475569;
+}
+
+/* --- component utilities ------------------------------------------ */
+.dark .card {
+  background-color: #1e293b;
+  border-color: rgba(51, 65, 85, 0.8);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.3),
+    0 8px 24px -12px rgba(0, 0, 0, 0.5);
+}
+.dark .input {
+  background-color: #0f172a;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+.dark .input::placeholder {
+  color: #64748b;
+}
+.dark .label {
+  color: #8794a8;
+}
+.dark .btn-outline {
+  background-color: transparent;
+  border-color: #475569;
+  color: #cbd5e1;
+}
+.dark .btn-outline:hover {
+  background-color: #273548;
+}
+.dark .btn-ghost {
+  color: #a3b2c2;
+}
+.dark .btn-ghost:hover {
+  background-color: #273548;
+}
+.dark .btn-danger {
+  background-color: rgba(244, 63, 94, 0.15);
+  color: #fb7185;
+}
+.dark .btn-danger:hover {
+  background-color: rgba(244, 63, 94, 0.25);
+}
+
+/* --- surfaces ------------------------------------------------------ */
+.dark .bg-white {
+  background-color: #1e293b;
+}
+.dark .bg-slate-50 {
+  background-color: #0f172a;
+}
+.dark .bg-slate-50\/60,
+.dark .bg-slate-50\/70,
+.dark .bg-slate-50\/80 {
+  background-color: rgba(30, 41, 59, 0.55);
+}
+.dark .bg-slate-100 {
+  background-color: #334155;
+}
+.dark .bg-slate-100\/70 {
+  background-color: rgba(51, 65, 85, 0.7);
+}
+.dark .bg-slate-200 {
+  background-color: #475569;
+}
+.dark .bg-white\/70,
+.dark .bg-white\/80,
+.dark .bg-white\/85,
+.dark .bg-white\/90 {
+  background-color: rgba(15, 23, 42, 0.85);
+}
+.dark .bg-white\/95 {
+  background-color: rgba(15, 23, 42, 0.92);
+}
+
+/* --- brand + status tints ------------------------------------------ */
+.dark .bg-brand-50 {
+  background-color: rgba(45, 212, 191, 0.08);
+}
+.dark .bg-brand-50\/50,
+.dark .bg-brand-50\/60 {
+  background-color: rgba(45, 212, 191, 0.06);
+}
+.dark .bg-brand-100 {
+  background-color: rgba(45, 212, 191, 0.16);
+}
+.dark .bg-brand-200\/40 {
+  background-color: rgba(13, 148, 136, 0.18);
+}
+.dark .bg-emerald-50 {
+  background-color: rgba(16, 185, 129, 0.12);
+}
+.dark .bg-emerald-100 {
+  background-color: rgba(16, 185, 129, 0.18);
+}
+.dark .bg-amber-50 {
+  background-color: rgba(245, 158, 11, 0.12);
+}
+.dark .bg-amber-100 {
+  background-color: rgba(245, 158, 11, 0.18);
+}
+.dark .bg-rose-50 {
+  background-color: rgba(244, 63, 94, 0.12);
+}
+.dark .bg-rose-50\/40 {
+  background-color: rgba(244, 63, 94, 0.08);
+}
+.dark .bg-rose-100 {
+  background-color: rgba(244, 63, 94, 0.2);
+}
+.dark .bg-portal-50 {
+  background-color: rgba(139, 92, 246, 0.12);
+}
+.dark .bg-portal-100,
+.dark .bg-violet-100 {
+  background-color: rgba(139, 92, 246, 0.18);
+}
+.dark .bg-sky-50 {
+  background-color: rgba(14, 165, 233, 0.12);
+}
+.dark .bg-sky-100 {
+  background-color: rgba(14, 165, 233, 0.18);
+}
+.dark .bg-teal-100 {
+  background-color: rgba(45, 212, 191, 0.18);
+}
+.dark .bg-fuchsia-100 {
+  background-color: rgba(217, 70, 239, 0.18);
+}
+
+/* --- text ----------------------------------------------------------- */
+.dark .text-slate-900 {
+  color: #f1f5f9;
+}
+.dark .text-slate-800 {
+  color: #e2e8f0;
+}
+.dark .text-slate-700 {
+  color: #cbd5e1;
+}
+.dark .text-slate-600 {
+  color: #9fb0c3;
+}
+.dark .text-slate-500 {
+  color: #8794a8;
+}
+.dark .text-brand-500,
+.dark .text-brand-600 {
+  color: #2dd4bf;
+}
+.dark .text-brand-700 {
+  color: #5eead4;
+}
+.dark .text-brand-800,
+.dark .text-brand-950 {
+  color: #99f6e4;
+}
+.dark .text-emerald-600,
+.dark .text-emerald-700 {
+  color: #34d399;
+}
+.dark .text-amber-600,
+.dark .text-amber-700 {
+  color: #fbbf24;
+}
+.dark .text-amber-800 {
+  color: #fcd34d;
+}
+.dark .text-rose-600,
+.dark .text-rose-700 {
+  color: #fb7185;
+}
+.dark .text-rose-600\/80 {
+  color: rgba(251, 113, 133, 0.8);
+}
+.dark .text-portal-600 {
+  color: #a78bfa;
+}
+.dark .text-portal-700 {
+  color: #c4b5fd;
+}
+.dark .text-sky-600 {
+  color: #38bdf8;
+}
+.dark .text-sky-700 {
+  color: #7dd3fc;
+}
+.dark .text-violet-700 {
+  color: #c4b5fd;
+}
+.dark .text-fuchsia-700 {
+  color: #e879f9;
+}
+
+/* --- borders / dividers / rings ------------------------------------- */
+.dark .border-slate-100 {
+  border-color: #243245;
+}
+.dark .border-slate-200,
+.dark .border-slate-200\/70,
+.dark .border-slate-200\/80 {
+  border-color: #334155;
+}
+.dark .border-slate-300,
+.dark .border-slate-300\/80,
+.dark .border-slate-400 {
+  border-color: #475569;
+}
+.dark .border-brand-100 {
+  border-color: rgba(45, 212, 191, 0.15);
+}
+.dark .border-brand-200 {
+  border-color: rgba(45, 212, 191, 0.25);
+}
+.dark .border-rose-200 {
+  border-color: rgba(244, 63, 94, 0.3);
+}
+.dark .divide-slate-100 > * + *,
+.dark .divide-slate-50 > * + * {
+  border-color: #243245;
+}
+.dark .ring-slate-200 {
+  --tw-ring-color: #334155;
+}
+.dark .ring-slate-900\/5 {
+  --tw-ring-color: rgba(255, 255, 255, 0.08);
+}
+.dark .ring-brand-100 {
+  --tw-ring-color: rgba(45, 212, 191, 0.2);
+}
+.dark .ring-sky-100 {
+  --tw-ring-color: rgba(56, 189, 248, 0.25);
+}
+.dark .ring-amber-100 {
+  --tw-ring-color: rgba(245, 158, 11, 0.25);
+}
+.dark .ring-rose-100 {
+  --tw-ring-color: rgba(244, 63, 94, 0.25);
+}
+
+/* --- light gradient tints (photo frames, icon tiles) ----------------- */
+.dark .from-brand-50 {
+  --tw-gradient-from: rgba(45, 212, 191, 0.08);
+}
+.dark .from-brand-100 {
+  --tw-gradient-from: rgba(45, 212, 191, 0.15);
+}
+.dark .to-brand-50 {
+  --tw-gradient-to: rgba(45, 212, 191, 0.04);
+}
+.dark .to-brand-100 {
+  --tw-gradient-to: rgba(45, 212, 191, 0.12);
+}
+
+/* --- hover states ---------------------------------------------------- */
+.dark .hover\:bg-slate-50:hover,
+.dark .hover\:bg-slate-50\/60:hover,
+.dark .hover\:bg-slate-50\/70:hover {
+  background-color: #273548;
+}
+.dark .hover\:bg-slate-100:hover {
+  background-color: #334155;
+}
+.dark .hover\:bg-slate-200:hover {
+  background-color: #475569;
+}
+.dark .hover\:bg-brand-50:hover {
+  background-color: rgba(45, 212, 191, 0.1);
+}
+.dark .hover\:bg-brand-100:hover {
+  background-color: rgba(45, 212, 191, 0.18);
+}
+.dark .hover\:bg-rose-50:hover {
+  background-color: rgba(244, 63, 94, 0.12);
+}
+.dark .hover\:bg-rose-100:hover {
+  background-color: rgba(244, 63, 94, 0.2);
+}
+.dark .hover\:bg-emerald-100:hover {
+  background-color: rgba(16, 185, 129, 0.2);
+}
+.dark .hover\:border-brand-300:hover {
+  border-color: rgba(45, 212, 191, 0.4);
+}
+.dark .hover\:border-slate-300:hover {
+  border-color: #475569;
+}
+.dark .hover\:text-slate-700:hover {
+  color: #cbd5e1;
+}
+.dark .hover\:text-slate-800:hover {
+  color: #e2e8f0;
+}
+.dark .hover\:text-slate-600:hover {
+  color: #9fb0c3;
+}
+
 /* Print: show only the ficha, cleanly. */
 @media print {
   body * {

@@ -3,9 +3,11 @@ import { ArrowLeft, Clock } from "lucide-react";
 import BrandMark from "../components/BrandMark.jsx";
 import LanguageToggle from "../components/LanguageToggle.jsx";
 import { useLang } from "../i18n/LanguageContext.jsx";
+import { useSeo } from "../lib/seo.js";
 
 export default function ComingSoon() {
   const { t } = useLang();
+  useSeo({ title: `${t("comingSoon.title")} | Clinika`, noindex: true });
   return (
     <div className="flex min-h-screen flex-col bg-slate-50">
       <header className="border-b border-slate-200/70 bg-white/80 backdrop-blur">

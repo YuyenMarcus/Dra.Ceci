@@ -1,0 +1,48 @@
+# Clinika
+
+> Clinika is a bilingual (Spanish/English) practice-management platform for dental clinics. It brings appointment scheduling, online booking, patient records with an interactive odontogram, treatment plans, inventory tracking and billing together in one fast web app. Clinics get a public profile page where patients book themselves in seconds — no patient account required. Built for Latin America, with electronic invoicing (DTE) for El Salvador's Ministerio de Hacienda on the top plan. 14-day free trial, no credit card required.
+
+Key facts:
+- Product type: SaaS, web-based dental practice management software
+- Languages: Spanish (default) and English, switchable in-app
+- Primary market: dental clinics and independent dentists in El Salvador and Latin America
+- Trial: 14 days free on every plan, no credit card required
+- Billing: monthly subscriptions via Stripe; cancel anytime, no lock-in
+- Each clinic gets a shareable public booking page at clinika.health/c/{clinic-slug}
+- Patients can book online without creating an account
+- Contact: team@clinika.health
+
+## Product
+
+- [Home / overview](https://www.clinika.health/): What Clinika does — scheduling, online booking, patient records, odontogram, inventory and dashboard, with pricing and FAQ
+- [Find a dentist](https://www.clinika.health/find): Public directory of clinics on Clinika where patients can book an appointment online
+- [Create a clinic](https://www.clinika.health/signup): Doctor sign-up; a clinic is set up in minutes with its own public booking page
+- [Doctor sign-in](https://www.clinika.health/login): Access to the clinic dashboard
+- [Patient portal](https://www.clinika.health/me/login): Patients check appointments, treatment history and records
+
+## Features
+
+- Scheduling: calendar with double-booking prevention, token/queue system, WhatsApp reminders
+- Online booking: public clinic profile with services, hours, location map and real-time slot availability
+- Patient records: full clinical ficha, interactive odontogram, treatment plans and timeline, digital informed consent (MINSAL compliant), CSV patient import
+- Inventory: stock tracking with low-stock alerts and treatment-linked deductions
+- Billing: treatment-linked budgeting, doctor commission calculator and, on the top plan, the full DTE e-invoicing pipeline for El Salvador (digital signature → Hacienda API → UUID, Sello de Recepción storage, Wompi payment links, 10-year fiscal archive)
+- Dashboard: today's appointments, restock alerts and cancellations at a glance
+
+## Pricing (USD, per month)
+
+- Starter — $25: scheduling for up to 2 doctors, token/queue system, 100 WhatsApp reminders/month, basic patient records, email support, 1GB document storage
+- Profesional — $35: unlimited doctors, full patient ficha, interactive odontogram + treatment plans, budgeting, digital informed consent, prescription PDFs, inventory with treatment-linked deductions, patient timeline, patient portal with WhatsApp OTP, 500 WhatsApp reminders/month, dashboard and reports, commission calculator, 10GB storage, priority support
+- Hacienda-Ready — $55: everything in Profesional plus full DTE electronic invoicing with Hacienda (El Salvador), Sello de Recepción storage, Wompi payment integration, 10-year fiscal document archive, unlimited storage, multi-doctor commission tracking, dedicated onboarding, unlimited WhatsApp reminders
+
+## FAQ
+
+- Is a credit card needed for the trial? No — 14 days free, pay only to continue
+- Can patients book online? Yes — every clinic gets a public page where patients pick an open slot and book in seconds, no account needed
+- Is the data secure? Yes — each clinic can only access its own information, protected with authentication and encryption in transit
+- Can clinics cancel anytime? Yes — change plan or cancel from Settings → Manage billing, with no penalties
+
+## Optional
+
+- [Extended documentation for LLMs](https://www.clinika.health/llms-full.txt): Fuller product, feature and pricing detail
+- [Sitemap](https://www.clinika.health/sitemap.xml): Indexable pages

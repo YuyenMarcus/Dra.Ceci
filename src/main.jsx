@@ -5,6 +5,7 @@ import App from "./App.jsx";
 import { StoreProvider } from "./store/StoreContext.jsx";
 import { AuthProvider } from "./auth/AuthContext.jsx";
 import { LanguageProvider } from "./i18n/LanguageContext.jsx";
+import { ThemeProvider } from "./theme/ThemeContext.jsx";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
 import "./index.css";
 
@@ -12,13 +13,15 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     <ErrorBoundary>
       <BrowserRouter>
-        <LanguageProvider>
-          <AuthProvider>
-            <StoreProvider>
-              <App />
-            </StoreProvider>
-          </AuthProvider>
-        </LanguageProvider>
+        <ThemeProvider>
+          <LanguageProvider>
+            <AuthProvider>
+              <StoreProvider>
+                <App />
+              </StoreProvider>
+            </AuthProvider>
+          </LanguageProvider>
+        </ThemeProvider>
       </BrowserRouter>
     </ErrorBoundary>
   </StrictMode>

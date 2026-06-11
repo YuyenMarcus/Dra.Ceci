@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../auth/AuthContext.jsx";
 import { useLang } from "../i18n/LanguageContext.jsx";
+import { useSeo } from "../lib/seo.js";
 import {
   loadPatientPortal,
   linkPatientRecords,
@@ -35,9 +36,11 @@ import {
 import { funGreeting } from "../lib/funGreeting.js";
 import LanguageToggle from "../components/LanguageToggle.jsx";
 import TreatmentTimeline from "../components/TreatmentTimeline.jsx";
+import { ThemeToggle } from "../theme/ThemeContext.jsx";
 
 export default function PatientHome() {
   const { t, lang } = useLang();
+  useSeo({ title: `${t("app.patientPortal")} | Clinika`, noindex: true });
   const { patient, logout, canSwitchRoles } = useAuth();
   const [doctors, setDoctors] = useState([]);
   const [appointments, setAppointments] = useState([]);
@@ -128,7 +131,8 @@ export default function PatientHome() {
             <span className="text-lg font-bold text-slate-900">Clinika</span>
           </Link>
           <div className="flex items-center gap-2">
-            <LanguageToggle className="mr-1" />
+            <LanguageToggle />
+            <ThemeToggle className="mr-1 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100" />
             {canSwitchRoles && (
               <Link
                 to="/app"

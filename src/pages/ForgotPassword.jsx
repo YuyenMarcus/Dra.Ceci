@@ -4,11 +4,13 @@ import { ArrowLeft, Send, MailCheck } from "lucide-react";
 import BrandMark from "../components/BrandMark.jsx";
 import { useAuth } from "../auth/AuthContext.jsx";
 import { useLang } from "../i18n/LanguageContext.jsx";
+import { useSeo } from "../lib/seo.js";
 import LanguageToggle from "../components/LanguageToggle.jsx";
 
 export default function ForgotPassword() {
   const { resetPassword } = useAuth();
   const { t } = useLang();
+  useSeo({ title: t("seo.loginTitle"), noindex: true });
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);

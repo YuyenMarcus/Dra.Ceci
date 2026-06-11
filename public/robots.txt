@@ -1,0 +1,41 @@
+# www.clinika.health — robots.txt
+# Public marketing pages, the clinic directory and public clinic profiles
+# are crawlable. The doctor dashboard, admin console and patient portal
+# are private application areas.
+
+User-agent: *
+Allow: /
+Allow: /me/login
+Allow: /me/signup
+Disallow: /app
+Disallow: /admin
+Disallow: /me
+Disallow: /forgot-password
+Disallow: /update-password
+Disallow: /coming-soon
+
+# AI / LLM crawlers are welcome on public pages.
+# A machine-readable summary of this site is available at /llms.txt
+# (and an extended version at /llms-full.txt).
+User-agent: GPTBot
+Allow: /
+Disallow: /app
+Disallow: /admin
+Disallow: /me
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /app
+Disallow: /admin
+Disallow: /me
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /app
+Disallow: /admin
+Disallow: /me
+
+User-agent: Google-Extended
+Allow: /
+
+Sitemap: https://www.clinika.health/sitemap.xml

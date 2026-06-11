@@ -1,0 +1,127 @@
+# Clinika — full reference for LLMs
+
+> Clinika (https://www.clinika.health) is a bilingual (Spanish/English) practice-management platform for dental clinics: scheduling, online booking, patient records with interactive odontogram, treatment plans, inventory, billing and a patient portal in one web app. Built for Latin America — Spanish-first, WhatsApp-native reminders, and El Salvador DTE electronic invoicing on the top plan. 14-day free trial on every plan, no credit card required. Contact: team@clinika.health.
+
+## What Clinika is
+
+Clinika is software-as-a-service for dental clinics and independent dentists. A clinic signs up in minutes, configures its name, hours and services, and immediately gets:
+
+1. A private dashboard for the team: appointments, patient records, inventory and settings.
+2. A public profile page at `https://www.clinika.health/c/{clinic-slug}` showing services, photos, hours and location, where patients book an appointment online in seconds without creating an account.
+3. A patient portal where patients review their upcoming visits, treatment history and records.
+
+The interface is fully bilingual: Spanish is the default and English can be toggled anywhere in the app. Date formats and content follow the selected language.
+
+## Who it is for
+
+- Dental clinics in El Salvador and the broader Latin American market
+- Independent dentists who want online booking without building a website
+- Multi-doctor practices that need commission tracking and role separation (including a restricted "reception mode")
+- Clinics that must issue DTE electronic invoices to El Salvador's Ministerio de Hacienda
+
+## Feature detail
+
+### Scheduling
+- Calendar of appointments with double-booking prevention
+- Token / queue system for walk-ins
+- Appointment reminders over WhatsApp (quota depends on plan)
+- Cancellations and reschedules tracked on the dashboard
+
+### Online booking (public clinic profile)
+- Every clinic gets a shareable page: services, photo gallery, doctor bio, opening hours, phone, address and an embedded map (with exact pin support)
+- Patients pick an available slot from the clinic's real schedule; conflicts are blocked server-side
+- No patient account is required to book; bookings can be managed via a manage-booking link
+
+### Patient records
+- Full clinical ficha per patient (history, allergies, notes)
+- Interactive odontogram with treatment plans
+- Patient treatment timeline
+- Digital informed consent, MINSAL compliant
+- Digital prescription PDF generator (CSSP/DCI fields)
+- CSV patient import that adapts to different column formats (single name column or separate first/last name columns)
+
+### Inventory
+- Stock levels with low-stock and out-of-stock alerts
+- Treatment-linked deductions: supplies decrement automatically when treatments are performed (Profesional and above)
+
+### Billing & finance
+- Treatment-linked budgeting tool for patient quotes
+- Doctor commission calculator; multi-doctor commission tracking on the top plan
+- Hacienda-Ready plan: full DTE pipeline for El Salvador — invoice JSON → digital signature → Hacienda API → UUID, storage of the Sello de Recepción, Wompi payment-link integration, and a 10-year document archive for fiscal compliance
+
+### Patient portal
+- Patients sign in (WhatsApp OTP access on Profesional and above) to see appointments, treatments and history
+
+### Platform
+- Subscriptions billed monthly through Stripe; upgrade, downgrade or cancel anytime from Settings → Manage billing
+- Authentication and per-clinic data isolation: each clinic can only access its own information, enforced at the database level (row-level security)
+- Encryption in transit; light and dark mode; responsive web app
+
+## Pricing (USD per month, 14-day free trial on all plans, no credit card to start)
+
+### Starter — $25/month
+- Scheduling for up to 2 doctors
+- Token / queue system
+- WhatsApp reminders (100/month)
+- Basic patient records
+- Email support
+- 1GB document storage
+
+### Profesional — $35/month (most popular)
+- Scheduling with unlimited doctors
+- Token / queue system
+- Full patient ficha
+- Interactive odontogram + treatment plans
+- Treatment-linked budgeting tool
+- Digital informed consent (MINSAL compliant)
+- Digital prescription PDF generator (CSSP/DCI fields)
+- Inventory with treatment-linked deductions
+- Patient treatment timeline
+- Patient portal with WhatsApp OTP access
+- WhatsApp reminders (500/month)
+- Dashboard and reports
+- Doctor commission calculator
+- 10GB document storage
+- Priority support
+
+### Hacienda-Ready — $55/month
+- Everything in Profesional
+- Full DTE pipeline (JSON → digital signature → Hacienda API → UUID)
+- Sello de Recepción storage
+- Wompi payment link integration
+- 10-year document archive (fiscal compliance)
+- Unlimited document storage
+- Multi-doctor commission tracking
+- Dedicated onboarding
+- Unlimited WhatsApp reminders
+
+## Frequently asked questions
+
+**Do I need a card to try Clinika?**
+No. The 14-day trial requires no credit card. You only pay when you decide to continue.
+
+**Can my patients book online?**
+Yes. Your clinic gets a public page with your schedule; patients pick an open slot and book in seconds, no account needed.
+
+**Is my data secure?**
+Yes. Each clinic can only access its own information, protected with authentication and encryption in transit.
+
+**Can I cancel anytime?**
+Yes. Change plans or cancel from Settings → Manage billing, with no lock-in or penalties.
+
+## Key URLs
+
+- Home: https://www.clinika.health/
+- Find a dentist (public directory): https://www.clinika.health/find
+- Create a clinic (doctor sign-up): https://www.clinika.health/signup
+- Doctor sign-in: https://www.clinika.health/login
+- Patient portal sign-in: https://www.clinika.health/me/login
+- Public clinic profiles: https://www.clinika.health/c/{clinic-slug}
+- Online booking for a clinic: https://www.clinika.health/c/{clinic-slug}/book
+- Compact LLM summary: https://www.clinika.health/llms.txt
+- Sitemap: https://www.clinika.health/sitemap.xml
+
+## Contact
+
+- Email: team@clinika.health
+- All sales, support, privacy and press inquiries go to the same address.

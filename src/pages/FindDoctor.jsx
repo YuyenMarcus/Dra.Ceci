@@ -10,11 +10,13 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { useLang } from "../i18n/LanguageContext.jsx";
+import { useSeo } from "../lib/seo.js";
 import { listClinics } from "../store/db.js";
 import LanguageToggle from "../components/LanguageToggle.jsx";
 
 export default function FindDoctor() {
   const { t } = useLang();
+  useSeo({ title: t("seo.findTitle"), description: t("seo.findDesc"), path: "/find" });
   const [clinics, setClinics] = useState([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");

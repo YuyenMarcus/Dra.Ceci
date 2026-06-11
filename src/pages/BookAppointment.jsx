@@ -16,6 +16,7 @@ import LanguageToggle from "../components/LanguageToggle.jsx";
 import Calendar from "../components/Calendar.jsx";
 import PhoneField from "../components/PhoneField.jsx";
 import { useLang } from "../i18n/LanguageContext.jsx";
+import { useSeo } from "../lib/seo.js";
 import { getClinicBySlug, getTakenSlots, requestAppointmentRpc } from "../store/db.js";
 import { formatDate, formatTime, relativeDay } from "../lib/format.js";
 import { generateSlots, upcomingWorkingDays, dateKey } from "../lib/availability.js";
@@ -109,6 +110,12 @@ export default function BookAppointment() {
       active = false;
     };
   }, [slug]);
+
+  useSeo({
+    title: clinic?.name ? t("seo.bookTitle", { name: clinic.name }) : undefined,
+    description: clinic?.name ? t("seo.bookDesc", { name: clinic.name }) : undefined,
+    path: `/c/${slug}/book`,
+  });
 
   // Load taken slots for the booking window so availability never collides.
   useEffect(() => {

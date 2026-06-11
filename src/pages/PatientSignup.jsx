@@ -4,6 +4,7 @@ import { ArrowLeft, UserPlus, MailCheck } from "lucide-react";
 import BrandMark from "../components/BrandMark.jsx";
 import { useAuth } from "../auth/AuthContext.jsx";
 import { useLang } from "../i18n/LanguageContext.jsx";
+import { useSeo } from "../lib/seo.js";
 import LanguageToggle from "../components/LanguageToggle.jsx";
 import PhoneField from "../components/PhoneField.jsx";
 import ResendConfirmation from "../components/ResendConfirmation.jsx";
@@ -12,6 +13,7 @@ export default function PatientSignup() {
   const navigate = useNavigate();
   const { signUpPatient, isClient } = useAuth();
   const { t, lang } = useLang();
+  useSeo({ title: t("seo.patientSignupTitle"), description: t("seo.patientLoginDesc"), path: "/me/signup" });
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");

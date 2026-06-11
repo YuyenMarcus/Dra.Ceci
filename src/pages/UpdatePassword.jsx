@@ -4,12 +4,14 @@ import { KeyRound, CheckCircle2 } from "lucide-react";
 import BrandMark from "../components/BrandMark.jsx";
 import { useAuth } from "../auth/AuthContext.jsx";
 import { useLang } from "../i18n/LanguageContext.jsx";
+import { useSeo } from "../lib/seo.js";
 import LanguageToggle from "../components/LanguageToggle.jsx";
 
 export default function UpdatePassword() {
   const navigate = useNavigate();
   const { updatePassword } = useAuth();
   const { t } = useLang();
+  useSeo({ title: t("seo.loginTitle"), noindex: true });
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");

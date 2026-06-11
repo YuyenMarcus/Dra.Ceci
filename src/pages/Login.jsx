@@ -4,6 +4,7 @@ import { ArrowLeft, LogIn, CalendarPlus } from "lucide-react";
 import BrandMark from "../components/BrandMark.jsx";
 import { useAuth } from "../auth/AuthContext.jsx";
 import { useLang } from "../i18n/LanguageContext.jsx";
+import { useSeo } from "../lib/seo.js";
 import LanguageToggle from "../components/LanguageToggle.jsx";
 import ResendConfirmation from "../components/ResendConfirmation.jsx";
 
@@ -11,6 +12,7 @@ export default function Login() {
   const navigate = useNavigate();
   const { login, isDoctor, isClient, loading } = useAuth();
   const { t } = useLang();
+  useSeo({ title: t("seo.loginTitle"), description: t("seo.loginDesc"), path: "/login" });
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

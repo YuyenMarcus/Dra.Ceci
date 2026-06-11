@@ -727,6 +727,18 @@ export async function adminGrowth() {
   return data || null;
 }
 
+// Daily time series for the admin charts (signups, activity, MRR movement).
+// Returns null on any error so the charts section simply hides.
+export async function adminTimeseries(days = 90) {
+  if (!isSupabaseEnabled) return null;
+  const { data, error } = await supabase.rpc("admin_timeseries", { p_days: days });
+  if (error) {
+    console.debug("admin_timeseries failed:", error.message);
+    return null;
+  }
+  return data || null;
+}
+
 // Shallow-merge a patch into a clinic's profile (plan, billing, trialEndsAt,
 // suspended, referralSource, planCycle). Returns { ok, error? }.
 export async function adminUpdateClinic(clinicId, patch) {

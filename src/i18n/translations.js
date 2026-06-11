@@ -330,6 +330,7 @@ export const translations = {
     "landing.svc.checkupDesc": "Evaluación completa para prevenir y planear tu tratamiento.",
     "landing.whyTitle": "Por qué elegirnos",
     "landing.footerNote": "Reserva tu cita en línea.",
+    "landing.poweredBy": "Impulsado por",
 
     // App product landing ( / )
     "app.tagline": "Gestión de clínicas",
@@ -392,6 +393,30 @@ export const translations = {
     "faq.a3": "Sí. Cada clínica solo puede acceder a su propia información, protegida con autenticación y cifrado en tránsito.",
     "faq.q4": "¿Puedo cancelar en cualquier momento?",
     "faq.a4": "Sí. Puedes cambiar de plan o cancelar desde Ajustes → Gestionar facturación, sin permanencia ni penalidades.",
+
+    "seo.landingTitle":
+      "Clinika — Software de gestión para clínicas dentales | Agenda, fichas e inventario",
+    "seo.landingDesc":
+      "Clinika une agenda, reservas online, fichas de pacientes, odontograma e inventario en una sola app rápida y simple para clínicas dentales. Prueba gratis 14 días, sin tarjeta.",
+    "seo.loginTitle": "Iniciar sesión | Clinika",
+    "seo.loginDesc":
+      "Accede al panel de tu clínica: agenda, fichas de pacientes e inventario.",
+    "seo.signupTitle": "Crea tu clínica gratis | Clinika",
+    "seo.signupDesc":
+      "Configura tu clínica dental en minutos. 14 días de prueba gratis, sin tarjeta de crédito.",
+    "seo.findTitle": "Encuentra tu dentista y reserva online | Clinika",
+    "seo.findDesc":
+      "Explora clínicas dentales que usan Clinika y reserva tu cita en línea en segundos, sin crear cuenta.",
+    "seo.patientLoginTitle": "Portal de pacientes — Iniciar sesión | Clinika",
+    "seo.patientLoginDesc":
+      "Consulta tus citas, tratamientos e historial dental en el portal de pacientes de Clinika.",
+    "seo.patientSignupTitle": "Portal de pacientes — Crear cuenta | Clinika",
+    "seo.profileTitle": "{name} — Reserva tu cita dental online | Clinika",
+    "seo.profileDesc":
+      "Reserva una cita en {name} en segundos. Consulta servicios, horarios y ubicación, y agenda en línea sin crear cuenta.",
+    "seo.bookTitle": "Reservar cita en {name} | Clinika",
+    "seo.bookDesc":
+      "Elige fecha y horario disponible en {name} y confirma tu cita dental en línea.",
     "cta.title": "Empieza a gestionar tu clínica hoy",
     "cta.sub": "Únete a las clínicas que ya organizan sus citas, fichas e inventario con Clinika.",
     "notFound.title": "Página no encontrada",
@@ -608,14 +633,28 @@ export const translations = {
     "nav.admin": "Admin",
     "admin.title": "Consola de administración",
     "admin.subtitle": "Clínicas, ingresos y uso del producto",
+    "admin.overview": "Resumen del negocio",
+    "admin.clinics": "Clínicas",
+    "admin.clinicsSub": "Gestiona el plan, la prueba y el acceso de cada clínica.",
+    "admin.showing": "Mostrando {n} de {total}",
+    "admin.growthSub": "Comparado con el mes pasado",
+    "admin.trendsTitle": "Tendencias",
+    "admin.rangeDays": "{n} días",
+    "admin.cTotalClinics": "Clínicas registradas",
+    "admin.cMrr": "MRR facturado",
+    "admin.cSignups": "Registros por día",
+    "admin.cActive": "Clínicas activas por día",
     "admin.refresh": "Actualizar",
     "admin.backToApp": "Volver a la app",
     "admin.loading": "Cargando clínicas…",
     "admin.empty": "No hay clínicas que coincidan.",
     "admin.loadError": "No se pudieron cargar las clínicas.",
     "admin.saveError": "No se pudo guardar el cambio.",
-    "admin.mrr": "MRR (ingreso mensual)",
+    "admin.mrr": "MRR (facturado por Stripe)",
+    "admin.mrrManual": "+{v} en {n} plan(es) manuales — no facturado",
     "admin.activeClinics": "Clínicas activas",
+    "admin.activeSplit": "{s} de pago · {m} manuales · promedio {v}",
+    "admin.manualTag": "Manual",
     "admin.arpu": "Ingreso promedio por clínica: {v}",
     "admin.trials": "En prueba",
     "admin.newThisMonth": "{v} nuevas este mes",
@@ -664,7 +703,7 @@ export const translations = {
     "admin.gActive7d": "Activas (7 días)",
     "admin.gPortalLogins": "{n} accesos al portal",
     "admin.footnote":
-      "Cambiar el plan marca la clínica como activa (pago manual) y cuenta en el MRR. Las métricas de soporte, DTE, WhatsApp y tiempo de actividad llegarán al conectar el seguimiento de eventos y Stripe.",
+      "Cambiar el plan aquí marca la clínica como activa (cortesía manual) sin cobrarle: no toca Stripe y NO cuenta en el MRR, que solo refleja lo facturado por Stripe. Las métricas de soporte, DTE y WhatsApp llegarán al conectar esas integraciones.",
 
     "find.title": "Encuentra un doctor",
     "find.sub": "Explora los consultorios y agenda tu cita en línea.",
@@ -1166,6 +1205,7 @@ export const translations = {
     "landing.svc.checkupDesc": "A complete evaluation to prevent issues and plan your care.",
     "landing.whyTitle": "Why choose us",
     "landing.footerNote": "Book your appointment online.",
+    "landing.poweredBy": "Powered by",
 
     // App product landing ( / )
     "app.tagline": "Clinic management",
@@ -1228,6 +1268,30 @@ export const translations = {
     "faq.a3": "Yes. Each clinic can only access its own information, protected with authentication and encryption in transit.",
     "faq.q4": "Can I cancel anytime?",
     "faq.a4": "Yes. Change plans or cancel from Settings → Manage billing, with no lock-in or penalties.",
+
+    "seo.landingTitle":
+      "Clinika — Dental clinic management software | Scheduling, records & inventory",
+    "seo.landingDesc":
+      "Clinika brings scheduling, online booking, patient records, odontogram and inventory together in one fast, simple app for dental clinics. Free 14-day trial, no card required.",
+    "seo.loginTitle": "Sign in | Clinika",
+    "seo.loginDesc":
+      "Access your clinic dashboard: scheduling, patient records and inventory.",
+    "seo.signupTitle": "Create your clinic for free | Clinika",
+    "seo.signupDesc":
+      "Set up your dental clinic in minutes. 14-day free trial, no credit card required.",
+    "seo.findTitle": "Find your dentist and book online | Clinika",
+    "seo.findDesc":
+      "Browse dental clinics using Clinika and book your appointment online in seconds — no account needed.",
+    "seo.patientLoginTitle": "Patient portal — Sign in | Clinika",
+    "seo.patientLoginDesc":
+      "Check your appointments, treatments and dental history in the Clinika patient portal.",
+    "seo.patientSignupTitle": "Patient portal — Create account | Clinika",
+    "seo.profileTitle": "{name} — Book your dental appointment online | Clinika",
+    "seo.profileDesc":
+      "Book an appointment at {name} in seconds. See services, hours and location, and schedule online without an account.",
+    "seo.bookTitle": "Book an appointment at {name} | Clinika",
+    "seo.bookDesc":
+      "Pick an available date and time at {name} and confirm your dental appointment online.",
     "cta.title": "Start running your clinic today",
     "cta.sub": "Join the clinics already organizing their appointments, records and inventory with Clinika.",
     "notFound.title": "Page not found",
@@ -1443,14 +1507,28 @@ export const translations = {
     "nav.admin": "Admin",
     "admin.title": "Admin console",
     "admin.subtitle": "Clinics, revenue and product usage",
+    "admin.overview": "Business overview",
+    "admin.clinics": "Clinics",
+    "admin.clinicsSub": "Manage each clinic's plan, trial and access.",
+    "admin.showing": "Showing {n} of {total}",
+    "admin.growthSub": "Compared to last month",
+    "admin.trendsTitle": "Trends",
+    "admin.rangeDays": "{n} days",
+    "admin.cTotalClinics": "Registered clinics",
+    "admin.cMrr": "Billed MRR",
+    "admin.cSignups": "Signups per day",
+    "admin.cActive": "Active clinics per day",
     "admin.refresh": "Refresh",
     "admin.backToApp": "Back to app",
     "admin.loading": "Loading clinics…",
     "admin.empty": "No clinics match.",
     "admin.loadError": "Could not load clinics.",
     "admin.saveError": "Could not save the change.",
-    "admin.mrr": "MRR (monthly revenue)",
+    "admin.mrr": "MRR (billed via Stripe)",
+    "admin.mrrManual": "+{v} in {n} manual plan(s) — not billed",
     "admin.activeClinics": "Active clinics",
+    "admin.activeSplit": "{s} paying · {m} manual · avg {v}",
+    "admin.manualTag": "Manual",
     "admin.arpu": "Avg revenue per clinic: {v}",
     "admin.trials": "On trial",
     "admin.newThisMonth": "{v} new this month",
@@ -1499,7 +1577,7 @@ export const translations = {
     "admin.gActive7d": "Active (7 days)",
     "admin.gPortalLogins": "{n} portal logins",
     "admin.footnote":
-      "Changing the plan marks the clinic active (manual comp) and counts toward MRR. Support, DTE, WhatsApp and uptime metrics arrive once event tracking and Stripe are connected.",
+      "Changing the plan here marks the clinic active (manual comp) without charging them: it never touches Stripe and does NOT count toward MRR, which only reflects what Stripe actually bills. Support, DTE and WhatsApp metrics arrive once those integrations are connected.",
 
     "find.title": "Find a doctor",
     "find.sub": "Browse clinics and book your appointment online.",

@@ -27,6 +27,9 @@ import { useAuth } from "../auth/AuthContext.jsx";
 import { getClinicBySlug } from "../store/db.js";
 import LanguageToggle from "../components/LanguageToggle.jsx";
 import ClinicMap from "../components/ClinicMap.jsx";
+import Reveal from "../components/ui/reveal.jsx";
+import { ThemeToggle } from "../theme/ThemeContext.jsx";
+import { useSeo, SITE_URL } from "../lib/seo.js";
 
 const U = (id) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=1200&q=80`;
 const STOCK = {
@@ -64,8 +67,8 @@ function ImageSlot({ src, alt = "", label, className = "" }) {
 
 function ServiceCard({ icon: Icon, name, children }) {
   return (
-    <div className="card p-6">
-      <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+    <div className="card group h-full p-6 transition duration-300 hover:-translate-y-1 hover:shadow-[0_4px_8px_rgba(15,23,42,0.04),0_16px_36px_-14px_rgba(13,148,136,0.3)]">
+      <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-brand-50 to-brand-100 text-brand-600 ring-1 ring-brand-100 transition duration-300 group-hover:from-brand-600 group-hover:to-brand-700 group-hover:text-white">
         <Icon size={22} />
       </div>
       <h3 className="font-semibold text-slate-900">{name}</h3>
@@ -111,6 +114,53 @@ export default function Profile() {
     : clinic?.mapQuery
       ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(clinic.mapQuery)}`
       : null;
+
+  // SEO: dynamic title/description + Dentist structured data for the clinic.
+  // Must run unconditionally (before the loading/404 early returns below).
+  useSeo({
+    title: clinic?.name ? t("seo.profileTitle", { name: clinic.name }) : undefined,
+    description: clinic?.name
+      ? clinic.profile?.tagline?.trim() || t("seo.profileDesc", { name: clinic.name })
+      : undefined,
+    path: `/c/${slug}`,
+    type: "profile",
+    image: clinic?.profile?.images?.hero || undefined,
+    noindex: !loading && !clinic,
+    jsonLd: clinic?.name
+      ? {
+          dentist: {
+            "@context": "https://schema.org",
+            "@type": "Dentist",
+            name: clinic.name,
+            url: `${SITE_URL}/c/${slug}`,
+            ...(clinic.phone ? { telephone: clinic.phone } : {}),
+            ...(clinic.address || clinic.city
+              ? {
+                  address: {
+                    "@type": "PostalAddress",
+                    ...(clinic.address ? { streetAddress: clinic.address } : {}),
+                    ...(clinic.city ? { addressLocality: clinic.city } : {}),
+                  },
+                }
+              : {}),
+            ...(coords
+              ? {
+                  geo: {
+                    "@type": "GeoCoordinates",
+                    latitude: coords.lat,
+                    longitude: coords.lng,
+                  },
+                }
+              : {}),
+            ...(clinic.specialty ? { medicalSpecialty: clinic.specialty } : {}),
+            potentialAction: {
+              "@type": "ReserveAction",
+              target: `${SITE_URL}/c/${slug}/book`,
+            },
+          },
+        }
+      : null,
+  });
 
   async function copyLink() {
     try {
@@ -221,7 +271,8 @@ export default function Profile() {
             <span className="truncate text-lg font-bold text-slate-900">{clinicName}</span>
           </Link>
           <div className="flex shrink-0 items-center gap-2">
-            <LanguageToggle className="sm:mr-1" />
+            <LanguageToggle />
+            <ThemeToggle className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100 sm:inline-flex sm:mr-1" />
             <Link to={`/c/${slug}/manage`} className="btn-ghost hidden sm:inline-flex">
               {t("landing.manageBooking")}
             </Link>
@@ -247,8 +298,8 @@ export default function Profile() {
 
       {/* Hero */}
       <section className="relative overflow-hidden">
-        <div className="pointer-events-none absolute -top-24 left-1/2 h-72 w-[42rem] -translate-x-1/2 rounded-full bg-brand-200/40 blur-3xl" />
-        <div className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-16 lg:grid-cols-2 lg:py-24">
+        <div className="pointer-events-none absolute -top-24 left-1/2 h-72 w-[42rem] -translate-x-1/2 transform-gpu rounded-full bg-brand-200/40 blur-3xl" />
+        <div className="mx-auto grid max-w-6xl items-center gap-12 px-5 pb-12 pt-16 lg:grid-cols-2 lg:pt-24">
           <div>
             <span className="animate-fade-up inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-3.5 py-1.5 text-xs font-semibold text-brand-700">
               <Sparkles size={14} /> {cp.kicker?.trim() || t("landing.heroKicker")}
@@ -281,17 +332,76 @@ export default function Profile() {
               </p>
             )}
           </div>
-          <div className="animate-fade-up">
-            <ImageSlot src={heroImg} label={t("landing.heroImage")} className="aspect-[4/3] w-full shadow-sm" />
+          {/* Layered photo with a floating hours chip */}
+          <div className="animate-fade-up relative">
+            <div
+              aria-hidden
+              className="absolute -inset-3 rotate-2 transform-gpu rounded-3xl bg-gradient-to-br from-brand-100 to-brand-50 ring-1 ring-brand-100"
+            />
+            <ImageSlot
+              src={heroImg}
+              label={t("landing.heroImage")}
+              className="relative aspect-[4/3] w-full shadow-xl"
+            />
+            <div className="absolute -bottom-5 left-5 flex max-w-[85%] items-center gap-2.5 rounded-2xl bg-white/95 px-4 py-3 shadow-lg ring-1 ring-slate-900/5 backdrop-blur">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+                <Clock size={18} />
+              </span>
+              <div className="min-w-0">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  {t("landing.hours")}
+                </p>
+                <p className="truncate text-xs font-semibold text-slate-800">{hoursValue}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* At-a-glance strip */}
+        <div className="mx-auto max-w-6xl px-5 pb-14 pt-6">
+          <div className="card grid gap-5 p-6 sm:grid-cols-3 sm:gap-2 sm:divide-x sm:divide-slate-100 sm:p-2">
+            {[
+              {
+                icon: MapPin,
+                label: t("landing.address"),
+                value: [clinic.address, clinic.city].filter(Boolean).join(", ") || clinic.clinic,
+              },
+              { icon: Clock, label: t("landing.hours"), value: hoursValue },
+              clinic.phone && { icon: Phone, label: t("landing.phone"), value: clinic.phone },
+            ]
+              .filter(Boolean)
+              .map(({ icon: Icon, label, value }) => (
+                <div key={label} className="flex items-center gap-3 sm:px-5 sm:py-3.5">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+                    <Icon size={18} />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                      {label}
+                    </p>
+                    <p className="truncate text-sm font-medium text-slate-700">{value}</p>
+                  </div>
+                </div>
+              ))}
           </div>
         </div>
       </section>
 
       {/* Meet the dentist */}
       <section className="mx-auto max-w-6xl px-5 py-14">
-        <div className="grid items-center gap-10 lg:grid-cols-2">
-          <ImageSlot src={doctorImg} label={clinicName} className="aspect-[4/5] max-h-[30rem] w-full" />
-          <div>
+        <div className="grid items-center gap-12 lg:grid-cols-2">
+          <Reveal className="relative">
+            <div
+              aria-hidden
+              className="absolute -inset-3 -rotate-2 transform-gpu rounded-3xl bg-brand-50 ring-1 ring-brand-100"
+            />
+            <ImageSlot
+              src={doctorImg}
+              label={clinicName}
+              className="relative aspect-[4/5] max-h-[30rem] w-full shadow-lg"
+            />
+          </Reveal>
+          <Reveal delay={120}>
             <span className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-3.5 py-1.5 text-xs font-semibold text-brand-700">
               <Stethoscope size={14} /> {cp.professionLabel?.trim() || t("landing.yourDentist")}
             </span>
@@ -311,20 +421,26 @@ export default function Profile() {
             <Link to={`/c/${slug}/book`} className="btn-primary mt-7 px-6 py-3 text-base">
               {t("landing.bookWithDra")} <ArrowRight size={18} />
             </Link>
-          </div>
+          </Reveal>
         </div>
       </section>
 
       {/* Services */}
-      <section id="services" className="scroll-mt-24 bg-white py-16">
+      <section id="services" className="scroll-mt-24 border-y border-slate-200/70 bg-white py-16">
         <div className="mx-auto max-w-6xl px-5">
-          <h2 className="text-center text-3xl font-bold text-slate-900">{t("landing.servicesTitle")}</h2>
-          <p className="mx-auto mt-2 max-w-md text-center text-slate-500">{t("landing.servicesSub")}</p>
+          <Reveal className="text-center">
+            <h2 className="text-3xl font-bold tracking-tight text-slate-900">
+              {t("landing.servicesTitle")}
+            </h2>
+            <p className="mx-auto mt-2 max-w-md text-slate-500">{t("landing.servicesSub")}</p>
+          </Reveal>
           <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {serviceList.map((s) => (
-              <ServiceCard key={s.name} icon={s.icon} name={s.name}>
-                {s.desc}
-              </ServiceCard>
+            {serviceList.map((s, i) => (
+              <Reveal key={s.name} delay={(i % 3) * 90}>
+                <ServiceCard icon={s.icon} name={s.name}>
+                  {s.desc}
+                </ServiceCard>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -332,20 +448,38 @@ export default function Profile() {
 
       {/* Gallery */}
       <section className="mx-auto max-w-6xl px-5 py-14">
-        <h2 className="text-center text-2xl font-bold text-slate-900">{t("landing.galleryTitle")}</h2>
-        <p className="mx-auto mt-1.5 max-w-md text-center text-sm text-slate-500">{t("landing.gallerySub")}</p>
+        <Reveal className="text-center">
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900">
+            {t("landing.galleryTitle")}
+          </h2>
+          <p className="mx-auto mt-1.5 max-w-md text-sm text-slate-500">{t("landing.gallerySub")}</p>
+        </Reveal>
         <div className="mt-7 grid gap-4 sm:grid-cols-3">
-          <ImageSlot src={receptionImg} label={t("landing.reception")} className="aspect-[4/3]" />
-          <ImageSlot src={treatmentImg} label={t("landing.treatmentRoom")} className="aspect-[4/3]" />
-          <ImageSlot src={equipmentImg} label={t("landing.equipment")} className="aspect-[4/3]" />
+          {[
+            { src: receptionImg, label: t("landing.reception") },
+            { src: treatmentImg, label: t("landing.treatmentRoom") },
+            { src: equipmentImg, label: t("landing.equipment") },
+          ].map(({ src, label }, i) => (
+            <Reveal key={label} delay={i * 90} className="group overflow-hidden rounded-2xl">
+              <ImageSlot
+                src={src}
+                label={label}
+                className="aspect-[4/3] transition-transform duration-500 group-hover:scale-105"
+              />
+            </Reveal>
+          ))}
         </div>
       </section>
 
       {/* Location */}
       <section className="mx-auto max-w-6xl px-5 pb-14">
-        <h2 className="text-center text-2xl font-bold text-slate-900">{t("landing.locationTitle")}</h2>
-        <p className="mx-auto mt-1.5 max-w-md text-center text-sm text-slate-500">{t("landing.locationSub")}</p>
-        <div className="mt-7 grid gap-5 lg:grid-cols-2">
+        <Reveal className="text-center">
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900">
+            {t("landing.locationTitle")}
+          </h2>
+          <p className="mx-auto mt-1.5 max-w-md text-sm text-slate-500">{t("landing.locationSub")}</p>
+        </Reveal>
+        <Reveal className="mt-7 grid gap-5 lg:grid-cols-2">
           <div className="card flex flex-col gap-5 p-7">
             <div className="flex items-start gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
@@ -422,30 +556,56 @@ export default function Profile() {
           ) : (
             <ImageSlot label={t("landing.mapPlaceholder")} className="min-h-[18rem]" />
           )}
-        </div>
+        </Reveal>
       </section>
 
       {/* CTA */}
       <section className="mx-auto max-w-6xl px-5 pb-20">
-        <div className="card flex flex-col items-center gap-5 bg-gradient-to-br from-brand-700 to-brand-900 px-8 py-12 text-center text-white">
-          <h2 className="max-w-xl text-3xl font-bold">{t("landing.ctaTitle")}</h2>
-          <p className="max-w-md text-brand-100">{t("landing.ctaSub")}</p>
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <Link to={`/c/${slug}/book`} className="btn bg-white px-6 py-3 text-base text-brand-700 hover:bg-brand-50">
-              {t("landing.bookAppointment")}
-            </Link>
-            <Link
-              to={`/c/${slug}/manage`}
-              className="btn border border-white/40 px-6 py-3 text-base text-white hover:bg-white/10"
-            >
-              {t("landing.manageBooking")}
-            </Link>
+        <Reveal className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-brand-700 via-brand-800 to-brand-950 px-8 py-14 text-center text-white sm:px-12">
+          <div
+            aria-hidden
+            className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:36px_36px]"
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -top-24 left-1/2 h-64 w-[36rem] -translate-x-1/2 transform-gpu rounded-full bg-brand-400/25 blur-3xl"
+          />
+          <div className="relative flex flex-col items-center gap-5">
+            <h2 className="max-w-xl text-3xl font-bold tracking-tight sm:text-4xl">
+              {t("landing.ctaTitle")}
+            </h2>
+            <p className="max-w-md text-brand-100">{t("landing.ctaSub")}</p>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Link
+                to={`/c/${slug}/book`}
+                className="btn bg-white px-6 py-3 text-base font-semibold text-brand-700 hover:bg-brand-50"
+              >
+                {t("landing.bookAppointment")} <ArrowRight size={18} />
+              </Link>
+              <Link
+                to={`/c/${slug}/manage`}
+                className="btn border border-white/40 px-6 py-3 text-base text-white hover:bg-white/10"
+              >
+                {t("landing.manageBooking")}
+              </Link>
+            </div>
           </div>
-        </div>
+        </Reveal>
       </section>
 
-      <footer className="border-t border-slate-200 py-8 text-center text-sm text-slate-400">
-        {clinicName} · {t("landing.footerNote")}
+      <footer className="border-t border-slate-200 bg-white py-8">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-5 text-sm text-slate-400 sm:flex-row">
+          <span>
+            © {new Date().getFullYear()} {clinicName} · {t("landing.footerNote")}
+          </span>
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1.5 font-medium text-slate-500 transition hover:text-brand-600"
+          >
+            {t("landing.poweredBy")} <BrandMark size={18} rounded="rounded-md" />
+            <span className="font-semibold">Clinika</span>
+          </Link>
+        </div>
       </footer>
     </div>
   );

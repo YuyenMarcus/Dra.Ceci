@@ -1,15 +1,125 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Identity -->
+    <title>Clinika — Software de gestión para clínicas dentales | Agenda, fichas e inventario</title>
+    <meta
+      name="description"
+      content="Clinika une agenda, reservas online, fichas de pacientes, odontograma e inventario en una sola app rápida y simple para clínicas dentales. Prueba gratis 14 días, sin tarjeta."
+    />
+    <meta
+      name="keywords"
+      content="software clínica dental, software dental El Salvador, agenda dental, reservas online dentista, ficha de paciente, odontograma digital, inventario clínica, gestión consultorio dental, facturación Hacienda DTE, Clinika"
+    />
+    <meta name="author" content="Clinika" />
+    <meta name="application-name" content="Clinika" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="canonical" href="https://www.clinika.health/" />
+
+    <!-- Icons & theme -->
     <link rel="icon" type="image/png" href="/logo.png" />
     <link rel="apple-touch-icon" href="/logo-bg.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0d9488" />
-    <title>Clinika — Clinic Inventory & Scheduling</title>
-    <meta property="og:title" content="Clinika — Clinic Inventory & Scheduling" />
-    <meta property="og:image" content="/logo-bg.png" />
+    <meta name="theme-color" content="#0d9488" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)" />
+
+    <!-- Open Graph -->
+    <meta property="og:site_name" content="Clinika" />
     <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://www.clinika.health/" />
+    <meta property="og:title" content="Clinika — Software de gestión para clínicas dentales" />
+    <meta
+      property="og:description"
+      content="Agenda, reservas online, fichas de pacientes e inventario en un solo lugar. Prueba gratis 14 días, sin tarjeta."
+    />
+    <meta property="og:image" content="https://www.clinika.health/logo-bg.png" />
+    <meta property="og:image:width" content="512" />
+    <meta property="og:image:height" content="512" />
+    <meta property="og:image:alt" content="Logotipo de Clinika" />
+    <meta property="og:locale" content="es_SV" />
+    <meta property="og:locale:alternate" content="en_US" />
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Clinika — Software de gestión para clínicas dentales" />
+    <meta
+      name="twitter:description"
+      content="Agenda, reservas online, fichas de pacientes e inventario en un solo lugar. Prueba gratis 14 días, sin tarjeta."
+    />
+    <meta name="twitter:image" content="https://www.clinika.health/logo-bg.png" />
+
+    <!-- Structured data: organization + website + product -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://www.clinika.health/#organization",
+            "name": "Clinika",
+            "url": "https://www.clinika.health/",
+            "logo": "https://www.clinika.health/logo-bg.png",
+            "email": "team@clinika.health",
+            "description": "Software de gestión para clínicas dentales: agenda, reservas online, fichas de pacientes, odontograma e inventario."
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://www.clinika.health/#website",
+            "url": "https://www.clinika.health/",
+            "name": "Clinika",
+            "publisher": { "@id": "https://www.clinika.health/#organization" },
+            "inLanguage": ["es", "en"]
+          },
+          {
+            "@type": "SoftwareApplication",
+            "@id": "https://www.clinika.health/#software",
+            "name": "Clinika",
+            "applicationCategory": "BusinessApplication",
+            "applicationSubCategory": "Dental practice management software",
+            "operatingSystem": "Web",
+            "url": "https://www.clinika.health/",
+            "description": "Agenda, reservas online, fichas de pacientes, odontograma, inventario y facturación para clínicas dentales.",
+            "offers": [
+              {
+                "@type": "Offer",
+                "name": "Starter",
+                "price": "25",
+                "priceCurrency": "USD",
+                "description": "Agenda (hasta 2 doctores), sistema de turnos, recordatorios por WhatsApp y fichas básicas."
+              },
+              {
+                "@type": "Offer",
+                "name": "Profesional",
+                "price": "35",
+                "priceCurrency": "USD",
+                "description": "Ficha completa, odontograma interactivo, presupuestos, consentimiento informado digital e inventario."
+              },
+              {
+                "@type": "Offer",
+                "name": "Hacienda-Ready",
+                "price": "55",
+                "priceCurrency": "USD",
+                "description": "Todo lo de Profesional más facturación electrónica DTE con Hacienda, pagos Wompi y archivo fiscal de 10 años."
+              }
+            ]
+          }
+        ]
+      }
+    </script>
+
+    <script>
+      // Apply the saved theme before first paint to avoid a light flash.
+      try {
+        if (localStorage.getItem("clinika.theme") === "dark") {
+          document.documentElement.classList.add("dark");
+        }
+        // Keep the lang attribute honest pre-hydration too.
+        var l = localStorage.getItem("medtrack.lang");
+        if (l === "en" || l === "es") document.documentElement.lang = l;
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

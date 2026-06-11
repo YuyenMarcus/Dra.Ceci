@@ -5,6 +5,7 @@ import AppPreview from "../components/ui/app-preview.jsx";
 import HeroScroll from "../components/ui/hero-scroll-animation.jsx";
 import { Footer2 } from "../components/ui/footer2.jsx";
 import Reveal from "../components/ui/reveal.jsx";
+import { ThemeToggle } from "../theme/ThemeContext.jsx";
 import {
   ArrowRight,
   Boxes,
@@ -25,10 +26,29 @@ import { useLang } from "../i18n/LanguageContext.jsx";
 import { useAuth } from "../auth/AuthContext.jsx";
 import LanguageToggle from "../components/LanguageToggle.jsx";
 import { PLANS, planFeatures } from "../lib/plans.js";
+import { useSeo } from "../lib/seo.js";
 
 export default function AppLanding() {
   const { t, lang } = useLang();
   const { isDoctor, isClient, canAccessPatientPortal, clinic } = useAuth();
+
+  useSeo({
+    title: t("seo.landingTitle"),
+    description: t("seo.landingDesc"),
+    path: "/",
+    jsonLd: {
+      faq: {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: [1, 2, 3, 4].map((i) => ({
+          "@type": "Question",
+          name: t(`faq.q${i}`),
+          acceptedAnswer: { "@type": "Answer", text: t(`faq.a${i}`) },
+        })),
+      },
+    },
+  });
+
   const profileTo = isDoctor && clinic?.slug ? `/c/${clinic.slug}` : "/signup";
   // Secondary CTA: doctors view their own public profile, everyone else is
   // pointed at creating a clinic (no more "example profile" framing).
@@ -123,7 +143,8 @@ export default function AppLanding() {
             </span>
           </Link>
           <div className="flex items-center gap-2">
-            <LanguageToggle className="mr-1" />
+            <LanguageToggle />
+            <ThemeToggle className="mr-1 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100" />
             <a href="#pricing" className="btn-ghost hidden md:inline-flex">
               {t("app.navPricing")}
             </a>

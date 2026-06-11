@@ -23,6 +23,8 @@ import { updateClinic, logEvent } from "../store/db.js";
 import Tour from "./Tour.jsx";
 import Modal from "./Modal.jsx";
 import BrandMark from "./BrandMark.jsx";
+import { ThemeToggle } from "../theme/ThemeContext.jsx";
+import { useSeo } from "../lib/seo.js";
 
 const TOUR_KEY = "medtrack.tour.doctor";
 
@@ -143,6 +145,12 @@ export default function Layout({ children }) {
   const title = titles[location.pathname]
     ? t(titles[location.pathname])
     : "Clinika";
+
+  // The whole doctor app is private — keep it out of search engines.
+  useSeo({
+    title: title === "Clinika" ? "Clinika" : `${title} | Clinika`,
+    noindex: true,
+  });
 
   const navItems = receptionMode ? nav.filter((n) => n.reception) : nav;
 
@@ -349,6 +357,7 @@ export default function Layout({ children }) {
               <HelpCircle size={15} />
               <span className="hidden lg:inline">{t("layout.tour")}</span>
             </button>
+            <ThemeToggle />
 
             <div className="mx-1.5 hidden h-6 w-px bg-slate-200 sm:block" />
 
