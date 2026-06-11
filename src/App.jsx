@@ -22,6 +22,8 @@ import PatientLogin from "./pages/PatientLogin.jsx";
 import PatientSignup from "./pages/PatientSignup.jsx";
 import FindDoctor from "./pages/FindDoctor.jsx";
 import Admin from "./pages/Admin.jsx";
+import ComingSoon from "./pages/ComingSoon.jsx";
+import NotFound from "./pages/NotFound.jsx";
 import CookieConsent from "./components/CookieConsent.jsx";
 
 const SPLASH_KEY = "medtrack.splashed";
@@ -108,6 +110,9 @@ export default function App() {
         {/* Public doctor directory */}
         <Route path="/find" element={<FindDoctor />} />
 
+        {/* Placeholder for not-yet-built pages (social, about, legal) */}
+        <Route path="/coming-soon" element={<ComingSoon />} />
+
         {/* Public clinic profile + booking (slug-scoped) */}
         <Route path="/c/:slug" element={<Profile />} />
         <Route path="/c/:slug/book" element={<BookAppointment />} />
@@ -178,7 +183,7 @@ export default function App() {
         {/* Legacy redirects */}
         <Route path="/dra-ceci" element={<LegacyDraCeci />} />
         <Route path="/c/:slug/portal" element={<LegacySlugRedirect to="book" />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
       <CookieConsent />
     </>

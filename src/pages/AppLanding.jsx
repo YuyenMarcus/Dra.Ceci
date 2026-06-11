@@ -72,7 +72,7 @@ export default function AppLanding() {
       title: t("footer.product"),
       links: [
         { text: t("footer.features"), url: "#features" },
-        { text: t("footer.booking"), url: profileTo },
+        { text: t("footer.booking"), url: "/find" },
         { text: t("footer.portal"), url: portalTo },
         { text: t("footer.signin"), url: primaryTo },
       ],
@@ -80,7 +80,7 @@ export default function AppLanding() {
     {
       title: t("footer.company"),
       links: [
-        { text: t("footer.about"), url: "#features" },
+        { text: t("footer.about"), url: "/coming-soon" },
         { text: t("footer.contact"), url: "mailto:hola@clinika.health" },
       ],
     },
@@ -88,15 +88,15 @@ export default function AppLanding() {
       title: t("footer.resources"),
       links: [
         { text: t("footer.help"), url: "mailto:hola@clinika.health" },
-        { text: t("footer.privacy"), url: "#" },
+        { text: t("footer.privacy"), url: "/coming-soon" },
       ],
     },
     {
       title: t("footer.social"),
       links: [
-        { text: "Instagram", url: "#" },
-        { text: "LinkedIn", url: "#" },
-        { text: "X", url: "#" },
+        { text: "Instagram", url: "/coming-soon" },
+        { text: "LinkedIn", url: "/coming-soon" },
+        { text: "X", url: "/coming-soon" },
       ],
     },
   ];
@@ -241,8 +241,8 @@ export default function AppLanding() {
         menuItems={footerMenu}
         copyright={`© ${new Date().getFullYear()} Clinika. ${t("footer.rights")}`}
         bottomLinks={[
-          { text: t("footer.terms"), url: "#" },
-          { text: t("footer.privacy"), url: "#" },
+          { text: t("footer.terms"), url: "/coming-soon" },
+          { text: t("footer.privacy"), url: "/coming-soon" },
         ]}
       />
     </div>
