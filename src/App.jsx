@@ -16,6 +16,7 @@ import Appointments from "./pages/Appointments.jsx";
 import BookAppointment from "./pages/BookAppointment.jsx";
 import ManageBooking from "./pages/ManageBooking.jsx";
 import Settings from "./pages/Settings.jsx";
+import Locations from "./pages/Locations.jsx";
 import ProfileEdit from "./pages/ProfileEdit.jsx";
 import PatientHome from "./pages/PatientHome.jsx";
 import PatientLogin from "./pages/PatientLogin.jsx";
@@ -175,6 +176,14 @@ export default function App() {
             element={
               <RequireFullAccess>
                 <Settings />
+              </RequireFullAccess>
+            }
+          />
+          <Route
+            path="locations"
+            element={
+              <RequireFullAccess>
+                <Locations />
               </RequireFullAccess>
             }
           />

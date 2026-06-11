@@ -22,11 +22,12 @@ import {
   Check,
   Pencil,
   Flag,
+  Building2,
 } from "lucide-react";
 import { useLang } from "../i18n/LanguageContext.jsx";
 import { useAuth } from "../auth/AuthContext.jsx";
 import { getServiceIcon } from "../components/serviceIcons.jsx";
-import { getClinicBySlug, reportClinic } from "../store/db.js";
+import { getClinicBySlug, getClinicLocations, reportClinic } from "../store/db.js";
 import LanguageToggle from "../components/LanguageToggle.jsx";
 import Modal from "../components/Modal.jsx";
 import ClinicMap from "../components/ClinicMap.jsx";
@@ -95,6 +96,7 @@ export default function Profile() {
   const { t } = useLang();
   const { clinic: authClinic, isDoctor, logout } = useAuth();
   const [clinic, setClinic] = useState(null);
+  const [branches, setBranches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
 
@@ -156,6 +158,19 @@ export default function Profile() {
       active = false;
     };
   }, [slug]);
+
+  // Load this clinic's branches once we know its id. Multi-location clinics
+  // list every branch here (single directory entry, one profile page).
+  useEffect(() => {
+    if (!clinic?.id) return;
+    let active = true;
+    getClinicLocations(clinic.id)
+      .then((locs) => active && setBranches(locs))
+      .catch((err) => console.error(err));
+    return () => {
+      active = false;
+    };
+  }, [clinic?.id]);
 
   const profileUrl =
     typeof window !== "undefined" ? `${window.location.origin}/c/${slug}` : `/c/${slug}`;
@@ -614,6 +629,72 @@ export default function Profile() {
           )}
         </Reveal>
       </section>
+
+      {/* Branches (multi-location clinics) */}
+      {branches.length > 0 && (
+        <section className="mx-auto max-w-6xl px-5 pb-14">
+          <Reveal className="text-center">
+            <h2 className="text-2xl font-bold tracking-tight text-slate-900">
+              {t("landing.branchesTitle")}
+            </h2>
+            <p className="mx-auto mt-1.5 max-w-md text-sm text-slate-500">
+              {t("landing.branchesSub")}
+            </p>
+          </Reveal>
+          <Reveal className="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {branches.map((b) => {
+              const addr = [b.address, b.city].filter(Boolean).join(", ");
+              const bMapUrl =
+                Number.isFinite(b.lat) && Number.isFinite(b.lng)
+                  ? `https://www.google.com/maps/search/?api=1&query=${b.lat},${b.lng}`
+                  : b.mapQuery || addr
+                    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(b.mapQuery || addr)}`
+                    : null;
+              return (
+                <div key={b.id} className="card flex flex-col gap-3 p-6">
+                  <div className="flex items-center gap-2.5">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+                      <Building2 size={19} />
+                    </span>
+                    <p className="font-semibold text-slate-900">{b.name}</p>
+                  </div>
+                  {addr && (
+                    <p className="flex items-start gap-2 text-sm text-slate-500">
+                      <MapPin size={15} className="mt-0.5 shrink-0 text-slate-400" /> {addr}
+                    </p>
+                  )}
+                  {b.hours && (
+                    <p className="flex items-start gap-2 text-sm text-slate-500">
+                      <Clock size={15} className="mt-0.5 shrink-0 text-slate-400" /> {b.hours}
+                    </p>
+                  )}
+                  {b.phone && (
+                    <p className="flex items-start gap-2 text-sm text-slate-500">
+                      <Phone size={15} className="mt-0.5 shrink-0 text-slate-400" />
+                      {formatPhoneIntl(b.phone)}
+                    </p>
+                  )}
+                  <div className="mt-auto flex flex-wrap gap-2 pt-1">
+                    {bMapUrl && (
+                      <a
+                        href={bMapUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="btn-outline px-3 py-1.5 text-sm"
+                      >
+                        <Navigation size={14} /> {t("landing.getDirections")}
+                      </a>
+                    )}
+                    <Link to={`/c/${slug}/book`} className="btn-ghost px-3 py-1.5 text-sm">
+                      <ArrowRight size={14} /> {t("landing.bookHere")}
+                    </Link>
+                  </div>
+                </div>
+              );
+            })}
+          </Reveal>
+        </section>
+      )}
 
       {/* CTA */}
       <section className="mx-auto max-w-6xl px-5 pb-20">

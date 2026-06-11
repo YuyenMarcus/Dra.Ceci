@@ -115,6 +115,7 @@ function rowToAppointment(row) {
   return {
     id: row.id,
     doctorId: row.clinic_id,
+    locationId: row.location_id ?? undefined,
     clientId: row.patient_id ?? undefined,
     provider: row.provider,
     patientName: row.patient_name ?? undefined,
@@ -134,6 +135,7 @@ function appointmentToRow(clinicId, a) {
   return {
     id: a.id,
     clinic_id: clinicId,
+    location_id: a.locationId ?? null,
     patient_id: a.clientId ?? null,
     provider: a.provider ?? "",
     patient_name: a.patientName ?? null,
@@ -342,12 +344,13 @@ export async function deleteAppointment(id) {
 // Public booking RPCs (used by /c/:slug/book and /c/:slug/manage)
 // ---------------------------------------------------------------------------
 
-export async function getTakenSlots(clinicId, fromISO, toISO) {
+export async function getTakenSlots(clinicId, fromISO, toISO, locationId = null) {
   if (!isSupabaseEnabled) return [];
   const { data, error } = await supabase.rpc("public_taken_slots", {
     p_clinic_id: clinicId,
     p_from: fromISO,
     p_to: toISO,
+    p_location_id: locationId,
   });
   if (error) throw error;
   return (data ?? []).map((r) => ({
@@ -369,9 +372,102 @@ export async function requestAppointmentRpc(params) {
     p_notes: params.notes ?? "",
     p_start: params.start,
     p_duration_min: Number(params.durationMin) || 30,
+    p_location_id: params.locationId ?? null,
   });
   if (error) return { ok: false, error: "err.bookingFailed" };
   return data;
+}
+
+// ---------------------------------------------------------------------------
+// Clinic locations (branches) — migration 0019. Managing them is a Profesional+
+// feature gated client-side; reads are public via a SECURITY DEFINER RPC.
+// ---------------------------------------------------------------------------
+
+function rowToLocation(row) {
+  return {
+    id: row.id,
+    name: row.name ?? "",
+    address: row.address ?? "",
+    city: row.city ?? "",
+    phone: row.phone ?? "",
+    mapQuery: row.map_query ?? "",
+    lat: typeof row.lat === "number" ? row.lat : null,
+    lng: typeof row.lng === "number" ? row.lng : null,
+    hours: row.hours ?? "",
+    workingDays: row.working_days ?? [1, 2, 3, 4, 5],
+    startHour: row.start_hour ?? 9,
+    endHour: row.end_hour ?? 17,
+    slotMinutes: row.slot_minutes ?? 30,
+    sortOrder: row.sort_order ?? 0,
+    active: row.active ?? true,
+  };
+}
+
+// Public: active branches for a clinic (booking picker + public profile).
+export async function getClinicLocations(clinicId) {
+  if (!isSupabaseEnabled || !clinicId) return [];
+  const { data, error } = await supabase.rpc("public_clinic_locations", {
+    p_clinic_id: clinicId,
+  });
+  if (error) {
+    console.debug("public_clinic_locations failed:", error.message);
+    return [];
+  }
+  return (data ?? []).map(rowToLocation);
+}
+
+// Owner: every branch (incl. inactive) for management.
+export async function listMyLocations(clinicId) {
+  if (!isSupabaseEnabled || !clinicId) return [];
+  const { data, error } = await supabase
+    .from("clinic_locations")
+    .select("*")
+    .eq("clinic_id", clinicId)
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: true });
+  if (error) throw error;
+  return (data ?? []).map(rowToLocation);
+}
+
+function locationToRow(clinicId, loc) {
+  const row = { clinic_id: clinicId };
+  const set = (key, val) => {
+    if (val !== undefined) row[key] = val;
+  };
+  if (loc.id) row.id = loc.id;
+  set("name", loc.name?.trim());
+  set("address", loc.address?.trim());
+  set("city", loc.city?.trim());
+  set("phone", loc.phone?.trim());
+  set("map_query", loc.mapQuery?.trim());
+  set("lat", Number.isFinite(loc.lat) ? loc.lat : null);
+  set("lng", Number.isFinite(loc.lng) ? loc.lng : null);
+  set("hours", loc.hours?.trim());
+  set("working_days", loc.workingDays);
+  set("start_hour", loc.startHour);
+  set("end_hour", loc.endHour);
+  set("slot_minutes", loc.slotMinutes);
+  set("sort_order", loc.sortOrder);
+  set("active", loc.active);
+  return row;
+}
+
+export async function saveLocation(clinicId, loc) {
+  if (!isSupabaseEnabled) return { ok: false, error: "err.noBackend" };
+  const { data, error } = await supabase
+    .from("clinic_locations")
+    .upsert(locationToRow(clinicId, loc))
+    .select()
+    .single();
+  if (error) return { ok: false, error: error.message || "error" };
+  return { ok: true, location: rowToLocation(data) };
+}
+
+export async function deleteLocation(id) {
+  if (!isSupabaseEnabled) return { ok: false, error: "err.noBackend" };
+  const { error } = await supabase.from("clinic_locations").delete().eq("id", id);
+  if (error) return { ok: false, error: error.message || "error" };
+  return { ok: true };
 }
 
 // Submit an abuse report for a clinic's public profile (anonymous allowed).

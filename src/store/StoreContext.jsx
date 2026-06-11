@@ -187,7 +187,12 @@ export function StoreProvider({ children }) {
       if (!clinicId) return { ok: false, error: "err.noBackend" };
       const startMs = new Date(apt.start).getTime();
       const endMs = startMs + (Number(apt.durationMin) || 30) * 60000;
-      if (hasConflict(appointments, clinicId, startMs, endMs)) {
+      // Each branch keeps its own calendar: only check conflicts within the
+      // same location (or among unassigned appointments when no branch is set).
+      const sameBranch = apt.locationId
+        ? appointments.filter((a) => a.locationId === apt.locationId)
+        : appointments.filter((a) => !a.locationId);
+      if (hasConflict(sameBranch, clinicId, startMs, endMs)) {
         return { ok: false, error: "err.timeTaken" };
       }
       const next = {

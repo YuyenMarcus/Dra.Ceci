@@ -39,6 +39,7 @@ const profesionalCaps = {
   patientPortal: true,
   dashboardReports: true,
   commissionCalculator: true,
+  multiLocation: true,
   storageGb: 10,
   prioritySupport: true,
 };

@@ -15,6 +15,7 @@ import {
   ConciergeBell,
   Lock,
   ShieldCheck,
+  Building2,
 } from "lucide-react";
 import { useAuth } from "../auth/AuthContext.jsx";
 import { useLang } from "../i18n/LanguageContext.jsx";
@@ -51,9 +52,18 @@ const titles = {
   "/app/appointments": "nav.appointments",
   "/app/profile": "nav.profile",
   "/app/settings": "nav.settings",
+  "/app/locations": "nav.locations",
 };
 
-function SidebarContent({ onNavigate, t, items = nav, userName, userSpecialty }) {
+function SidebarContent({
+  onNavigate,
+  t,
+  items = nav,
+  userName,
+  userSpecialty,
+  showLocations = false,
+  locationsLocked = false,
+}) {
   return (
     <>
       <div className="flex items-center gap-3 px-5 pb-5 pt-6">
@@ -74,7 +84,7 @@ function SidebarContent({ onNavigate, t, items = nav, userName, userSpecialty })
         {t("layout.menu")}
       </p>
 
-      <nav className="flex-1 space-y-0.5 px-3">
+      <nav className="space-y-0.5 px-3">
         {items.map(({ to, labelKey, icon: Icon, end, tour }, i) => (
           <NavLink
             key={to}
@@ -110,6 +120,52 @@ function SidebarContent({ onNavigate, t, items = nav, userName, userSpecialty })
         ))}
       </nav>
 
+      {/* Locations — its own divided section. Shaded + lock-badged for clinics
+          whose plan can't manage branches; clicking still opens a preview. */}
+      {showLocations && (
+        <div className="mt-5 px-3">
+          <div className="mx-1 mb-4 h-px bg-white/10" />
+          <NavLink
+            to="/app/locations"
+            data-tour="nav-locations"
+            onClick={onNavigate}
+            className={({ isActive }) =>
+              [
+                "group relative flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-colors duration-200",
+                locationsLocked ? "opacity-50 hover:opacity-80" : "",
+                isActive
+                  ? "bg-white/[0.12] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
+                  : "text-brand-100/75 hover:bg-white/[0.06] hover:text-white",
+              ].join(" ")
+            }
+          >
+            {({ isActive }) => (
+              <>
+                <span
+                  className={`absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-brand-300 transition-opacity ${
+                    isActive ? "opacity-100" : "opacity-0"
+                  }`}
+                />
+                <Building2
+                  size={18}
+                  className={isActive ? "text-brand-300" : "text-brand-200/60 transition-colors group-hover:text-brand-200"}
+                />
+                <span className="flex-1">{t("nav.locations")}</span>
+                {locationsLocked ? (
+                  <Lock size={13} className="text-brand-200/70" />
+                ) : (
+                  <span className="rounded-full bg-brand-300/20 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-brand-200">
+                    {t("nav.locationsPro")}
+                  </span>
+                )}
+              </>
+            )}
+          </NavLink>
+        </div>
+      )}
+
+      <div className="flex-1" />
+
       <div className="mx-3 mb-4 mt-4 rounded-xl bg-white/[0.06] p-3">
         <div className="flex items-center gap-2.5">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-300/20 text-sm font-semibold text-brand-200">
@@ -143,7 +199,9 @@ export default function Layout({ children }) {
     exitReception,
     isAdmin,
     access,
+    can,
   } = useAuth();
+  const locationsLocked = !can("multiLocation");
   const { t } = useLang();
   const title = titles[location.pathname]
     ? t(titles[location.pathname])
@@ -296,6 +354,8 @@ export default function Layout({ children }) {
           items={navItems}
           userName={currentUser?.name}
           userSpecialty={currentUser?.specialty}
+          showLocations={!receptionMode}
+          locationsLocked={locationsLocked}
         />
       </div>
 
@@ -321,6 +381,8 @@ export default function Layout({ children }) {
               userName={currentUser?.name}
               userSpecialty={currentUser?.specialty}
               onNavigate={() => setMobileOpen(false)}
+              showLocations={!receptionMode}
+              locationsLocked={locationsLocked}
             />
           </div>
         </div>

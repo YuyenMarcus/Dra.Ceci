@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Plus,
@@ -13,7 +13,9 @@ import {
   Link2,
   Search,
   UserPlus,
+  Building2,
 } from "lucide-react";
+import { listMyLocations } from "../store/db.js";
 import { useStore } from "../store/StoreContext.jsx";
 import { useAuth } from "../auth/AuthContext.jsx";
 import { useLang } from "../i18n/LanguageContext.jsx";
@@ -74,7 +76,26 @@ export default function Appointments() {
     notes: "",
     start: toLocalInput(),
     durationMin: 30,
+    locationId: "",
   }));
+  const [locations, setLocations] = useState([]);
+
+  useEffect(() => {
+    if (!currentUser?.id) return;
+    let active = true;
+    listMyLocations(currentUser.id)
+      .then((rows) => active && setLocations(rows))
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [currentUser?.id]);
+
+  const locById = useMemo(() => {
+    const map = {};
+    for (const l of locations) map[l.id] = l;
+    return map;
+  }, [locations]);
 
   const clientById = (id) => clients.find((c) => c.id === id);
 
@@ -107,6 +128,7 @@ export default function Appointments() {
       notes: "",
       start: toLocalInput(),
       durationMin: 30,
+      locationId: locations[0]?.id ?? "",
     });
     setBookError(null);
     setModalOpen(true);
@@ -120,6 +142,7 @@ export default function Appointments() {
       provider: currentUser.name,
       durationMin: Number(form.durationMin),
       start: new Date(form.start).toISOString(),
+      locationId: form.locationId || null,
     });
     if (!res.ok) {
       setBookError({ key: res.error, vars: res.errorVars });
@@ -266,6 +289,11 @@ export default function Appointments() {
                       {a.source === "public" && (
                         <span className="ml-2 rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-semibold text-sky-700">
                           {t("common.online")}
+                        </span>
+                      )}
+                      {a.locationId && locById[a.locationId] && (
+                        <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-brand-100 px-2 py-0.5 text-[10px] font-semibold text-brand-700">
+                          <Building2 size={10} /> {locById[a.locationId].name}
                         </span>
                       )}
                     </p>
@@ -471,6 +499,23 @@ export default function Appointments() {
                 onChange={(e) => setForm({ ...form, start: e.target.value })}
               />
             </div>
+            {locations.length > 0 && (
+              <div>
+                <label className="label">{t("loc.branch")}</label>
+                <select
+                  className="input"
+                  value={form.locationId}
+                  onChange={(e) => setForm({ ...form, locationId: e.target.value })}
+                >
+                  <option value="">{t("loc.noBranch")}</option>
+                  {locations.map((l) => (
+                    <option key={l.id} value={l.id}>
+                      {l.name || t("loc.untitled")}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
             {bookError && (
               <p className="rounded-xl bg-rose-50 px-3.5 py-2.5 text-sm font-medium text-rose-600">
                 {t(bookError.key, bookError.vars)}

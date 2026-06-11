@@ -10,6 +10,8 @@ import {
   ShieldCheck,
   CalendarDays,
   HelpCircle,
+  Building2,
+  MapPin,
 } from "lucide-react";
 import Tour from "../components/Tour.jsx";
 import LanguageToggle from "../components/LanguageToggle.jsx";
@@ -18,7 +20,12 @@ import PhoneField from "../components/PhoneField.jsx";
 import { useLang } from "../i18n/LanguageContext.jsx";
 import { useAuth } from "../auth/AuthContext.jsx";
 import { useSeo } from "../lib/seo.js";
-import { getClinicBySlug, getTakenSlots, requestAppointmentRpc } from "../store/db.js";
+import {
+  getClinicBySlug,
+  getClinicLocations,
+  getTakenSlots,
+  requestAppointmentRpc,
+} from "../store/db.js";
 import { formatDate, formatTime, relativeDay } from "../lib/format.js";
 import { generateSlots, upcomingWorkingDays, dateKey } from "../lib/availability.js";
 import { VISIT_REASON_KEYS } from "../lib/reasons.js";
@@ -94,6 +101,8 @@ export default function BookAppointment() {
 
   const [clinic, setClinic] = useState(null);
   const [loadingClinic, setLoadingClinic] = useState(true);
+  const [locations, setLocations] = useState([]);
+  const [locationId, setLocationId] = useState("");
   const [takenSlots, setTakenSlots] = useState([]);
   const [step, setStep] = useState("slot");
   const [selectedDay, setSelectedDay] = useState("");
@@ -130,6 +139,52 @@ export default function BookAppointment() {
     path: `/c/${slug}/book`,
   });
 
+  // Load the clinic's branches. When there are any, the patient must pick one
+  // and availability is scoped to that branch (each branch has its own calendar
+  // and hours). With no branches we keep the single-calendar behavior.
+  useEffect(() => {
+    if (!clinic?.id) return;
+    let active = true;
+    getClinicLocations(clinic.id)
+      .then((locs) => {
+        if (!active) return;
+        setLocations(locs);
+        if (locs.length) setLocationId((cur) => cur || locs[0].id);
+      })
+      .catch((err) => console.error(err));
+    return () => {
+      active = false;
+    };
+  }, [clinic?.id]);
+
+  const selectedLocation = useMemo(
+    () => locations.find((l) => l.id === locationId) || null,
+    [locations, locationId]
+  );
+
+  // Drive the calendar + slot generation off the chosen branch's schedule when
+  // one is selected; otherwise off the clinic's own schedule. Keep `id` as the
+  // clinic id so taken-slot matching (keyed by clinic id) still lines up.
+  const scheduleSource = useMemo(() => {
+    if (!clinic) return null;
+    if (!selectedLocation) return clinic;
+    return {
+      ...clinic,
+      id: clinic.id,
+      workingDays: selectedLocation.workingDays,
+      startHour: selectedLocation.startHour,
+      endHour: selectedLocation.endHour,
+      slotMinutes: selectedLocation.slotMinutes,
+    };
+  }, [clinic, selectedLocation]);
+
+  function pickLocation(id) {
+    setLocationId(id);
+    setSelectedDay("");
+    setSlot(null);
+    setStep("slot");
+  }
+
   // Load taken slots for the booking window so availability never collides.
   useEffect(() => {
     if (!clinic?.id) return;
@@ -138,7 +193,7 @@ export default function BookAppointment() {
     from.setHours(0, 0, 0, 0);
     const to = new Date(from);
     to.setDate(to.getDate() + 60);
-    getTakenSlots(clinic.id, from.toISOString(), to.toISOString())
+    getTakenSlots(clinic.id, from.toISOString(), to.toISOString(), locationId || null)
       .then((slots) =>
         active &&
         setTakenSlots(
@@ -154,7 +209,7 @@ export default function BookAppointment() {
     return () => {
       active = false;
     };
-  }, [clinic?.id, confirmation]);
+  }, [clinic?.id, locationId, confirmation]);
 
   // Prefill contact details from the signed-in patient's account.
   useEffect(() => {
@@ -189,11 +244,14 @@ export default function BookAppointment() {
     setTourOpen(false);
   }
 
-  const workingDays = useMemo(() => (clinic ? upcomingWorkingDays(clinic, 30) : []), [clinic]);
+  const workingDays = useMemo(
+    () => (scheduleSource ? upcomingWorkingDays(scheduleSource, 30) : []),
+    [scheduleSource]
+  );
   const activeDay = selectedDay || (workingDays[0] && dateKey(workingDays[0]));
   const slots = useMemo(
-    () => (clinic && activeDay ? generateSlots(clinic, activeDay, takenSlots) : []),
-    [clinic, activeDay, takenSlots]
+    () => (scheduleSource && activeDay ? generateSlots(scheduleSource, activeDay, takenSlots) : []),
+    [scheduleSource, activeDay, takenSlots]
   );
   const availableCount = slots.filter((s) => s.available).length;
 
@@ -213,6 +271,7 @@ export default function BookAppointment() {
     setError(null);
     const res = await requestAppointmentRpc({
       clinicId: clinic.id,
+      locationId: selectedLocation ? selectedLocation.id : null,
       patientName: form.name,
       patientPhone: form.phone,
       patientEmail: form.email,
@@ -234,6 +293,7 @@ export default function BookAppointment() {
       start: slot.start,
       durationMin: slot.durationMin,
       doctorName: clinic.name,
+      locationName: selectedLocation?.name || "",
     });
   }
 
@@ -318,6 +378,11 @@ export default function BookAppointment() {
               <p className="text-sm text-brand-700/80">
                 {confirmation.doctorName} · {confirmation.reason}
               </p>
+              {confirmation.locationName && (
+                <p className="flex items-center gap-1 text-sm text-brand-700/80">
+                  <Building2 size={13} /> {confirmation.locationName}
+                </p>
+              )}
               {confirmation.notes && (
                 <p className="text-sm italic text-brand-700/70">“{confirmation.notes}”</p>
               )}
@@ -365,13 +430,52 @@ export default function BookAppointment() {
                 </div>
               </div>
               <div className="px-6 py-5">
+                {locations.length > 0 && (
+                  <div className="mb-5">
+                    <p className="label">{t("book.pickLocation")}</p>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      {locations.map((loc) => {
+                        const on = loc.id === locationId;
+                        return (
+                          <button
+                            key={loc.id}
+                            type="button"
+                            onClick={() => pickLocation(loc.id)}
+                            className={`flex items-start gap-2.5 rounded-xl border px-3.5 py-3 text-left transition ${
+                              on
+                                ? "border-brand-500 bg-brand-50 ring-1 ring-brand-500"
+                                : "border-slate-200 bg-white hover:border-brand-300"
+                            }`}
+                          >
+                            <Building2
+                              size={17}
+                              className={`mt-0.5 shrink-0 ${on ? "text-brand-600" : "text-slate-400"}`}
+                            />
+                            <span className="min-w-0">
+                              <span className="block truncate text-sm font-semibold text-slate-800">
+                                {loc.name || t("loc.untitled")}
+                              </span>
+                              {(loc.address || loc.city) && (
+                                <span className="mt-0.5 flex items-center gap-1 truncate text-xs text-slate-400">
+                                  <MapPin size={11} />
+                                  {[loc.address, loc.city].filter(Boolean).join(", ")}
+                                </span>
+                              )}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 <p className="label">{t("book.pickDay")}</p>
-                <Calendar doctor={clinic} value={activeDay} onSelect={setSelectedDay} />
+                <Calendar doctor={scheduleSource} value={activeDay} onSelect={setSelectedDay} />
 
                 <div className="mt-5 flex items-center justify-between">
                   <p className="label mb-0">{t("book.availableTimes")}</p>
                   <span className="text-xs text-slate-400">
-                    {t("book.openEach", { count: availableCount, min: clinic.slotMinutes })}
+                    {t("book.openEach", { count: availableCount, min: scheduleSource.slotMinutes })}
                   </span>
                 </div>
                 {slots.length === 0 ? (
@@ -420,6 +524,11 @@ export default function BookAppointment() {
                   <p className="text-sm text-brand-700/80">
                     {formatDate(slot.start)} · {clinic.name} · {slot.durationMin} min
                   </p>
+                  {selectedLocation && (
+                    <p className="mt-0.5 flex items-center gap-1 text-sm text-brand-700/80">
+                      <Building2 size={13} /> {selectedLocation.name}
+                    </p>
+                  )}
                 </div>
               </div>
 

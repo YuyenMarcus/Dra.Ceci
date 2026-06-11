@@ -8,11 +8,13 @@ import {
   MapPin,
   CalendarPlus,
   ArrowRight,
+  Star,
 } from "lucide-react";
 import { useLang } from "../i18n/LanguageContext.jsx";
 import { useSeo } from "../lib/seo.js";
 import { listClinics } from "../store/db.js";
 import { isPaidClinic } from "../lib/plans.js";
+import { useFavorites } from "../lib/favorites.js";
 import LanguageToggle from "../components/LanguageToggle.jsx";
 
 // Great-circle distance (km) between two {lat, lng} points.
@@ -37,8 +39,75 @@ function clinicDistanceKm(clinic, userLoc) {
   return haversineKm(userLoc, { lat, lng });
 }
 
+function DoctorCard({ c, userLoc, t, fav, onToggleFav }) {
+  const photo = c.profile?.images?.doctor;
+  const distKm = userLoc ? clinicDistanceKm(c, userLoc) : Infinity;
+  const showDist = Number.isFinite(distKm);
+  return (
+    <div className="card flex flex-col p-5">
+      <div className="flex items-start gap-3">
+        {photo ? (
+          <img
+            src={photo}
+            alt={c.name}
+            className="h-14 w-14 shrink-0 rounded-2xl object-cover"
+          />
+        ) : (
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-portal-100 text-portal-700">
+            <Stethoscope size={24} />
+          </div>
+        )}
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-bold text-slate-900">{c.name}</p>
+          {(c.specialty || c.clinic) && (
+            <p className="truncate text-sm text-slate-500">{c.specialty || c.clinic}</p>
+          )}
+          {(c.clinic || c.city) && (
+            <p className="mt-0.5 flex items-center gap-1.5 truncate text-xs text-slate-400">
+              <MapPin size={12} />
+              {[c.clinic, c.city].filter(Boolean).join(" · ")}
+            </p>
+          )}
+        </div>
+        <div className="flex shrink-0 flex-col items-end gap-1.5">
+          <button
+            type="button"
+            onClick={() => onToggleFav(c.id)}
+            aria-pressed={fav}
+            aria-label={fav ? t("find.unsave") : t("find.save")}
+            title={fav ? t("find.unsave") : t("find.save")}
+            className={`rounded-full p-1.5 transition ${
+              fav
+                ? "text-amber-400 hover:bg-amber-50"
+                : "text-slate-300 hover:bg-slate-100 hover:text-amber-400"
+            }`}
+          >
+            <Star size={19} className={fav ? "fill-amber-400" : ""} />
+          </button>
+          {showDist && (
+            <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-500">
+              {t("find.kmAway", {
+                km: distKm < 10 ? distKm.toFixed(1) : Math.round(distKm),
+              })}
+            </span>
+          )}
+        </div>
+      </div>
+      <div className="mt-4 flex gap-2">
+        <Link to={`/c/${c.slug}`} className="btn-outline flex-1 text-sm">
+          {t("app.navProfile")}
+        </Link>
+        <Link to={`/c/${c.slug}/book`} className="btn-primary flex-1 text-sm">
+          <CalendarPlus size={15} /> {t("patient.bookNew")}
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 export default function FindDoctor() {
   const { t } = useLang();
+  const { isFav, toggle } = useFavorites();
   useSeo({ title: t("seo.findTitle"), description: t("seo.findDesc"), path: "/find" });
   const [clinics, setClinics] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -102,6 +171,9 @@ export default function FindDoctor() {
     });
   }, [clinics, query, userLoc]);
 
+  const saved = useMemo(() => filtered.filter((c) => isFav(c.id)), [filtered, isFav]);
+  const others = useMemo(() => filtered.filter((c) => !isFav(c.id)), [filtered, isFav]);
+
   return (
     <div className="portal-scope min-h-screen bg-slate-50">
       <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/80 backdrop-blur">
@@ -145,59 +217,43 @@ export default function FindDoctor() {
             <p className="text-sm text-slate-500">{t("find.empty")}</p>
           </div>
         ) : (
-          <div className="mt-6 grid gap-4 sm:grid-cols-2">
-            {filtered.map((c) => {
-              const photo = c.profile?.images?.doctor;
-              const distKm = userLoc ? clinicDistanceKm(c, userLoc) : Infinity;
-              const showDist = Number.isFinite(distKm);
-              return (
-                <div key={c.id} className="card flex flex-col p-5">
-                  <div className="flex items-center gap-3">
-                    {photo ? (
-                      <img
-                        src={photo}
-                        alt={c.name}
-                        className="h-14 w-14 shrink-0 rounded-2xl object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-portal-100 text-portal-700">
-                        <Stethoscope size={24} />
-                      </div>
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate font-bold text-slate-900">{c.name}</p>
-                      {(c.specialty || c.clinic) && (
-                        <p className="truncate text-sm text-slate-500">
-                          {c.specialty || c.clinic}
-                        </p>
-                      )}
-                      {(c.clinic || c.city) && (
-                        <p className="mt-0.5 flex items-center gap-1.5 truncate text-xs text-slate-400">
-                          <MapPin size={12} />
-                          {[c.clinic, c.city].filter(Boolean).join(" · ")}
-                        </p>
-                      )}
-                    </div>
-                    {showDist && (
-                      <span className="shrink-0 self-start rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-500">
-                        {t("find.kmAway", {
-                          km: distKm < 10 ? distKm.toFixed(1) : Math.round(distKm),
-                        })}
-                      </span>
-                    )}
-                  </div>
-                  <div className="mt-4 flex gap-2">
-                    <Link to={`/c/${c.slug}`} className="btn-outline flex-1 text-sm">
-                      {t("app.navProfile")}
-                    </Link>
-                    <Link to={`/c/${c.slug}/book`} className="btn-primary flex-1 text-sm">
-                      <CalendarPlus size={15} /> {t("patient.bookNew")}
-                    </Link>
-                  </div>
+          <>
+            {saved.length > 0 && (
+              <section className="mt-6">
+                <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-slate-500">
+                  <Star size={15} className="fill-amber-400 text-amber-400" />
+                  {t("find.savedTitle")}
+                </h2>
+                <div className="mt-3 grid gap-4 sm:grid-cols-2">
+                  {saved.map((c) => (
+                    <DoctorCard key={c.id} c={c} userLoc={userLoc} t={t} fav onToggleFav={toggle} />
+                  ))}
                 </div>
-              );
-            })}
-          </div>
+              </section>
+            )}
+
+            {others.length > 0 && (
+              <section className="mt-6">
+                {saved.length > 0 && (
+                  <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">
+                    {t("find.allTitle")}
+                  </h2>
+                )}
+                <div className={`grid gap-4 sm:grid-cols-2 ${saved.length > 0 ? "mt-3" : ""}`}>
+                  {others.map((c) => (
+                    <DoctorCard
+                      key={c.id}
+                      c={c}
+                      userLoc={userLoc}
+                      t={t}
+                      fav={false}
+                      onToggleFav={toggle}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+          </>
         )}
 
         <div className="mt-10 text-center">
