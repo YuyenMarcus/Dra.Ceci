@@ -937,9 +937,12 @@ export const translations = {
     "dtour.5.title": "Citas",
     "dtour.5.body":
       "Agenda visitas sin conflictos y gestiona Próximas, Pasadas y Canceladas. Las reservas hechas en línea se etiquetan para que las reconozcas.",
-    "dtour.6.title": "Ajustes y tu perfil público",
+    "dtour.6.title": "Tu página pública",
     "dtour.6.body":
-      "Cambia el idioma y copia el enlace de tu perfil público para compartirlo con tus pacientes y que reserven en línea.",
+      "Personaliza tu perfil público: titular, fotos, horario y los servicios que ofreces — cada uno con su propio icono (diente, diente limpio, brackets y más). Comparte el enlace para que tus pacientes reserven en línea.",
+    "dtour.7.title": "Ajustes",
+    "dtour.7.body":
+      "Cambia el idioma, gestiona tu suscripción y los datos de tu clínica. Aquí también está tu prueba gratuita y la facturación.",
 
     // Cookies
     "cookie.title": "Usamos cookies",
@@ -1923,9 +1926,12 @@ export const translations = {
     "dtour.5.title": "Appointments",
     "dtour.5.body":
       "Schedule conflict-free visits and manage Upcoming, Past and Cancelled. Bookings made online are tagged so you can spot them.",
-    "dtour.6.title": "Settings & your public profile",
+    "dtour.6.title": "Your public page",
     "dtour.6.body":
-      "Switch languages and copy your public profile link to share with patients so they can book online.",
+      "Customize your public profile: headline, photos, hours, and the services you offer — each with its own icon (tooth, clean tooth, braces, and more). Share the link so patients can book online.",
+    "dtour.7.title": "Settings",
+    "dtour.7.body":
+      "Switch languages, manage your subscription, and update your clinic details. Your free trial and billing live here too.",
 
     "cookie.title": "We use cookies",
     "cookie.body":

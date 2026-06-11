@@ -219,7 +219,8 @@ export default function Layout({ children }) {
     { selector: '[data-tour="nav-inventory"]', title: t("dtour.3.title"), body: t("dtour.3.body") },
     { selector: '[data-tour="nav-clients"]', title: t("dtour.4.title"), body: t("dtour.4.body") },
     { selector: '[data-tour="nav-appointments"]', title: t("dtour.5.title"), body: t("dtour.5.body") },
-    { selector: '[data-tour="nav-settings"]', title: t("dtour.6.title"), body: t("dtour.6.body") },
+    { selector: '[data-tour="nav-profile"]', title: t("dtour.6.title"), body: t("dtour.6.body") },
+    { selector: '[data-tour="nav-settings"]', title: t("dtour.7.title"), body: t("dtour.7.body") },
   ];
 
   const [tourOpen, setTourOpen] = useState(false);
