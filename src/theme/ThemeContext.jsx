@@ -11,7 +11,8 @@ const ThemeContext = createContext({ theme: "light", toggle: () => {} });
 export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(() => {
     try {
-      return localStorage.getItem(KEY) === "dark" ? "dark" : "light";
+      const saved = localStorage.getItem(KEY);
+      return saved === "dark" ? "dark" : "light";
     } catch {
       return "light";
     }
@@ -20,7 +21,7 @@ export function ThemeProvider({ children }) {
   useEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark");
     try {
-      localStorage.setItem(KEY, theme);
+      localStorage.setItem(KEY, theme === "dark" ? "dark" : "light");
     } catch {
       /* private mode — theme just won't persist */
     }

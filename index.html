@@ -22,8 +22,7 @@
     <!-- Icons & theme -->
     <link rel="icon" type="image/png" href="/logo.png" />
     <link rel="apple-touch-icon" href="/logo-bg.png" />
-    <meta name="theme-color" content="#0d9488" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#0d9488" />
 
     <!-- Open Graph -->
     <meta property="og:site_name" content="Clinika" />
@@ -113,8 +112,9 @@
     </script>
 
     <script>
-      // Apply the saved theme before first paint to avoid a light flash.
+      // Default is light. Only restore dark when the user explicitly chose it.
       try {
+        document.documentElement.classList.remove("dark");
         if (localStorage.getItem("clinika.theme") === "dark") {
           document.documentElement.classList.add("dark");
         }
