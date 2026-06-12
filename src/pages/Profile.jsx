@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import BrandMark from "../components/BrandMark.jsx";
+import BrandLoader from "../components/BrandLoader.jsx";
 import {
   Stethoscope,
   ArrowRight,
@@ -253,11 +254,7 @@ export default function Profile() {
   ];
 
   if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-brand-200 border-t-brand-600" />
-      </div>
-    );
+    return <BrandLoader />;
   }
 
   if (!clinic) {

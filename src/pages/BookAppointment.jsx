@@ -16,6 +16,7 @@ import {
 import Tour from "../components/Tour.jsx";
 import LanguageToggle from "../components/LanguageToggle.jsx";
 import Calendar from "../components/Calendar.jsx";
+import BrandLoader from "../components/BrandLoader.jsx";
 import PhoneField from "../components/PhoneField.jsx";
 import { useLang } from "../i18n/LanguageContext.jsx";
 import { useAuth } from "../auth/AuthContext.jsx";
@@ -139,18 +140,14 @@ export default function BookAppointment() {
     path: `/c/${slug}/book`,
   });
 
-  // Load the clinic's branches. When there are any, the patient must pick one
-  // and availability is scoped to that branch (each branch has its own calendar
-  // and hours). With no branches we keep the single-calendar behavior.
+  // Load the clinic's branches. When there are any, the patient picks where to
+  // book: the main clinic (default) or a branch — each with its own calendar
+  // and hours. With no branches we keep the single-calendar behavior.
   useEffect(() => {
     if (!clinic?.id) return;
     let active = true;
     getClinicLocations(clinic.id)
-      .then((locs) => {
-        if (!active) return;
-        setLocations(locs);
-        if (locs.length) setLocationId((cur) => cur || locs[0].id);
-      })
+      .then((locs) => active && setLocations(locs))
       .catch((err) => console.error(err));
     return () => {
       active = false;
@@ -167,16 +164,62 @@ export default function BookAppointment() {
   // clinic id so taken-slot matching (keyed by clinic id) still lines up.
   const scheduleSource = useMemo(() => {
     if (!clinic) return null;
-    if (!selectedLocation) return clinic;
+    // No branch selected: drive off the clinic's own schedule, including any
+    // rich availability config (custom weekly hours, block-offs, published
+    // times) saved on the profile.
+    if (!selectedLocation) {
+      return { ...clinic, availability: clinic.profile?.availability || null };
+    }
+    // A branch uses its own rich availability config when set, otherwise its
+    // simple per-location columns.
     return {
       ...clinic,
       id: clinic.id,
+      availability: selectedLocation.availability || null,
       workingDays: selectedLocation.workingDays,
       startHour: selectedLocation.startHour,
       endHour: selectedLocation.endHour,
       slotMinutes: selectedLocation.slotMinutes,
     };
   }, [clinic, selectedLocation]);
+
+  // Services the doctor marked as directly bookable with a fixed duration.
+  // When present, patients choose the service first so the time grid uses the
+  // right slot length (e.g. cleaning 30m, implant 90m).
+  const bookableServices = useMemo(() => {
+    const list = clinic?.profile?.services;
+    if (!Array.isArray(list)) return [];
+    return list
+      .filter((s) => s && s.name && Number.isFinite(s.durationMin) && s.durationMin > 0)
+      .map((s) => ({ name: s.name, durationMin: s.durationMin }));
+  }, [clinic]);
+
+  const [service, setSrvc] = useState(null);
+
+  function pickService(s) {
+    setSrvc(s);
+    setSlot(null);
+    setForm((f) => ({ ...f, reason: s?.name || f.reason }));
+  }
+
+  const activeDuration = service?.durationMin || null;
+  const displayStep =
+    activeDuration ||
+    scheduleSource?.availability?.slotMinutes ||
+    scheduleSource?.slotMinutes ||
+    30;
+
+  // How far ahead patients may book (booking horizon) for the active calendar.
+  const horizonDays = useMemo(() => {
+    const h = scheduleSource?.availability?.horizonDays;
+    return Number.isFinite(h) && h > 0 ? h : 60;
+  }, [scheduleSource]);
+  const maxDate = useMemo(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() + horizonDays);
+    return d;
+  }, [horizonDays]);
 
   function pickLocation(id) {
     setLocationId(id);
@@ -192,7 +235,7 @@ export default function BookAppointment() {
     const from = new Date();
     from.setHours(0, 0, 0, 0);
     const to = new Date(from);
-    to.setDate(to.getDate() + 60);
+    to.setDate(to.getDate() + Math.max(60, horizonDays));
     getTakenSlots(clinic.id, from.toISOString(), to.toISOString(), locationId || null)
       .then((slots) =>
         active &&
@@ -209,7 +252,7 @@ export default function BookAppointment() {
     return () => {
       active = false;
     };
-  }, [clinic?.id, locationId, confirmation]);
+  }, [clinic?.id, locationId, confirmation, horizonDays]);
 
   // Prefill contact details from the signed-in patient's account.
   useEffect(() => {
@@ -245,13 +288,38 @@ export default function BookAppointment() {
   }
 
   const workingDays = useMemo(
-    () => (scheduleSource ? upcomingWorkingDays(scheduleSource, 30) : []),
-    [scheduleSource]
+    () =>
+      scheduleSource
+        ? upcomingWorkingDays(scheduleSource, 30).filter((d) => d <= maxDate)
+        : [],
+    [scheduleSource, maxDate]
+  );
+  // Adaptive day picker: a schedule that's open most of the time reads best as
+  // a month calendar (closed days greyed out), while a sparse/burst schedule
+  // (e.g. one week per month) reads best as a strip of just the open days so
+  // patients never page through empty months hunting for them.
+  const denseSchedule = useMemo(() => {
+    if (workingDays.length < 10) return false;
+    const cutoff = new Date();
+    cutoff.setHours(0, 0, 0, 0);
+    cutoff.setDate(cutoff.getDate() + 30);
+    return workingDays.filter((d) => d <= cutoff).length >= 10;
+  }, [workingDays]);
+  const dayFmt = useMemo(
+    () => new Intl.DateTimeFormat(lang === "en" ? "en-US" : "es-ES", { weekday: "short" }),
+    [lang]
+  );
+  const monthFmt = useMemo(
+    () => new Intl.DateTimeFormat(lang === "en" ? "en-US" : "es-ES", { month: "short" }),
+    [lang]
   );
   const activeDay = selectedDay || (workingDays[0] && dateKey(workingDays[0]));
   const slots = useMemo(
-    () => (scheduleSource && activeDay ? generateSlots(scheduleSource, activeDay, takenSlots) : []),
-    [scheduleSource, activeDay, takenSlots]
+    () =>
+      scheduleSource && activeDay
+        ? generateSlots(scheduleSource, activeDay, takenSlots, activeDuration)
+        : [],
+    [scheduleSource, activeDay, takenSlots, activeDuration]
   );
   const availableCount = slots.filter((s) => s.available).length;
 
@@ -315,11 +383,7 @@ export default function BookAppointment() {
   }
 
   if (loadingClinic) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-100">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-brand-200 border-t-brand-600" />
-      </div>
-    );
+    return <BrandLoader className="bg-slate-100" />;
   }
 
   if (!clinic) {
@@ -434,6 +498,34 @@ export default function BookAppointment() {
                   <div className="mb-5">
                     <p className="label">{t("book.pickLocation")}</p>
                     <div className="grid gap-2 sm:grid-cols-2">
+                      {/* Main clinic is always bookable alongside its branches. */}
+                      <button
+                        type="button"
+                        onClick={() => pickLocation("")}
+                        className={`flex items-start gap-2.5 rounded-xl border px-3.5 py-3 text-left transition ${
+                          locationId === ""
+                            ? "border-brand-500 bg-brand-50 ring-1 ring-brand-500"
+                            : "border-slate-200 bg-white hover:border-brand-300"
+                        }`}
+                      >
+                        <Stethoscope
+                          size={17}
+                          className={`mt-0.5 shrink-0 ${
+                            locationId === "" ? "text-brand-600" : "text-slate-400"
+                          }`}
+                        />
+                        <span className="min-w-0">
+                          <span className="block truncate text-sm font-semibold text-slate-800">
+                            {t("book.mainLocation")}
+                          </span>
+                          <span className="mt-0.5 flex items-center gap-1 truncate text-xs text-slate-400">
+                            <MapPin size={11} />
+                            {[clinic.address, clinic.city].filter(Boolean).join(", ") ||
+                              clinic.clinic ||
+                              clinic.name}
+                          </span>
+                        </span>
+                      </button>
                       {locations.map((loc) => {
                         const on = loc.id === locationId;
                         return (
@@ -469,13 +561,88 @@ export default function BookAppointment() {
                   </div>
                 )}
 
+                {bookableServices.length > 0 && (
+                  <div className="mb-5">
+                    <p className="label">{t("book.pickService")}</p>
+                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                      {bookableServices.map((s) => {
+                        const on = service?.name === s.name;
+                        return (
+                          <button
+                            key={s.name}
+                            type="button"
+                            onClick={() => pickService(s)}
+                            className={`flex items-center justify-between gap-2 rounded-xl border px-3.5 py-3 text-left transition ${
+                              on
+                                ? "border-brand-500 bg-brand-50 ring-1 ring-brand-500"
+                                : "border-slate-200 bg-white hover:border-brand-300"
+                            }`}
+                          >
+                            <span className="min-w-0 truncate text-sm font-semibold text-slate-800">
+                              {s.name}
+                            </span>
+                            <span className="shrink-0 text-xs text-slate-400">
+                              {s.durationMin} min
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 <p className="label">{t("book.pickDay")}</p>
-                <Calendar doctor={scheduleSource} value={activeDay} onSelect={setSelectedDay} />
+                {workingDays.length === 0 ? (
+                  <p className="rounded-xl bg-slate-50 px-4 py-6 text-center text-sm text-slate-400">
+                    {t("book.noUpcomingDays", { name: clinic.name })}
+                  </p>
+                ) : denseSchedule ? (
+                  /* Mostly-open schedule: a familiar month calendar. Keyed by
+                     location so it resets to the current month on switch. */
+                  <Calendar
+                    key={locationId || "main"}
+                    doctor={scheduleSource}
+                    value={activeDay}
+                    onSelect={setSelectedDay}
+                    maxDate={maxDate}
+                  />
+                ) : (
+                  <div className="-mx-1 flex snap-x gap-2 overflow-x-auto px-1 pb-2">
+                    {workingDays.map((d) => {
+                      const dk = dateKey(d);
+                      const on = dk === activeDay;
+                      return (
+                        <button
+                          key={dk}
+                          type="button"
+                          onClick={() => setSelectedDay(dk)}
+                          className={`flex w-[4.25rem] shrink-0 snap-start flex-col items-center rounded-2xl border px-2 py-2.5 transition ${
+                            on
+                              ? "border-brand-600 bg-brand-600 text-white shadow-sm"
+                              : "border-slate-200 bg-white text-slate-700 hover:border-brand-300"
+                          }`}
+                        >
+                          <span
+                            className={`text-[11px] font-semibold uppercase ${
+                              on ? "text-brand-100" : "text-slate-400"
+                            }`}
+                          >
+                            {dayFmt.format(d)}
+                          </span>
+                          <span className="text-lg font-bold leading-tight">{d.getDate()}</span>
+                          <span className={`text-[11px] capitalize ${on ? "text-brand-100" : "text-slate-400"}`}>
+                            {monthFmt.format(d)}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
 
                 <div className="mt-5 flex items-center justify-between">
                   <p className="label mb-0">{t("book.availableTimes")}</p>
                   <span className="text-xs text-slate-400">
-                    {t("book.openEach", { count: availableCount, min: scheduleSource.slotMinutes })}
+                    {t("book.openEach", { count: availableCount, min: displayStep })}
                   </span>
                 </div>
                 {slots.length === 0 ? (

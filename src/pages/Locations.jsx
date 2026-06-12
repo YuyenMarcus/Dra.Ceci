@@ -118,7 +118,7 @@ function LocationForm({ initial, onCancel, onSave, t }) {
   return (
     <form onSubmit={submit} className="card border-brand-200 p-6 dark:border-brand-800">
       <div className="mb-5 flex items-center gap-3 border-b border-slate-100 pb-4 dark:border-slate-700">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-500/10">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-300">
           <Building2 size={20} />
         </div>
         <h2 className="font-semibold text-slate-900 dark:text-white">
@@ -201,7 +201,7 @@ function LocationForm({ initial, onCancel, onSave, t }) {
       {/* Schedule */}
       <div className="mt-5 rounded-2xl border border-slate-200 p-4 dark:border-slate-700">
         <p className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200">
-          <Clock size={15} className="text-brand-600" /> {t("loc.schedule")}
+          <Clock size={15} className="text-brand-600 dark:text-brand-300" /> {t("loc.schedule")}
         </p>
         <div className="flex flex-wrap gap-1.5">
           {WEEKDAYS.map(({ day, key }) => {
@@ -279,7 +279,7 @@ function LocationForm({ initial, onCancel, onSave, t }) {
       </label>
 
       {error && (
-        <p className="mt-4 rounded-xl bg-rose-50 px-3.5 py-2.5 text-sm font-medium text-rose-600">
+        <p className="mt-4 rounded-xl bg-rose-50 px-3.5 py-2.5 text-sm font-medium text-rose-600 dark:bg-rose-900/20 dark:text-rose-300">
           {t(error)}
         </p>
       )}
@@ -305,7 +305,7 @@ function LocationCard({ loc, onEdit, onDelete, t }) {
     <div className="card flex flex-col gap-3 p-5 sm:flex-row sm:items-start sm:justify-between dark:bg-slate-900">
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-500/10">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-300">
             <Building2 size={17} />
           </span>
           <span className="font-semibold text-slate-900 dark:text-white">
@@ -334,7 +334,7 @@ function LocationCard({ loc, onEdit, onDelete, t }) {
           <Pencil size={15} /> {t("common.edit")}
         </button>
         <button
-          className="btn-ghost px-2.5 py-2 text-xs text-rose-600 hover:bg-rose-50"
+          className="btn-ghost px-2.5 py-2 text-xs text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-900/20"
           onClick={() => onDelete(loc)}
         >
           <Trash2 size={15} />
@@ -356,11 +356,11 @@ function LockedPreview({ t }) {
       <div className="pointer-events-none space-y-3 opacity-50 blur-[1.5px]" aria-hidden>
         {sample.map((s) => (
           <div key={s.name} className="card flex items-start gap-3 p-5">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-900/40 dark:text-brand-300">
               <Building2 size={17} />
             </span>
             <div>
-              <p className="font-semibold text-slate-900">{s.name}</p>
+              <p className="font-semibold text-slate-900 dark:text-white">{s.name}</p>
               <p className="mt-1 text-sm text-slate-500">
                 {s.city} · {s.hours}
               </p>
@@ -371,7 +371,7 @@ function LockedPreview({ t }) {
 
       <div className="absolute inset-0 flex items-center justify-center p-4">
         <div className="card max-w-md p-6 text-center shadow-xl dark:bg-slate-900">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-50 text-brand-600 dark:bg-brand-500/10">
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-300">
             <Lock size={22} />
           </div>
           <h2 className="text-lg font-bold text-slate-900 dark:text-white">
@@ -388,9 +388,16 @@ function LockedPreview({ t }) {
 }
 
 export default function Locations() {
-  const { clinic, can } = useAuth();
+  const { clinic, can, refreshClinic } = useAuth();
   const { t } = useLang();
   useSeo({ title: `${t("nav.locations")} | Clinika`, noindex: true });
+
+  // Re-read the clinic on mount so the tier gate reflects the CURRENT plan,
+  // not whatever was loaded at login (the plan can change mid-session via the
+  // admin console / billing).
+  useEffect(() => {
+    refreshClinic?.();
+  }, [refreshClinic]);
 
   const allowed = can("multiLocation");
   const [locations, setLocations] = useState([]);
@@ -468,7 +475,7 @@ export default function Locations() {
       </div>
 
       {error && (
-        <p className="mb-4 rounded-xl bg-rose-50 px-3.5 py-2.5 text-sm font-medium text-rose-600">
+        <p className="mb-4 rounded-xl bg-rose-50 px-3.5 py-2.5 text-sm font-medium text-rose-600 dark:bg-rose-900/20 dark:text-rose-300">
           {t(error) || error}
         </p>
       )}
@@ -486,7 +493,7 @@ export default function Locations() {
         </div>
       ) : locations.length === 0 ? (
         <div className="card p-10 text-center dark:bg-slate-900">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-50 text-brand-600 dark:bg-brand-500/10">
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-300">
             <Building2 size={22} />
           </div>
           <p className="font-semibold text-slate-900 dark:text-white">{t("loc.emptyTitle")}</p>

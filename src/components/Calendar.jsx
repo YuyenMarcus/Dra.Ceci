@@ -13,11 +13,12 @@ function startOfDay(d) {
 
 // Month-grid date picker. Only working days that are today or later are
 // selectable; the user can page forward through as many months as needed.
-export default function Calendar({ doctor, value, onSelect }) {
+export default function Calendar({ doctor, value, onSelect, maxDate }) {
   const { lang } = useLang();
   const locale = LOCALES[lang] ?? LOCALES.es;
 
   const today = startOfDay(new Date());
+  const limit = maxDate ? startOfDay(maxDate) : null;
   const selected = value ? new Date(`${value}T00:00:00`) : null;
 
   const [view, setView] = useState(() => {
@@ -93,8 +94,9 @@ export default function Calendar({ doctor, value, onSelect }) {
           const inMonth = date.getMonth() === view.month;
           const key = dateKey(date);
           const isPast = startOfDay(date) < today;
+          const beyond = limit ? startOfDay(date) > limit : false;
           const working = isWorkingDay(doctor, date);
-          const selectable = inMonth && working && !isPast;
+          const selectable = inMonth && working && !isPast && !beyond;
           const isSelected = value === key;
           const isToday = key === dateKey(today);
 

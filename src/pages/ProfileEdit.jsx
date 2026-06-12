@@ -256,6 +256,9 @@ export default function ProfileEdit() {
           name: (s.name || "").trim(),
           desc: (s.desc || "").trim(),
           icon: s.icon || DEFAULT_SERVICE_ICON,
+          ...(Number.isFinite(s.durationMin) && s.durationMin > 0
+            ? { durationMin: s.durationMin }
+            : {}),
         }))
         .filter((s) => s.name),
       images: Object.fromEntries(
@@ -494,6 +497,22 @@ export default function ProfileEdit() {
                 onChange={(e) => setService(i, "desc", e.target.value)}
                 placeholder={t("pedit.serviceDescPh")}
               />
+              <div className="flex items-center gap-1.5 sm:w-28">
+                <input
+                  className="input w-full"
+                  type="number"
+                  min="0"
+                  step="5"
+                  value={Number.isFinite(s.durationMin) ? s.durationMin : ""}
+                  onChange={(e) => {
+                    const v = parseInt(e.target.value, 10);
+                    setService(i, "durationMin", Number.isFinite(v) && v > 0 ? v : undefined);
+                  }}
+                  placeholder={t("pedit.serviceMinsPh")}
+                  title={t("pedit.serviceMins")}
+                />
+                <span className="shrink-0 text-xs text-slate-400">min</span>
+              </div>
               <button
                 type="button"
                 onClick={() => removeService(i)}

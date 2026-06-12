@@ -16,6 +16,7 @@ import {
   Lock,
   ShieldCheck,
   Building2,
+  Clock,
 } from "lucide-react";
 import { useAuth } from "../auth/AuthContext.jsx";
 import { useLang } from "../i18n/LanguageContext.jsx";
@@ -50,9 +51,11 @@ const titles = {
   "/app/inventory": "nav.inventory",
   "/app/clients": "nav.clients",
   "/app/appointments": "nav.appointments",
+  "/app/availability": "nav.availability",
   "/app/profile": "nav.profile",
   "/app/settings": "nav.settings",
   "/app/locations": "nav.locations",
+  "/app/backup": "nav.backup",
 };
 
 function SidebarContent({
@@ -63,6 +66,8 @@ function SidebarContent({
   userSpecialty,
   showLocations = false,
   locationsLocked = false,
+  backupLocked = false,
+  availabilityLocked = false,
 }) {
   return (
     <>
@@ -126,12 +131,49 @@ function SidebarContent({
         <div className="mt-5 px-3">
           <div className="mx-1 mb-4 h-px bg-white/10" />
           <NavLink
+            to="/app/availability"
+            data-tour="nav-availability"
+            onClick={onNavigate}
+            className={({ isActive }) =>
+              [
+                "group relative flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-colors duration-200",
+                availabilityLocked ? "opacity-50 hover:opacity-80" : "",
+                isActive
+                  ? "bg-white/[0.12] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
+                  : "text-brand-100/75 hover:bg-white/[0.06] hover:text-white",
+              ].join(" ")
+            }
+          >
+            {({ isActive }) => (
+              <>
+                <span
+                  className={`absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-brand-300 transition-opacity ${
+                    isActive ? "opacity-100" : "opacity-0"
+                  }`}
+                />
+                <Clock
+                  size={18}
+                  className={isActive ? "text-brand-300" : "text-brand-200/60 transition-colors group-hover:text-brand-200"}
+                />
+                <span className="flex-1">{t("nav.availability")}</span>
+                {availabilityLocked ? (
+                  <Lock size={13} className="text-brand-200/70" />
+                ) : (
+                  <span className="rounded-full bg-brand-300/20 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-brand-200">
+                    {t("nav.locationsPro")}
+                  </span>
+                )}
+              </>
+            )}
+          </NavLink>
+
+          <NavLink
             to="/app/locations"
             data-tour="nav-locations"
             onClick={onNavigate}
             className={({ isActive }) =>
               [
-                "group relative flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-colors duration-200",
+                "group relative mt-0.5 flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-colors duration-200",
                 locationsLocked ? "opacity-50 hover:opacity-80" : "",
                 isActive
                   ? "bg-white/[0.12] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
@@ -152,6 +194,43 @@ function SidebarContent({
                 />
                 <span className="flex-1">{t("nav.locations")}</span>
                 {locationsLocked ? (
+                  <Lock size={13} className="text-brand-200/70" />
+                ) : (
+                  <span className="rounded-full bg-brand-300/20 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-brand-200">
+                    {t("nav.locationsPro")}
+                  </span>
+                )}
+              </>
+            )}
+          </NavLink>
+
+          <NavLink
+            to="/app/backup"
+            data-tour="nav-backup"
+            onClick={onNavigate}
+            className={({ isActive }) =>
+              [
+                "group relative mt-0.5 flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-colors duration-200",
+                backupLocked ? "opacity-50 hover:opacity-80" : "",
+                isActive
+                  ? "bg-white/[0.12] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
+                  : "text-brand-100/75 hover:bg-white/[0.06] hover:text-white",
+              ].join(" ")
+            }
+          >
+            {({ isActive }) => (
+              <>
+                <span
+                  className={`absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-brand-300 transition-opacity ${
+                    isActive ? "opacity-100" : "opacity-0"
+                  }`}
+                />
+                <ShieldCheck
+                  size={18}
+                  className={isActive ? "text-brand-300" : "text-brand-200/60 transition-colors group-hover:text-brand-200"}
+                />
+                <span className="flex-1">{t("nav.backup")}</span>
+                {backupLocked ? (
                   <Lock size={13} className="text-brand-200/70" />
                 ) : (
                   <span className="rounded-full bg-brand-300/20 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-brand-200">
@@ -202,6 +281,8 @@ export default function Layout({ children }) {
     can,
   } = useAuth();
   const locationsLocked = !can("multiLocation");
+  const backupLocked = !can("dataBackup");
+  const availabilityLocked = !can("customAvailability");
   const { t } = useLang();
   const title = titles[location.pathname]
     ? t(titles[location.pathname])
@@ -356,6 +437,8 @@ export default function Layout({ children }) {
           userSpecialty={currentUser?.specialty}
           showLocations={!receptionMode}
           locationsLocked={locationsLocked}
+          backupLocked={backupLocked}
+          availabilityLocked={availabilityLocked}
         />
       </div>
 
@@ -383,6 +466,8 @@ export default function Layout({ children }) {
               onNavigate={() => setMobileOpen(false)}
               showLocations={!receptionMode}
               locationsLocked={locationsLocked}
+              backupLocked={backupLocked}
+              availabilityLocked={availabilityLocked}
             />
           </div>
         </div>

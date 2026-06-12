@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+/* Bind Tailwind's `dark:` variant to the `.dark` class on <html> (set by
+   ThemeContext) instead of the default `prefers-color-scheme` media query.
+   Without this, `dark:` utilities follow the user's OS theme and ignore the
+   in-app light/dark toggle — e.g. a `dark:bg-slate-900` element would render
+   dark in light mode whenever the OS is set to dark. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-brand-50: #f0fdfa;
   --color-brand-100: #ccfbf1;
@@ -311,6 +318,25 @@
   animation: mt-scale-in 0.4s ease both;
 }
 
+/* "Saved" confirmation: check pops in with a small spring overshoot. */
+@keyframes mt-saved-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.12);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.animate-saved-pop {
+  animation: mt-saved-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
 /* Stagger direct children (cards, list items, etc.) */
 .stagger > * {
   animation: mt-fade-up 0.5s cubic-bezier(0.21, 1.02, 0.73, 1) both;
@@ -365,6 +391,7 @@
   .animate-fade-in,
   .animate-fade-up,
   .animate-scale-in,
+  .animate-saved-pop,
   .animate-float,
   .animate-slide-in-left,
   .stagger > * {

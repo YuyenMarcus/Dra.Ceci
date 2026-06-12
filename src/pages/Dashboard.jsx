@@ -60,7 +60,9 @@ function StatCard({ icon: Icon, label, value, tone, to }) {
 }
 
 const sameDay = (iso) => {
+  if (!iso) return false;
   const d = new Date(iso);
+  if (!Number.isFinite(d.getTime())) return false;
   const n = new Date();
   return (
     d.getFullYear() === n.getFullYear() &&
@@ -106,12 +108,17 @@ export default function Dashboard() {
     [myAppointments]
   );
 
-  const todayCount = useMemo(
-    () =>
-      myAppointments.filter((a) => a.status === "scheduled" && sameDay(a.start))
-        .length,
-    [myAppointments]
-  );
+  // Only count appointments still ahead today — past slots stay "scheduled"
+  // until marked complete but shouldn't inflate the hero message.
+  const todayCount = useMemo(() => {
+    const now = Date.now();
+    return myAppointments.filter(
+      (a) =>
+        a.status === "scheduled" &&
+        sameDay(a.start) &&
+        new Date(a.start).getTime() >= now
+    ).length;
+  }, [myAppointments]);
 
   const clientName = (a) =>
     clients.find((c) => c.id === a.clientId)?.name ??

@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, Outlet, useParams } from "react-router-dom";
 import { useAuth } from "./auth/AuthContext.jsx";
 import Layout from "./components/Layout.jsx";
 import Splash from "./components/Splash.jsx";
+import BrandLoader from "./components/BrandLoader.jsx";
 import AppLanding from "./pages/AppLanding.jsx";
 import Profile from "./pages/Profile.jsx";
 import Login from "./pages/Login.jsx";
@@ -16,7 +17,9 @@ import Appointments from "./pages/Appointments.jsx";
 import BookAppointment from "./pages/BookAppointment.jsx";
 import ManageBooking from "./pages/ManageBooking.jsx";
 import Settings from "./pages/Settings.jsx";
+import Availability from "./pages/Availability.jsx";
 import Locations from "./pages/Locations.jsx";
+import Backup from "./pages/Backup.jsx";
 import ProfileEdit from "./pages/ProfileEdit.jsx";
 import PatientHome from "./pages/PatientHome.jsx";
 import PatientLogin from "./pages/PatientLogin.jsx";
@@ -34,11 +37,7 @@ import CookieConsent from "./components/CookieConsent.jsx";
 const SPLASH_KEY = "medtrack.splashed";
 
 function AuthLoading() {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50">
-      <div className="h-10 w-10 animate-spin rounded-full border-4 border-brand-200 border-t-brand-600" />
-    </div>
-  );
+  return <BrandLoader />;
 }
 
 function RequireDoctor({ children }) {
@@ -164,6 +163,14 @@ export default function App() {
           />
           <Route path="appointments" element={<Appointments />} />
           <Route
+            path="availability"
+            element={
+              <RequireFullAccess>
+                <Availability />
+              </RequireFullAccess>
+            }
+          />
+          <Route
             path="profile"
             element={
               <RequireFullAccess>
@@ -184,6 +191,14 @@ export default function App() {
             element={
               <RequireFullAccess>
                 <Locations />
+              </RequireFullAccess>
+            }
+          />
+          <Route
+            path="backup"
+            element={
+              <RequireFullAccess>
+                <Backup />
               </RequireFullAccess>
             }
           />

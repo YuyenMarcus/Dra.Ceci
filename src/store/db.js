@@ -298,6 +298,122 @@ export async function loadClinicData(clinicId) {
   };
 }
 
+// Full clinic export for owner-initiated backups (Profesional+). Pulls every
+// clinic-scoped record straight from the DB — the clinic row, patients,
+// appointments, inventory, branches, treatments and signed consents — so the
+// owner keeps a complete, restorable copy of their data. Raw rows are returned
+// (DB column shape) so a backup is a faithful snapshot, not a lossy app-shape
+// projection.
+export async function exportClinicData(clinicId) {
+  if (!isSupabaseEnabled || !clinicId) {
+    throw new Error("Backend not configured");
+  }
+  const [clinic, patients, appointments, inventory, locations, treatments, consents] =
+    await Promise.all([
+      supabase.from("clinics").select("*").eq("id", clinicId).single(),
+      supabase.from("patients").select("*").eq("clinic_id", clinicId),
+      supabase.from("appointments").select("*").eq("clinic_id", clinicId),
+      supabase.from("inventory").select("*").eq("clinic_id", clinicId),
+      supabase.from("clinic_locations").select("*").eq("clinic_id", clinicId),
+      supabase.from("treatments").select("*").eq("clinic_id", clinicId),
+      supabase.from("consent_records").select("*").eq("clinic_id", clinicId),
+    ]);
+
+  const firstError =
+    clinic.error ||
+    patients.error ||
+    appointments.error ||
+    inventory.error ||
+    locations.error ||
+    treatments.error ||
+    consents.error;
+  if (firstError) throw firstError;
+
+  return {
+    schema: "clinika.backup",
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    clinicId,
+    clinic: clinic.data ?? null,
+    counts: {
+      patients: patients.data?.length ?? 0,
+      appointments: appointments.data?.length ?? 0,
+      inventory: inventory.data?.length ?? 0,
+      locations: locations.data?.length ?? 0,
+      treatments: treatments.data?.length ?? 0,
+      consents: consents.data?.length ?? 0,
+    },
+    data: {
+      patients: patients.data ?? [],
+      appointments: appointments.data ?? [],
+      inventory: inventory.data ?? [],
+      locations: locations.data ?? [],
+      treatments: treatments.data ?? [],
+      consents: consents.data ?? [],
+    },
+  };
+}
+
+// Restore a clinic from a backup produced by exportClinicData. Upserts every
+// record back by its original id (so re-importing the same backup is
+// idempotent) while re-stamping clinic_id to the CURRENT clinic — that way a
+// backup can be restored into a fresh account after a disaster. Rows are
+// written in foreign-key-safe order. This MERGES: it never deletes records
+// created after the backup, it only re-adds/overwrites what the backup holds.
+export async function restoreClinicData(clinicId, backup) {
+  if (!isSupabaseEnabled || !clinicId) throw new Error("Backend not configured");
+  if (!backup || backup.schema !== "clinika.backup" || !backup.data) {
+    throw new Error("backup.invalidFile");
+  }
+  const d = backup.data;
+
+  // 1. Clinic profile, schedule and contact fields. We intentionally keep the
+  // current slug / owner / email / id to avoid unique-key conflicts and to not
+  // hijack the live public URL.
+  if (backup.clinic) {
+    const c = backup.clinic;
+    const patch = {};
+    for (const k of [
+      "name", "specialty", "clinic_name", "phone", "address", "city",
+      "map_query", "working_days", "start_hour", "end_hour", "slot_minutes",
+      "profile",
+    ]) {
+      if (c[k] !== undefined) patch[k] = c[k];
+    }
+    if (Object.keys(patch).length) {
+      const { error } = await supabase.from("clinics").update(patch).eq("id", clinicId);
+      if (error) throw new Error(`clinic: ${error.message}`);
+    }
+  }
+
+  // Patients: drop user_id so we never hit a missing-auth-user FK when
+  // restoring into a different project; the portal re-links by phone on login.
+  const remap = (rows, extra = {}) =>
+    (Array.isArray(rows) ? rows : []).map((r) => ({ ...r, clinic_id: clinicId, ...extra }));
+
+  const counts = {};
+  const steps = [
+    ["clinic_locations", remap(d.locations)],
+    ["patients", remap(d.patients, { user_id: null })],
+    ["appointments", remap(d.appointments)],
+    ["treatments", remap(d.treatments)],
+    ["consent_records", remap(d.consents)],
+    ["inventory", remap(d.inventory)],
+  ];
+
+  for (const [table, payload] of steps) {
+    if (!payload.length) {
+      counts[table] = 0;
+      continue;
+    }
+    const { error } = await supabase.from(table).upsert(payload);
+    if (error) throw new Error(`${table}: ${error.message}`);
+    counts[table] = payload.length;
+  }
+
+  return counts;
+}
+
 export async function upsertInventoryItem(clinicId, item) {
   if (!isSupabaseEnabled) return;
   const { error } = await supabase
@@ -400,6 +516,7 @@ function rowToLocation(row) {
     slotMinutes: row.slot_minutes ?? 30,
     sortOrder: row.sort_order ?? 0,
     active: row.active ?? true,
+    availability: row.availability ?? null,
   };
 }
 
@@ -449,6 +566,7 @@ function locationToRow(clinicId, loc) {
   set("slot_minutes", loc.slotMinutes);
   set("sort_order", loc.sortOrder);
   set("active", loc.active);
+  set("availability", loc.availability);
   return row;
 }
 
