@@ -83,12 +83,29 @@ Deno.serve(async (req) => {
       if (aff?.active && pct > 0) {
         let couponId = aff.stripe_coupon_id as string | null;
         if (!couponId) {
+          // Prefer a coupon whose id matches the affiliate code (e.g. one
+          // created by hand in the Stripe dashboard, like "ANGULO"). Reusing it
+          // keeps Stripe's redemption counter accurate and avoids minting a
+          // duplicate random-id coupon on every first checkout.
+          try {
+            const existing = await stripe.coupons.retrieve(aff.code);
+            if (existing && !(existing as { deleted?: boolean }).deleted && existing.valid) {
+              couponId = existing.id;
+            }
+          } catch {
+            // No coupon with that id yet — fall through and create one.
+          }
+        }
+        if (!couponId) {
           const coupon = await stripe.coupons.create({
+            id: aff.code,
             percent_off: Math.min(100, Math.max(0, pct * 100)),
             duration: "once",
             name: `Referral ${aff.code}`,
           });
           couponId = coupon.id;
+        }
+        if (couponId && couponId !== aff.stripe_coupon_id) {
           await admin
             .from("affiliates")
             .update({ stripe_coupon_id: couponId })
