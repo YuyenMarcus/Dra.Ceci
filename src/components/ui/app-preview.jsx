@@ -5,17 +5,22 @@ import {
   Users,
   CalendarDays,
   Bell,
+  Sparkles,
+  Stethoscope,
+  Smile,
 } from "lucide-react";
 import BrandMark from "../BrandMark.jsx";
+import { useLang } from "../../i18n/LanguageContext.jsx";
+import { formatLongDate } from "../../lib/format.js";
 
 /**
  * AppPreview — a lightweight, on-brand mock of the Clinika dashboard used as
  * the hero "product shot". Built from divs (no external screenshot) so it
- * stays crisp at any size and never 404s. Text is rendered as skeleton bars
- * so the preview reads the same in any language.
+ * stays crisp at any size and never 404s. Content is real (translated) text
+ * so it reads as a living product, not a loading skeleton.
  */
 export default function AppPreview() {
-  const navIcons = [LayoutDashboard, Boxes, Users, CalendarDays];
+  const { t } = useLang();
 
   // Some ad-block / content-filter extensions inject `display:none !important`
   // on sidebar-like elements (this hid the real portal sidebar in some Chrome
@@ -34,10 +39,56 @@ export default function AppPreview() {
     return () => mq.removeEventListener("change", apply);
   }, []);
 
+  const nav = [
+    { Icon: LayoutDashboard, label: t("nav.dashboard") },
+    { Icon: Boxes, label: t("nav.inventory") },
+    { Icon: Users, label: t("nav.clients") },
+    { Icon: CalendarDays, label: t("nav.appointments") },
+  ];
+
   const stats = [
-    { v: "8", Icon: CalendarDays, tone: "bg-brand-50 text-brand-600" },
-    { v: "1.2k", Icon: Users, tone: "bg-portal-100 text-portal-600" },
-    { v: "3", Icon: Boxes, tone: "bg-amber-50 text-amber-600" },
+    {
+      v: "8",
+      label: t("preview.apptsToday"),
+      Icon: CalendarDays,
+      tone: "bg-brand-50 text-brand-600",
+    },
+    {
+      v: "1.2k",
+      label: t("dash.myClients"),
+      Icon: Users,
+      tone: "bg-portal-100 text-portal-600",
+    },
+    {
+      v: "3",
+      label: t("dash.lowOut"),
+      Icon: Boxes,
+      tone: "bg-amber-50 text-amber-600",
+    },
+  ];
+
+  const agenda = [
+    {
+      reason: t("reason.cleaning"),
+      tag: t("preview.confirmed"),
+      time: "09:30",
+      Icon: Sparkles,
+      tone: "bg-emerald-100 text-emerald-700",
+    },
+    {
+      reason: t("reason.checkup"),
+      tag: t("common.online"),
+      time: "10:15",
+      Icon: Stethoscope,
+      tone: "bg-sky-100 text-sky-700",
+    },
+    {
+      reason: t("reason.whitening"),
+      tag: t("preview.firstVisit"),
+      time: "11:00",
+      Icon: Smile,
+      tone: "bg-violet-100 text-violet-700",
+    },
   ];
 
   return (
@@ -47,7 +98,11 @@ export default function AppPreview() {
         <span className="h-2.5 w-2.5 rounded-full bg-rose-300" />
         <span className="h-2.5 w-2.5 rounded-full bg-amber-300" />
         <span className="h-2.5 w-2.5 rounded-full bg-emerald-300" />
-        <div className="mx-auto h-5 w-64 max-w-[45%] rounded-md border border-slate-200 bg-white" />
+        <div className="mx-auto flex h-5 w-64 max-w-[45%] items-center justify-center rounded-md border border-slate-200 bg-white">
+          <span className="truncate px-2 text-[10px] text-slate-400">
+            clinika.health/app
+          </span>
+        </div>
       </div>
 
       <div className="flex min-h-[19rem]">
@@ -62,9 +117,9 @@ export default function AppPreview() {
             <span className="text-sm font-bold text-white">Clinika</span>
           </div>
           <nav className="flex flex-col gap-1.5">
-            {navIcons.map((Icon, i) => (
+            {nav.map(({ Icon, label }, i) => (
               <div
-                key={i}
+                key={label}
                 className={`flex items-center gap-2.5 rounded-lg px-3 py-2 ${
                   i === 0 ? "bg-white/10" : ""
                 }`}
@@ -74,10 +129,12 @@ export default function AppPreview() {
                   className={i === 0 ? "text-white" : "text-brand-200/70"}
                 />
                 <span
-                  className={`h-2 rounded-full ${
-                    i === 0 ? "w-16 bg-white/80" : "w-12 bg-brand-200/30"
+                  className={`text-xs font-medium ${
+                    i === 0 ? "text-white" : "text-brand-200/70"
                   }`}
-                />
+                >
+                  {label}
+                </span>
               </div>
             ))}
           </nav>
@@ -86,9 +143,13 @@ export default function AppPreview() {
         {/* Main */}
         <main className="flex-1 space-y-4 p-5">
           <div className="flex items-center justify-between">
-            <div className="space-y-2">
-              <div className="h-3 w-40 rounded-full bg-slate-200" />
-              <div className="h-2 w-24 rounded-full bg-slate-100" />
+            <div>
+              <p className="text-sm font-bold text-slate-800">
+                {t("preview.greeting")}
+              </p>
+              <p className="text-[11px] text-slate-400 first-letter:uppercase">
+                {formatLongDate()}
+              </p>
             </div>
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-50 text-brand-600">
               <Bell size={15} />
@@ -96,9 +157,9 @@ export default function AppPreview() {
           </div>
 
           <div className="grid grid-cols-3 gap-3">
-            {stats.map((s, i) => (
+            {stats.map((s) => (
               <div
-                key={i}
+                key={s.label}
                 className="rounded-xl border border-slate-100 bg-slate-50/60 p-3"
               >
                 <div
@@ -107,26 +168,40 @@ export default function AppPreview() {
                   <s.Icon size={15} />
                 </div>
                 <div className="text-lg font-bold text-slate-800">{s.v}</div>
-                <div className="mt-1 h-2 w-12 rounded-full bg-slate-200" />
+                <div className="mt-0.5 truncate text-[10px] font-medium text-slate-400">
+                  {s.label}
+                </div>
               </div>
             ))}
           </div>
 
           <div className="rounded-xl border border-slate-100">
             <div className="flex items-center justify-between border-b border-slate-100 px-4 py-2.5">
-              <div className="h-2.5 w-28 rounded-full bg-slate-200" />
-              <div className="h-2 w-10 rounded-full bg-slate-100" />
+              <span className="text-xs font-semibold text-slate-700">
+                {t("dash.todaysSchedule")}
+              </span>
+              <span className="text-[10px] font-medium text-brand-600">
+                {t("dash.viewAll")}
+              </span>
             </div>
             <div className="divide-y divide-slate-50">
-              {["09:30", "10:15", "11:00"].map((time) => (
-                <div key={time} className="flex items-center gap-3 px-4 py-2.5">
-                  <div className="h-8 w-8 rounded-full bg-gradient-to-br from-brand-100 to-portal-100" />
-                  <div className="flex-1 space-y-1.5">
-                    <div className="h-2.5 w-32 rounded-full bg-slate-200" />
-                    <div className="h-2 w-20 rounded-full bg-slate-100" />
+              {agenda.map((a) => (
+                <div key={a.time} className="flex items-center gap-3 px-4 py-2.5">
+                  <div
+                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${a.tone}`}
+                  >
+                    <a.Icon size={14} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-xs font-semibold text-slate-700">
+                      {a.reason}
+                    </p>
+                    <p className="truncate text-[10px] text-slate-400">
+                      {a.tag}
+                    </p>
                   </div>
                   <span className="rounded-full bg-brand-50 px-2.5 py-1 text-[11px] font-semibold text-brand-700">
-                    {time}
+                    {a.time}
                   </span>
                 </div>
               ))}

@@ -635,6 +635,10 @@ export const translations = {
     // Landing: how it works / pricing / FAQ / final CTA
     "app.navPricing": "Precios",
     "app.heroNote": "Prueba gratis de 14 días · Sin tarjeta de crédito",
+    "preview.greeting": "Tu clínica hoy",
+    "preview.apptsToday": "Citas hoy",
+    "preview.confirmed": "Confirmada",
+    "preview.firstVisit": "Primera visita",
     "how.title": "Configura tu clínica en minutos",
     "how.sub": "Tres pasos y tu consultorio queda en línea.",
     "how.1.title": "Crea tu cuenta",
@@ -1884,6 +1888,10 @@ export const translations = {
     // Landing: how it works / pricing / FAQ / final CTA
     "app.navPricing": "Pricing",
     "app.heroNote": "14-day free trial · No credit card required",
+    "preview.greeting": "Your clinic today",
+    "preview.apptsToday": "Appointments today",
+    "preview.confirmed": "Confirmed",
+    "preview.firstVisit": "First visit",
     "how.title": "Set up your clinic in minutes",
     "how.sub": "Three steps and your practice is online.",
     "how.1.title": "Create your account",
